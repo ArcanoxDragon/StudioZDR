@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="clr-namespace:StudioZDR.App.Features.SaveEditor.ViewModels;assembly=StudioZDR.App"
+			 mc:Ignorable="d"
+			 x:Class="StudioZDR.UI.Avalonia.Features.SaveEditor.Views.SaveEditorView"
+			 x:DataType="vm:SaveEditorViewModel"
+			 x:CompileBindings="True"
+			 Name="View"
+			 Width="800" Height="400">
+	<UserControl.KeyBindings>
+		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
+	</UserControl.KeyBindings>
+
+	<DockPanel>
+		<Menu DockPanel.Dock="Top">
+			<MenuItem Header="_File">
+				<MenuItem Header="_Open..." HotKey="Ctrl+O" Command="{Binding OpenFileCommand}" />
+				<MenuItem Header="_Save" HotKey="Ctrl+S" />
+				<MenuItem Header="Save _As..." />
+				<Separator />
+				<MenuItem Header="_Close" Command="{ReflectionBinding #View.Close}" />
+			</MenuItem>
+		</Menu>
+
+		<StackPanel Margin="50" Spacing="50">
+			<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
+				<TextBlock.Text>
+					Save Editor!
+				</TextBlock.Text>
+			</TextBlock>
+
+			<TextBlock Text="{Binding OpenedFileName, StringFormat='Opened file: {0}'}"
+					   TextWrapping="Wrap" />
+		</StackPanel>
+	</DockPanel>
+</UserControl>

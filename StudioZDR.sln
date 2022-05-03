@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StudioZDR.UI.Avalonia", "StudioZDR.UI.Avalonia\StudioZDR.UI.Avalonia.csproj", "{FE377723-3B46-402C-BC3A-27021A397BCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioZDR.App", "StudioZDR.App\StudioZDR.App.csproj", "{7C940168-384C-4E41-AA87-2C9EEF8D402D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE377723-3B46-402C-BC3A-27021A397BCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE377723-3B46-402C-BC3A-27021A397BCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE377723-3B46-402C-BC3A-27021A397BCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE377723-3B46-402C-BC3A-27021A397BCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C940168-384C-4E41-AA87-2C9EEF8D402D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C940168-384C-4E41-AA87-2C9EEF8D402D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C940168-384C-4E41-AA87-2C9EEF8D402D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C940168-384C-4E41-AA87-2C9EEF8D402D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F6B7CE5F-E0F2-430D-A555-F4A0A63B59C7}
+	EndGlobalSection
+EndGlobal

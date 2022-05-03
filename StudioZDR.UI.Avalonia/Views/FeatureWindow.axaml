@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:vm="clr-namespace:StudioZDR.App.ViewModels;assembly=StudioZDR.App"
+		xmlns:framework="clr-namespace:StudioZDR.UI.Avalonia.Framework"
+		mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+		x:Class="StudioZDR.UI.Avalonia.Views.FeatureWindow"
+		x:DataType="vm:FeatureWindowViewModel"
+		x:CompileBindings="True"
+		Icon="/Assets/AppIcon.ico"
+		Title="{Binding Feature.Name, FallbackValue='Studio ZDR'}"
+		CanResize="False"
+		WindowStartupLocation="CenterScreen"
+		Content="{Binding FeatureViewModel}"
+		SizeToContent="WidthAndHeight">
+	<Window.DataTemplates>
+		<framework:FeatureViewLocator />
+	</Window.DataTemplates>
+</Window>
