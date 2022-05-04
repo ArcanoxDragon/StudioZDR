@@ -1,4 +1,5 @@
-﻿using StudioZDR.App.ViewModels;
+﻿using Material.Icons;
+using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.App.Features;
 
@@ -8,7 +9,7 @@ public abstract class FeatureModule : Module, IFeature
 	public abstract string Description   { get; }
 	public abstract Type   ViewModelType { get; }
 
-	public virtual string IconName => "Default";
+	public virtual MaterialIconKind IconKind => MaterialIconKind.ToyBrick;
 
 	protected sealed override void Load(ContainerBuilder builder)
 	{

@@ -5,7 +5,11 @@ VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StudioZDR.UI.Avalonia", "StudioZDR.UI.Avalonia\StudioZDR.UI.Avalonia.csproj", "{FE377723-3B46-402C-BC3A-27021A397BCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioZDR.App", "StudioZDR.App\StudioZDR.App.csproj", "{7C940168-384C-4E41-AA87-2C9EEF8D402D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StudioZDR.App", "StudioZDR.App\StudioZDR.App.csproj", "{7C940168-384C-4E41-AA87-2C9EEF8D402D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rdParty", "3rdParty", "{BD85CCCC-5879-4FDF-8AAB-5848160B35CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Material.Icons.Avalonia", "3rdParty\Material.Icons.Avalonia\Material.Icons.Avalonia\Material.Icons.Avalonia.csproj", "{9F636DAD-1D5D-4C38-89B3-6B6A6A94381D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +25,16 @@ Global
 		{7C940168-384C-4E41-AA87-2C9EEF8D402D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C940168-384C-4E41-AA87-2C9EEF8D402D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C940168-384C-4E41-AA87-2C9EEF8D402D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F636DAD-1D5D-4C38-89B3-6B6A6A94381D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F636DAD-1D5D-4C38-89B3-6B6A6A94381D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F636DAD-1D5D-4C38-89B3-6B6A6A94381D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F636DAD-1D5D-4C38-89B3-6B6A6A94381D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9F636DAD-1D5D-4C38-89B3-6B6A6A94381D} = {BD85CCCC-5879-4FDF-8AAB-5848160B35CE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F6B7CE5F-E0F2-430D-A555-F4A0A63B59C7}

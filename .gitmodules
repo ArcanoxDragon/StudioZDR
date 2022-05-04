@@ -1,0 +1,3 @@
+[submodule "3rdParty/Material.Icons.Avalonia"]
+	path = 3rdParty/Material.Icons.Avalonia
+	url = https://github.com/AvaloniaUtils/Material.Icons.Avalonia.git

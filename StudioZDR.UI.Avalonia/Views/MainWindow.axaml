@@ -2,8 +2,8 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-		xmlns:views="clr-namespace:StudioZDR.UI.Avalonia.Views" 
 		xmlns:vm="clr-namespace:StudioZDR.App.ViewModels;assembly=StudioZDR.App"
+		xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
 		x:Class="StudioZDR.UI.Avalonia.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
@@ -42,8 +42,8 @@
 								Command="{ReflectionBinding #Window.ViewModel.LaunchFeature}"
 								CommandParameter="{Binding}"
 								ToolTip.Tip="{Binding Description}">
-							<StackPanel Orientation="Horizontal" Spacing="20">
-								<Image Source="{Binding Converter={x:Static views:MainWindow.FeatureIconConverter}}" MaxHeight="40" VerticalAlignment="Center" />
+							<StackPanel Orientation="Horizontal" Spacing="10">
+								<avalonia:MaterialIcon Kind="{Binding IconKind}" Width="24" Height="24"/>
 								<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
 							</StackPanel>
 						</Button>

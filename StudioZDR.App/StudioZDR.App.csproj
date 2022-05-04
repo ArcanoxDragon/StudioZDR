@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="6.3.0" />
+    <PackageReference Include="Material.Icons" Version="1.0.95" />
     <PackageReference Include="ReactiveUI" Version="18.0.10" />
     <PackageReference Include="ReactiveUI.Fody" Version="18.0.10" />
     <PackageReference Include="Splat.Autofac" Version="14.2.8" />

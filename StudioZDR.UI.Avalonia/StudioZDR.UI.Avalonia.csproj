@@ -27,7 +27,8 @@
 		<PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
 	</ItemGroup>
 	<ItemGroup>
-    	<ProjectReference Include="..\StudioZDR.App\StudioZDR.App.csproj" />
+		<ProjectReference Include="..\3rdParty\Material.Icons.Avalonia\Material.Icons.Avalonia\Material.Icons.Avalonia.csproj" />
+		<ProjectReference Include="..\StudioZDR.App\StudioZDR.App.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Assets\Images\" />
