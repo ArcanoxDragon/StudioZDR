@@ -8,7 +8,6 @@
 		x:Class="StudioZDR.UI.Avalonia.Views.FeatureWindow"
 		x:DataType="vm:FeatureWindowViewModel"
 		x:CompileBindings="True"
-		Icon="/Assets/AppIcon.ico"
 		Title="{Binding Feature.Name, FallbackValue='Studio ZDR'}"
 		CanResize="False"
 		WindowStartupLocation="CenterScreen"

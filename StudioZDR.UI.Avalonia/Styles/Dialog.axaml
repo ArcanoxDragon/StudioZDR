@@ -1,0 +1,19 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<Border Padding="20">
+			<!-- Add Controls for Previewer Here -->
+		</Border>
+	</Design.PreviewWith>
+
+	<Style Selector="Window.Dialog Button">
+		<Setter Property="MinWidth" Value="150" />
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+	</Style>
+
+	<Style Selector="Window.Dialog StackPanel.ButtonContainer">
+		<Setter Property="Margin" Value="0,20,0,0" />
+		<Setter Property="Spacing" Value="10" />
+		<Setter Property="HorizontalAlignment" Value="Center" />
+	</Style>
+</Styles>

@@ -30,6 +30,9 @@ internal class Program
 						 .UsePlatformDetect()
 						 .LogToTrace()
 						 .UseReactiveUI()
+						 .With(new Win32PlatformOptions {
+							 UseWindowsUIComposition = true,
+						 })
 						 .AfterPlatformServicesSetup(_ => {
 							 App.Container = builder.Build();
 

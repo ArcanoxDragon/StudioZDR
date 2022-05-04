@@ -13,7 +13,6 @@
 		CanResize="False"
 		SizeToContent="Height"
 		WindowStartupLocation="CenterScreen"
-		Icon="/Assets/AppIcon.ico"
 		Title="Studio ZDR"
 		TransparencyLevelHint="AcrylicBlur"
 		ExtendClientAreaToDecorationsHint="True"
@@ -23,7 +22,7 @@
 	<DockPanel>
 		<ExperimentalAcrylicBorder IsHitTestVisible="False">
 			<ExperimentalAcrylicBorder.Material>
-				<ExperimentalAcrylicMaterial BackgroundSource="Digger" TintColor="Black" TintOpacity="1" MaterialOpacity="0.65" />
+				<ExperimentalAcrylicMaterial BackgroundSource="Digger" TintColor="Black" TintOpacity="1" MaterialOpacity="0.85" />
 			</ExperimentalAcrylicBorder.Material>
 		</ExperimentalAcrylicBorder>
 

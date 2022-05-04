@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		mc:Ignorable="d"
+		x:Class="StudioZDR.UI.Avalonia.Views.Dialogs.ConfirmDialog"
+		Name="Dialog"
+		WindowStartupLocation="CenterOwner"
+		Classes="Dialog"
+		SizeToContent="WidthAndHeight"
+		CanResize="False">
+	<Grid RowDefinitions="*,Auto" Margin="10" MaxWidth="500">
+		<TextBlock Grid.Row="0" Text="{Binding #Dialog.Message}" TextWrapping="Wrap" />
+
+		<StackPanel Grid.Row="1" Orientation="Horizontal" Classes="ButtonContainer">
+			<Button Content="{Binding #Dialog.PositiveText}" IsDefault="True" Command="{Binding #Dialog.OnPositiveButtonClicked}" />
+			<Button Content="{Binding #Dialog.NegativeText}" IsCancel="True" Command="{Binding #Dialog.OnNegativeButtonClicked}" />
+		</StackPanel>
+	</Grid>
+</Window>
