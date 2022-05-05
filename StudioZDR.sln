@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rdParty", "3rdParty", "{BD
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Material.Icons.Avalonia", "3rdParty\Material.Icons.Avalonia\Material.Icons.Avalonia\Material.Icons.Avalonia.csproj", "{9F636DAD-1D5D-4C38-89B3-6B6A6A94381D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MercuryEngine.Data", "MercuryEngine.Data\src\MercuryEngine.Data\MercuryEngine.Data.csproj", "{A8C96644-8B7A-4C28-8ECE-4055A298F846}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{9F636DAD-1D5D-4C38-89B3-6B6A6A94381D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F636DAD-1D5D-4C38-89B3-6B6A6A94381D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F636DAD-1D5D-4C38-89B3-6B6A6A94381D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8C96644-8B7A-4C28-8ECE-4055A298F846}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8C96644-8B7A-4C28-8ECE-4055A298F846}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8C96644-8B7A-4C28-8ECE-4055A298F846}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8C96644-8B7A-4C28-8ECE-4055A298F846}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,3 +1,6 @@
 [submodule "3rdParty/Material.Icons.Avalonia"]
 	path = 3rdParty/Material.Icons.Avalonia
 	url = https://github.com/AvaloniaUtils/Material.Icons.Avalonia.git
+[submodule "MercuryEngine.Data"]
+	path = MercuryEngine.Data
+	url = https://github.com/ArcanoxDragon/MercuryEngine.Data.git
