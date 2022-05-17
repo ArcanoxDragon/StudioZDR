@@ -32,6 +32,13 @@ public class AvaloniaFileBrowser : IFileBrowser
 		return result.Single();
 	}
 
+	public async Task<string?> OpenFolderAsync(string? title = null)
+	{
+		var dialog = new OpenFolderDialog { Title = title };
+
+		return await dialog.ShowAsync(this.windowContext.CurrentWindow);
+	}
+
 	private static AvaloniaFileDialogFilter ToAvaloniaFilter(FileDialogFilter filter)
 		=> new() { Name = filter.Name, Extensions = filter.Extensions.ToList() };
 }
