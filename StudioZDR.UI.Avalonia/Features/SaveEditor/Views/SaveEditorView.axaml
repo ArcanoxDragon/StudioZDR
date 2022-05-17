@@ -11,14 +11,32 @@
 			 Width="800" Height="400">
 	<UserControl.KeyBindings>
 		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
+		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFileCommand}">
+			<KeyBinding.CommandParameter>
+				<x:Boolean>False</x:Boolean>
+			</KeyBinding.CommandParameter>
+		</KeyBinding>
+		<KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveFileCommand}">
+			<KeyBinding.CommandParameter>
+				<x:Boolean>True</x:Boolean>
+			</KeyBinding.CommandParameter>
+		</KeyBinding>
 	</UserControl.KeyBindings>
 
 	<DockPanel>
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="_File">
-				<MenuItem Header="_Open..." HotKey="Ctrl+O" Command="{Binding OpenFileCommand}" />
-				<MenuItem Header="_Save" HotKey="Ctrl+S" />
-				<MenuItem Header="Save _As..." />
+				<MenuItem Header="_Open..." InputGesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
+				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFileCommand}">
+					<MenuItem.CommandParameter>
+						<x:Boolean>False</x:Boolean>
+					</MenuItem.CommandParameter>
+				</MenuItem>
+				<MenuItem Header="Save _As..." InputGesture="Ctrl+Shift+S" Command="{Binding SaveFileCommand}">
+					<MenuItem.CommandParameter>
+						<x:Boolean>True</x:Boolean>
+					</MenuItem.CommandParameter>
+				</MenuItem>
 				<Separator />
 				<MenuItem Header="_Close" Command="{ReflectionBinding #View.Close}" />
 			</MenuItem>
@@ -31,7 +49,7 @@
 				</TextBlock.Text>
 			</TextBlock>
 
-			<TextBlock Text="{Binding OpenedFileName, StringFormat='Opened file: {0}'}"
+			<TextBlock Text="{Binding OpenedProfileName, StringFormat='Opened file: {0}'}"
 					   TextWrapping="Wrap" />
 		</StackPanel>
 	</DockPanel>
