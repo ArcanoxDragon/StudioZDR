@@ -48,4 +48,32 @@ public class PlayerInventory
 	}
 
 	#endregion
+
+	#region Health
+
+	public int MaxHealth
+	{
+		get => Inventory.TryGetFloat(Properties.MaxHealth, out var value) ? (int) value : Defaults.MaxHealth;
+		set => Inventory.PutValue(Properties.MaxHealth, (float) value);
+	}
+
+	public int CurrentHealth
+	{
+		get => Inventory.TryGetFloat(Properties.CurrentHealth, out var value) ? (int) value : Defaults.CurrentHealth;
+		set => Inventory.PutValue(Properties.CurrentHealth, (float) value);
+	}
+
+	public int EnergyTanks
+	{
+		get => Inventory.TryGetFloat(Properties.EnergyTanks, out var value) ? (int) value : Defaults.EnergyTanks;
+		set => Inventory.PutValue(Properties.EnergyTanks, (float) value);
+	}
+
+	public int EnergyTankParts
+	{
+		get => Inventory.TryGetFloat(Properties.EnergyTankParts, out var value) ? (int) value : Defaults.EnergyTankParts;
+		set => Inventory.PutValue(Properties.EnergyTankParts, (float) value);
+	}
+
+	#endregion
 }

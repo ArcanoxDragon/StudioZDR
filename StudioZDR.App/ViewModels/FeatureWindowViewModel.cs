@@ -20,10 +20,21 @@ public class FeatureWindowViewModel : ViewModelBase, IActivatableViewModel
 				.Select(feature => viewModelFactory.Create(feature.ViewModelType))
 				.ToPropertyEx(this, m => m.FeatureViewModel)
 				.DisposeWith(disposables);
+
+			// Hook up window with feature's ViewModel if able
+			this.WhenAnyValue(m => m.FeatureViewModel)
+				.WhereNotNull()
+				.OfType<IWindowAware>()
+				.CombineLatest(this.WhenAnyValue(m => m.OwningWindow))
+				.Subscribe(t => t.First.ParentWindow = t.Second)
+				.DisposeWith(disposables);
 		});
 	}
 
 	public ViewModelActivator Activator { get; } = new();
+
+	[Reactive]
+	public IWindow? OwningWindow { get; set; }
 
 	[Reactive]
 	public IFeature? Feature { get; set; }

@@ -10,6 +10,10 @@ internal static class Constants
 			public const int CurrentMissiles  = 15;
 			public const int MissileTanks     = 0;
 			public const int MissilePlusTanks = 0;
+			public const int MaxHealth        = 99;
+			public const int CurrentHealth    = 99;
+			public const int EnergyTanks      = 0;
+			public const int EnergyTankParts  = 0;
 		}
 	}
 
@@ -21,6 +25,10 @@ internal static class Constants
 			public const string CurrentMissiles  = "ITEM_WEAPON_MISSILE_CURRENT";
 			public const string MissileTanks     = "ITEM_MISSILE_TANKS";
 			public const string MissilePlusTanks = "ITEM_MISSILE_PLUS_TANKS";
+			public const string MaxHealth        = "ITEM_MAX_LIFE";
+			public const string CurrentHealth    = "ITEM_CURRENT_LIFE";
+			public const string EnergyTanks      = "ITEM_ENERGY_TANKS";
+			public const string EnergyTankParts  = "ITEM_LIFE_SHARDS";
 		}
 	}
 

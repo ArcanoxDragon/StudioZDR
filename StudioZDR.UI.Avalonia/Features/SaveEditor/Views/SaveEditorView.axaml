@@ -3,7 +3,6 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="clr-namespace:StudioZDR.App.Features.SaveEditor.ViewModels;assembly=StudioZDR.App"
-			 xmlns:dataModels="clr-namespace:StudioZDR.App.Features.SaveEditor.DataModels;assembly=StudioZDR.App"
 			 mc:Ignorable="d"
 			 x:Class="StudioZDR.UI.Avalonia.Features.SaveEditor.Views.SaveEditorView"
 			 x:DataType="vm:SaveEditorViewModel"
@@ -39,7 +38,7 @@
 					</MenuItem.CommandParameter>
 				</MenuItem>
 				<Separator />
-				<MenuItem Header="_Close" Command="{ReflectionBinding #View.Close}" />
+				<MenuItem Header="_Close" Command="{Binding Close}" />
 			</MenuItem>
 		</Menu>
 
@@ -53,7 +52,23 @@
 			</TabControl>
 
 			<TextBlock RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True"
-					   Text="Open a profile to begin!" IsVisible="{Binding !IsProfileOpened}" />
+					   Text="Open a profile to begin!">
+				<TextBlock.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="!IsProfileOpened" />
+						<Binding Path="!IsBusy" />
+					</MultiBinding>
+				</TextBlock.IsVisible>
+			</TextBlock>
+
+			<Border RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True"
+					RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"
+					Background="Black" Opacity="0.5" IsVisible="{Binding IsBusy}">
+				<StackPanel Orientation="Vertical" Spacing="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+					<TextBlock Text="Please wait..." HorizontalAlignment="Center" />
+					<ProgressBar IsIndeterminate="True" />
+				</StackPanel>
+			</Border>
 		</RelativePanel>
 	</DockPanel>
 </UserControl>

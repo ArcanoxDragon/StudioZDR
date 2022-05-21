@@ -17,6 +17,8 @@ public class InventoryViewModel : ViewModelBase, IActivatableViewModel
 
 	private PlayerInventory PlayerInventory { get; }
 
+	#region Missiles
+
 	public int MaxMissiles
 	{
 		get => PlayerInventory.MaxMissiles;
@@ -40,6 +42,36 @@ public class InventoryViewModel : ViewModelBase, IActivatableViewModel
 		get => PlayerInventory.MissilePlusTanks;
 		set => SetDataModelValue(m => m.MissilePlusTanks, value);
 	}
+
+	#endregion
+
+	#region Health
+
+	public int MaxHealth
+	{
+		get => PlayerInventory.MaxHealth;
+		set => SetDataModelValue(m => m.MaxHealth, value);
+	}
+
+	public int CurrentHealth
+	{
+		get => PlayerInventory.CurrentHealth;
+		set => SetDataModelValue(m => m.CurrentHealth, value);
+	}
+
+	public int EnergyTanks
+	{
+		get => PlayerInventory.EnergyTanks;
+		set => SetDataModelValue(m => m.EnergyTanks, value);
+	}
+
+	public int EnergyTankParts
+	{
+		get => PlayerInventory.EnergyTankParts;
+		set => SetDataModelValue(m => m.EnergyTankParts, value);
+	}
+
+	#endregion
 
 	private void SetDataModelValue<TValue>(Expression<Func<PlayerInventory, TValue>> expression, TValue value, [CallerMemberName] string? propertyName = default)
 	{
