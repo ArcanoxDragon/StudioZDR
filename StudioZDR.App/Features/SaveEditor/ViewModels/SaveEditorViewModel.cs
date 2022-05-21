@@ -1,5 +1,7 @@
-﻿using System.Reactive;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using ReactiveUI.Fody.Helpers;
 using StudioZDR.App.Features.SaveEditor.DataModels;
 using StudioZDR.App.Features.SaveEditor.Services;
@@ -8,6 +10,7 @@ using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.App.Features.SaveEditor.ViewModels;
 
+[SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
 public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel
 {
 	private readonly IFileBrowser  fileBrowser;
@@ -21,17 +24,34 @@ public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel
 		this.profileLoader = profileLoader;
 
 		this.WhenActivated(disposables => {
+			this.WhenAnyValue(m => m.OpenedProfile)
+				.Select(profile => profile != null)
+				.ToPropertyEx(this, m => m.IsProfileOpened);
+
+			#region Child ViewModel Connections
+
+			this.WhenAnyValue(m => m.OpenedProfile)
+				.Select(profile => profile is null ? null : new InventoryViewModel(profile.Inventory))
+				.ToPropertyEx(this, m => m.Inventory);
+
+			#endregion
+
 			var isProfileLoaded = this.WhenAnyValue(m => m.OpenedProfileName, name => !string.IsNullOrEmpty(name));
 
-			OpenFileCommand = ReactiveCommand.CreateFromTask(OpenFileAsync).DisposeWith(disposables);
-			OpenFileCommand.LoggedCatch(this);
+			OpenFile = ReactiveCommand.CreateFromTask(OpenFileAsync).DisposeWith(disposables);
+			OpenFile.LoggedCatch(this);
 
-			SaveFileCommand = ReactiveCommand.CreateFromTask<bool>(SaveFileAsync, isProfileLoaded).DisposeWith(disposables);
-			SaveFileCommand.LoggedCatch(this);
+			SaveFile = ReactiveCommand.CreateFromTask<bool>(SaveFileAsync, isProfileLoaded).DisposeWith(disposables);
+			SaveFile.LoggedCatch(this);
 		});
 	}
 
 	public ViewModelActivator Activator { get; } = new();
+
+	#region Profile
+
+	[ObservableAsProperty]
+	public bool IsProfileOpened { get; }
 
 	[Reactive]
 	public SaveProfile? OpenedProfile { get; set; }
@@ -39,11 +59,22 @@ public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel
 	[Reactive]
 	public string? OpenedProfileName { get; set; }
 
-	[Reactive]
-	public ReactiveCommand<Unit, Unit>? OpenFileCommand { get; set; }
+	#endregion
+
+	#region Child ViewModels
+
+	[ObservableAsProperty]
+	public InventoryViewModel Inventory { get; }
+
+	#endregion
+
+	#region Commands
 
 	[Reactive]
-	public ReactiveCommand<bool, Unit>? SaveFileCommand { get; set; }
+	public ReactiveCommand<Unit, Unit>? OpenFile { get; set; }
+
+	[Reactive]
+	public ReactiveCommand<bool, Unit>? SaveFile { get; set; }
 
 	private async Task<bool> ConfirmUnsavedChangesAsync()
 	{
@@ -84,4 +115,6 @@ public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel
 		else
 			await this.dialogs.AlertAsync("Save File", "Save selected!");
 	}
+
+	#endregion
 }

@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:viewModels="clr-namespace:StudioZDR.App.Features.SaveEditor.ViewModels;assembly=StudioZDR.App"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:Class="StudioZDR.UI.Avalonia.Features.SaveEditor.Views.InventoryView"
+			 x:DataType="viewModels:InventoryViewModel"
+			 x:CompileBindings="True">
+	<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto,*" Classes="ControlGrid">
+		<!-- First Column -->
+		<Label Grid.Row="0" Grid.Column="0"
+			   Content="Current Missiles:" Target="CurrentMissiles" />
+		<NumericUpDown Name="CurrentMissiles" Grid.Row="0" Grid.Column="1"
+					   Value="{Binding CurrentMissiles}" Minimum="0"
+					   ParsingNumberStyle="Integer" FormatString="0" />
+
+		<Label Grid.Row="1" Grid.Column="0"
+			   Content="Max Missiles:" Target="MaxMissiles" />
+		<NumericUpDown Name="MaxMissiles" Grid.Row="1" Grid.Column="1"
+					   Value="{Binding MaxMissiles}" Minimum="0"
+					   ParsingNumberStyle="Integer" FormatString="0" />
+
+		<!-- Second Column -->
+		<Label Grid.Row="0" Grid.Column="2"
+			   Content="Missile Tanks:" Target="MissileTanks">
+			<ToolTip.Tip>
+				<x:String>
+					This is how many Missile Tanks the player has collected. This does not
+					directly affect the amount of missiles Samus can carry; it only affects
+					the game completion percentage.
+				</x:String>
+			</ToolTip.Tip>
+		</Label>
+		<NumericUpDown Name="MissileTanks" Grid.Row="0" Grid.Column="3"
+					   Value="{Binding MissileTanks}" Minimum="0"
+					   ParsingNumberStyle="Integer" FormatString="0" />
+
+		<Label Grid.Row="1" Grid.Column="2"
+			   Content="Missile+ Tanks:" Target="MissilePlusTanks">
+			<ToolTip.Tip>
+				<x:String>
+					This is how many Missile Plus Tanks the player has collected. This does
+					not directly affect the amount of missiles Samus can carry; it only affects
+					the game completion percentage.
+				</x:String>
+			</ToolTip.Tip>
+		</Label>
+		<NumericUpDown Name="MissilePlusTanks" Grid.Row="1" Grid.Column="3"
+					   Value="{Binding MissilePlusTanks}" Minimum="0"
+					   ParsingNumberStyle="Integer" FormatString="0" />
+	</Grid>
+</UserControl>

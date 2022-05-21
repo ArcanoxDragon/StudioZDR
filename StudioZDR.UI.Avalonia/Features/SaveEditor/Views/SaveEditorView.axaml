@@ -3,6 +3,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="clr-namespace:StudioZDR.App.Features.SaveEditor.ViewModels;assembly=StudioZDR.App"
+			 xmlns:dataModels="clr-namespace:StudioZDR.App.Features.SaveEditor.DataModels;assembly=StudioZDR.App"
 			 mc:Ignorable="d"
 			 x:Class="StudioZDR.UI.Avalonia.Features.SaveEditor.Views.SaveEditorView"
 			 x:DataType="vm:SaveEditorViewModel"
@@ -10,13 +11,13 @@
 			 Name="View"
 			 Width="800" Height="400">
 	<UserControl.KeyBindings>
-		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
-		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFileCommand}">
+		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFile}" />
+		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFile}">
 			<KeyBinding.CommandParameter>
 				<x:Boolean>False</x:Boolean>
 			</KeyBinding.CommandParameter>
 		</KeyBinding>
-		<KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveFileCommand}">
+		<KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveFile}">
 			<KeyBinding.CommandParameter>
 				<x:Boolean>True</x:Boolean>
 			</KeyBinding.CommandParameter>
@@ -26,13 +27,13 @@
 	<DockPanel>
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="_File">
-				<MenuItem Header="_Open..." InputGesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
-				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFileCommand}">
+				<MenuItem Header="_Open..." InputGesture="Ctrl+O" Command="{Binding OpenFile}" />
+				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFile}">
 					<MenuItem.CommandParameter>
 						<x:Boolean>False</x:Boolean>
 					</MenuItem.CommandParameter>
 				</MenuItem>
-				<MenuItem Header="Save _As..." InputGesture="Ctrl+Shift+S" Command="{Binding SaveFileCommand}">
+				<MenuItem Header="Save _As..." InputGesture="Ctrl+Shift+S" Command="{Binding SaveFile}">
 					<MenuItem.CommandParameter>
 						<x:Boolean>True</x:Boolean>
 					</MenuItem.CommandParameter>
@@ -42,15 +43,17 @@
 			</MenuItem>
 		</Menu>
 
-		<StackPanel Margin="50" Spacing="50">
-			<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
-				<TextBlock.Text>
-					Save Editor!
-				</TextBlock.Text>
-			</TextBlock>
+		<RelativePanel>
+			<TabControl RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True"
+						RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"
+						IsVisible="{Binding IsProfileOpened}">
+				<TabItem Header="Inventory">
+					<ContentControl Content="{Binding Inventory}" />
+				</TabItem>
+			</TabControl>
 
-			<TextBlock Text="{Binding OpenedProfileName, StringFormat='Opened file: {0}'}"
-					   TextWrapping="Wrap" />
-		</StackPanel>
+			<TextBlock RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True"
+					   Text="Open a profile to begin!" IsVisible="{Binding !IsProfileOpened}" />
+		</RelativePanel>
 	</DockPanel>
 </UserControl>
