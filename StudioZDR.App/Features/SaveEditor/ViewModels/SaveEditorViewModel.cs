@@ -136,21 +136,17 @@ public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel, IWindow
 		if (!IsProfileOpened)
 			return;
 
-		string? profilePath;
-
 		if (saveAs)
 		{
-			profilePath = await this.fileBrowser.OpenFolderAsync("Choose Save Destination");
+			var newProfilePath = await this.fileBrowser.OpenFolderAsync("Choose Save Destination");
 
-			if (profilePath is null)
+			if (newProfilePath is null)
 				return;
-		}
-		else
-		{
-			profilePath = OpenedProfilePath;
+
+			OpenedProfilePath = newProfilePath;
 		}
 
-		await OpenedProfile.SaveAsync(profilePath);
+		await OpenedProfile.SaveAsync(OpenedProfilePath);
 	}
 
 	private async Task CloseAsync()
