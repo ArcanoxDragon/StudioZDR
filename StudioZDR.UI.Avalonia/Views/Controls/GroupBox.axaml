@@ -1,0 +1,50 @@
+<ContentControl xmlns="https://github.com/avaloniaui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+				xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+				xmlns:controls="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
+				mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+				x:Class="StudioZDR.UI.Avalonia.Views.Controls.GroupBox">
+	<ContentControl.Styles>
+		<Style Selector="Border.ContentBorder">
+			<Setter Property="BorderBrush" Value="{StaticResource SystemControlForegroundBaseMediumBrush}" />
+			<Setter Property="BorderThickness" Value="{StaticResource TextControlBorderThemeThickness}" />
+			<Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+			<Setter Property="Padding" Value="8,12,8,8" />
+		</Style>
+
+		<Style Selector="ContentPresenter.Header">
+			<Setter Property="Background" Value="{StaticResource RegionBrush}" />
+			<Setter Property="Margin" Value="12,0,0,0" />
+			<Setter Property="Padding" Value="5,0,5,0" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+		</Style>
+
+		<Style Selector="controls|GroupBox">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate>
+						<Grid RowDefinitions="Auto,Auto,*">
+							<Border Grid.Row="1" Grid.RowSpan="2" Classes="ContentBorder">
+								<ContentPresenter Content="{TemplateBinding Content}" />
+							</Border>
+
+							<ContentPresenter Grid.Row="0" Grid.RowSpan="2" Classes="Header" Content="{TemplateBinding Header}">
+								<ContentPresenter.ContentTemplate>
+									<DataTemplate>
+										<ContentPresenter Content="{Binding}" />
+									</DataTemplate>
+								</ContentPresenter.ContentTemplate>
+								<ContentPresenter.DataTemplates>
+									<DataTemplate DataType="x:String">
+										<TextBlock Text="{Binding}" />
+									</DataTemplate>
+								</ContentPresenter.DataTemplates>
+							</ContentPresenter>
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</ContentControl.Styles>
+</ContentControl>

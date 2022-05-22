@@ -31,7 +31,4 @@
 		<ProjectReference Include="..\3rdParty\Material.Icons.Avalonia\Material.Icons.Avalonia\Material.Icons.Avalonia.csproj" />
 		<ProjectReference Include="..\StudioZDR.App\StudioZDR.App.csproj" />
 	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Assets\Images\" />
-	</ItemGroup>
 </Project>
