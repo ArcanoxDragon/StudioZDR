@@ -76,4 +76,20 @@ public class PlayerInventory
 	}
 
 	#endregion
+
+	#region Aeion
+
+	public int MaxAeion
+	{
+		get => Inventory.TryGetFloat(Properties.MaxAeion, out var value) ? (int) value : Defaults.MaxAeion;
+		set => Inventory.PutValue(Properties.MaxAeion, (float) value);
+	}
+
+	public int CurrentAeion
+	{
+		get => Inventory.TryGetFloat(Properties.CurrentAeion, out var value) ? (int) value : Defaults.CurrentAeion;
+		set => Inventory.PutValue(Properties.CurrentAeion, (float) value);
+	}
+
+	#endregion
 }

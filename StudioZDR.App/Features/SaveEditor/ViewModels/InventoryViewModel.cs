@@ -73,6 +73,22 @@ public class InventoryViewModel : ViewModelBase, IActivatableViewModel
 
 	#endregion
 
+	#region Aeion
+
+	public int MaxAeion
+	{
+		get => PlayerInventory.MaxAeion;
+		set => SetDataModelValue(m => m.MaxAeion, value);
+	}
+
+	public int CurrentAeion
+	{
+		get => PlayerInventory.CurrentAeion;
+		set => SetDataModelValue(m => m.CurrentAeion, value);
+	}
+
+	#endregion
+
 	private void SetDataModelValue<TValue>(Expression<Func<PlayerInventory, TValue>> expression, TValue value, [CallerMemberName] string? propertyName = default)
 	{
 		var property = ExpressionUtility.GetProperty(expression);

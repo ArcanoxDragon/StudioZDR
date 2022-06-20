@@ -14,6 +14,8 @@ internal static class Constants
 			public const int CurrentHealth    = 99;
 			public const int EnergyTanks      = 0;
 			public const int EnergyTankParts  = 0;
+			public const int MaxAeion         = 1000;
+			public const int CurrentAeion     = 0;
 		}
 	}
 
@@ -29,6 +31,8 @@ internal static class Constants
 			public const string CurrentHealth    = "ITEM_CURRENT_LIFE";
 			public const string EnergyTanks      = "ITEM_ENERGY_TANKS";
 			public const string EnergyTankParts  = "ITEM_LIFE_SHARDS";
+			public const string MaxAeion         = "ITEM_MAX_SPECIAL_ENERGY";
+			public const string CurrentAeion     = "ITEM_CURRENT_SPECIAL_ENERGY";
 		}
 	}
 

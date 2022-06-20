@@ -114,5 +114,29 @@
 							   ParsingNumberStyle="Integer" FormatString="0" />
 			</Grid>
 		</controls:GroupBox>
+
+		<controls:GroupBox>
+			<controls:GroupBox.Header>
+				<StackPanel Orientation="Horizontal" Spacing="5">
+					<Image Source="/Assets/Images/AeionOrb.png" Width="20" />
+					<TextBlock Text="Aeion" VerticalAlignment="Center" />
+				</StackPanel>
+			</controls:GroupBox.Header>
+
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,2*,3*" Classes="ControlGrid">
+				<!-- First Column -->
+				<Label Grid.Row="0" Grid.Column="0"
+					   Content="Current Aeion:" Target="CurrentAeion" />
+				<NumericUpDown Name="CurrentAeion" Grid.Row="0" Grid.Column="1"
+							   Value="{Binding CurrentAeion}" Minimum="0"
+							   ParsingNumberStyle="Integer" FormatString="0" />
+
+				<Label Grid.Row="1" Grid.Column="0"
+					   Content="Max Aeion:" Target="MaxAeion" />
+				<NumericUpDown Name="MaxAeion" Grid.Row="1" Grid.Column="1"
+							   Value="{Binding MaxAeion}" Minimum="0"
+							   ParsingNumberStyle="Integer" FormatString="0" />
+			</Grid>
+		</controls:GroupBox>
 	</StackPanel>
 </UserControl>
