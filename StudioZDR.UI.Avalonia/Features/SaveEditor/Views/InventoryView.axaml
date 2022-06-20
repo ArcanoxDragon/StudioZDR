@@ -17,7 +17,7 @@
 				</StackPanel>
 			</controls:GroupBox.Header>
 
-			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,2*,3*" Classes="ControlGrid">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,20,2*,3*" Classes="ControlGrid">
 				<!-- First Column -->
 				<Label Grid.Row="0" Grid.Column="0"
 					   Content="Current Missiles:" Target="CurrentMissiles" />
@@ -32,7 +32,7 @@
 							   ParsingNumberStyle="Integer" FormatString="0" />
 
 				<!-- Second Column -->
-				<Label Grid.Row="0" Grid.Column="2"
+				<Label Grid.Row="0" Grid.Column="3"
 					   Content="Missile Tanks:" Target="MissileTanks">
 					<ToolTip.Tip>
 						<x:String>
@@ -42,11 +42,11 @@
 						</x:String>
 					</ToolTip.Tip>
 				</Label>
-				<NumericUpDown Name="MissileTanks" Grid.Row="0" Grid.Column="3"
+				<NumericUpDown Name="MissileTanks" Grid.Row="0" Grid.Column="4"
 							   Value="{Binding MissileTanks}" Minimum="0"
 							   ParsingNumberStyle="Integer" FormatString="0" />
 
-				<Label Grid.Row="1" Grid.Column="2"
+				<Label Grid.Row="1" Grid.Column="3"
 					   Content="Missile+ Tanks:" Target="MissilePlusTanks">
 					<ToolTip.Tip>
 						<x:String>
@@ -56,7 +56,7 @@
 						</x:String>
 					</ToolTip.Tip>
 				</Label>
-				<NumericUpDown Name="MissilePlusTanks" Grid.Row="1" Grid.Column="3"
+				<NumericUpDown Name="MissilePlusTanks" Grid.Row="1" Grid.Column="4"
 							   Value="{Binding MissilePlusTanks}" Minimum="0"
 							   ParsingNumberStyle="Integer" FormatString="0" />
 			</Grid>
@@ -70,7 +70,7 @@
 				</StackPanel>
 			</controls:GroupBox.Header>
 
-			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,2*,3*" Classes="ControlGrid">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,20,2*,3*" Classes="ControlGrid">
 				<!-- First Column -->
 				<Label Grid.Row="0" Grid.Column="0"
 					   Content="Current Health:" Target="CurrentHealth" />
@@ -85,7 +85,7 @@
 							   ParsingNumberStyle="Integer" FormatString="0" />
 
 				<!-- Second Column -->
-				<Label Grid.Row="0" Grid.Column="2"
+				<Label Grid.Row="0" Grid.Column="3"
 					   Content="Energy Tanks:" Target="EnergyTanks">
 					<ToolTip.Tip>
 						<x:String>
@@ -95,11 +95,11 @@
 						</x:String>
 					</ToolTip.Tip>
 				</Label>
-				<NumericUpDown Name="EnergyTanks" Grid.Row="0" Grid.Column="3"
+				<NumericUpDown Name="EnergyTanks" Grid.Row="0" Grid.Column="4"
 							   Value="{Binding EnergyTanks}" Minimum="0"
 							   ParsingNumberStyle="Integer" FormatString="0" />
 
-				<Label Grid.Row="1" Grid.Column="2"
+				<Label Grid.Row="1" Grid.Column="3"
 					   Content="Energy Tank Parts:" Target="EnergyTankParts">
 					<ToolTip.Tip>
 						<x:String>
@@ -109,7 +109,7 @@
 						</x:String>
 					</ToolTip.Tip>
 				</Label>
-				<NumericUpDown Name="EnergyTankParts" Grid.Row="1" Grid.Column="3"
+				<NumericUpDown Name="EnergyTankParts" Grid.Row="1" Grid.Column="4"
 							   Value="{Binding EnergyTankParts}" Minimum="0" Maximum="3"
 							   ParsingNumberStyle="Integer" FormatString="0" />
 			</Grid>
@@ -123,7 +123,7 @@
 				</StackPanel>
 			</controls:GroupBox.Header>
 
-			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,2*,3*" Classes="ControlGrid">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,20,2*,3*" Classes="ControlGrid">
 				<!-- First Column -->
 				<Label Grid.Row="0" Grid.Column="0"
 					   Content="Current Aeion:" Target="CurrentAeion" />
