@@ -19,12 +19,12 @@
 		<TrimmableAssembly Include="Avalonia.Themes.Default" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="0.10.999-cibuild0020498-beta" />
-		<PackageReference Include="Avalonia.Themes.Fluent" Version="0.10.999-cibuild0020498-beta" />
-		<PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0020498-beta" />
+		<PackageReference Include="Avalonia" Version="0.10.999-cibuild0021231-beta" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="0.10.999-cibuild0021231-beta" />
+		<PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0021231-beta" />
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.999-cibuild0020498-beta" />
-		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.999-cibuild0020498-beta" />
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.999-cibuild0021231-beta" />
+		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.999-cibuild0021231-beta" />
 		<PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
 	</ItemGroup>
 	<ItemGroup>
