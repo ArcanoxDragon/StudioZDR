@@ -61,9 +61,15 @@
 				</TextBlock.IsVisible>
 			</TextBlock>
 
+			<!-- Transluscent backdrop of "please wait" message -->
 			<Border RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True"
 					RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"
-					Background="Black" Opacity="0.5" IsVisible="{Binding IsBusy}">
+					Background="Black" Opacity="0.5" IsVisible="{Binding IsBusy}" />
+
+			<!-- "Please wait" message itself -->
+			<Border RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True"
+					RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"
+					IsVisible="{Binding IsBusy}">
 				<StackPanel Orientation="Vertical" Spacing="20" HorizontalAlignment="Center" VerticalAlignment="Center">
 					<TextBlock Text="Please wait..." HorizontalAlignment="Center" />
 					<ProgressBar IsIndeterminate="True" />
