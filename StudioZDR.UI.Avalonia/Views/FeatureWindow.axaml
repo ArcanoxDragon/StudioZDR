@@ -9,10 +9,10 @@
 		x:DataType="vm:FeatureWindowViewModel"
 		x:CompileBindings="True"
 		Title="{Binding Feature.Name, FallbackValue='Studio ZDR'}"
-		CanResize="False"
 		WindowStartupLocation="CenterScreen"
 		Content="{Binding FeatureViewModel}"
-		SizeToContent="WidthAndHeight">
+		Width="1280"
+		Height="800">
 	<Window.DataTemplates>
 		<framework:FeatureViewLocator />
 	</Window.DataTemplates>

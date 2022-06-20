@@ -7,8 +7,7 @@
 			 x:Class="StudioZDR.UI.Avalonia.Features.SaveEditor.Views.SaveEditorView"
 			 x:DataType="vm:SaveEditorViewModel"
 			 x:CompileBindings="True"
-			 Name="View"
-			 Width="800" Height="400">
+			 Name="View">
 	<UserControl.KeyBindings>
 		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFile}" />
 		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFile}">
