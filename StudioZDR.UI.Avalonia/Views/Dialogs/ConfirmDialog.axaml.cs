@@ -65,7 +65,7 @@ namespace StudioZDR.UI.Avalonia.Views.Dialogs
 			AvaloniaXamlLoader.Load(this);
 		}
 
-		private void OnPositiveButtonClicked() => Close(true);
-		private void OnNegativeButtonClicked() => Close(false);
+		public void OnPositiveButtonClicked() => Close(true);
+		public void OnNegativeButtonClicked() => Close(false);
 	}
 }

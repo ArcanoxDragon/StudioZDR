@@ -51,6 +51,6 @@ namespace StudioZDR.UI.Avalonia.Views.Dialogs
 			AvaloniaXamlLoader.Load(this);
 		}
 
-		private void OnButtonClicked() => Close();
+		public void OnButtonClicked() => Close();
 	}
 }
