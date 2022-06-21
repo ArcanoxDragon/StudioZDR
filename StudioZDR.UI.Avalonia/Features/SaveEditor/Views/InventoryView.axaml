@@ -4,139 +4,252 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:viewModels="clr-namespace:StudioZDR.App.Features.SaveEditor.ViewModels;assembly=StudioZDR.App"
 			 xmlns:controls="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
-			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
 			 x:Class="StudioZDR.UI.Avalonia.Features.SaveEditor.Views.InventoryView"
 			 x:DataType="viewModels:InventoryViewModel"
-			 x:CompileBindings="True">
-	<StackPanel Orientation="Vertical" Spacing="10">
-		<controls:GroupBox>
-			<controls:GroupBox.Header>
-				<StackPanel Orientation="Horizontal" Spacing="5">
-					<Image Source="/Assets/Images/MissileTank.png" Width="20" />
-					<TextBlock Text="Missiles" VerticalAlignment="Center" />
-				</StackPanel>
-			</controls:GroupBox.Header>
+			 x:CompileBindings="True"
+			 MinWidth="600">
+	<ScrollViewer>
+		<StackPanel Orientation="Vertical" Spacing="10" Margin="10">
+			<!-- Missiles -->
+			<controls:GroupBox>
+				<controls:GroupBox.Header>
+					<StackPanel Orientation="Horizontal" Spacing="5">
+						<Image Source="/Assets/Images/MissileTank.png" Width="20" />
+						<TextBlock Text="Missiles" VerticalAlignment="Center" />
+					</StackPanel>
+				</controls:GroupBox.Header>
 
-			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,20,2*,3*" Classes="ControlGrid">
-				<!-- First Column -->
-				<Label Grid.Row="0" Grid.Column="0"
-					   Content="Current Missiles:" Target="CurrentMissiles" />
-				<NumericUpDown Name="CurrentMissiles" Grid.Row="0" Grid.Column="1"
-							   Value="{Binding CurrentMissiles}" Minimum="0"
-							   ParsingNumberStyle="Integer" FormatString="0" />
+				<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,20,2*,3*" Classes="ControlGrid">
+					<!-- First Column -->
+					<Label Grid.Row="0" Grid.Column="0"
+						   Content="Current Missiles:" Target="CurrentMissiles" />
+					<NumericUpDown Name="CurrentMissiles" Grid.Row="0" Grid.Column="1"
+								   Value="{Binding CurrentMissiles}" Minimum="0"
+								   ParsingNumberStyle="Integer" FormatString="0" />
 
-				<Label Grid.Row="1" Grid.Column="0"
-					   Content="Max Missiles:" Target="MaxMissiles" />
-				<NumericUpDown Name="MaxMissiles" Grid.Row="1" Grid.Column="1"
-							   Value="{Binding MaxMissiles}" Minimum="0"
-							   ParsingNumberStyle="Integer" FormatString="0" />
+					<Label Grid.Row="1" Grid.Column="0"
+						   Content="Max Missiles:" Target="MaxMissiles" />
+					<NumericUpDown Name="MaxMissiles" Grid.Row="1" Grid.Column="1"
+								   Value="{Binding MaxMissiles}" Minimum="0"
+								   ParsingNumberStyle="Integer" FormatString="0" />
 
-				<!-- Second Column -->
-				<Label Grid.Row="0" Grid.Column="3"
-					   Content="Missile Tanks:" Target="MissileTanks">
-					<ToolTip.Tip>
-						<x:String>
-							This is how many Missile Tanks the player has collected. This does not
-							directly affect the amount of missiles Samus can carry; it only affects
-							the game completion percentage.
-						</x:String>
-					</ToolTip.Tip>
-				</Label>
-				<NumericUpDown Name="MissileTanks" Grid.Row="0" Grid.Column="4"
-							   Value="{Binding MissileTanks}" Minimum="0"
-							   ParsingNumberStyle="Integer" FormatString="0" />
+					<!-- Second Column -->
+					<Label Grid.Row="0" Grid.Column="3"
+						   Content="Missile Tanks:" Target="MissileTanks">
+						<ToolTip.Tip>
+							<x:String>
+								This is how many Missile Tanks the player has collected. This does not
+								directly affect the amount of missiles Samus can carry; it only affects
+								the game completion percentage.
+							</x:String>
+						</ToolTip.Tip>
+					</Label>
+					<NumericUpDown Name="MissileTanks" Grid.Row="0" Grid.Column="4"
+								   Value="{Binding MissileTanks}" Minimum="0"
+								   ParsingNumberStyle="Integer" FormatString="0" />
 
-				<Label Grid.Row="1" Grid.Column="3"
-					   Content="Missile+ Tanks:" Target="MissilePlusTanks">
-					<ToolTip.Tip>
-						<x:String>
-							This is how many Missile Plus Tanks the player has collected. This does
-							not directly affect the amount of missiles Samus can carry; it only affects
-							the game completion percentage.
-						</x:String>
-					</ToolTip.Tip>
-				</Label>
-				<NumericUpDown Name="MissilePlusTanks" Grid.Row="1" Grid.Column="4"
-							   Value="{Binding MissilePlusTanks}" Minimum="0"
-							   ParsingNumberStyle="Integer" FormatString="0" />
+					<Label Grid.Row="1" Grid.Column="3"
+						   Content="Missile+ Tanks:" Target="MissilePlusTanks">
+						<ToolTip.Tip>
+							<x:String>
+								This is how many Missile Plus Tanks the player has collected. This does
+								not directly affect the amount of missiles Samus can carry; it only affects
+								the game completion percentage.
+							</x:String>
+						</ToolTip.Tip>
+					</Label>
+					<NumericUpDown Name="MissilePlusTanks" Grid.Row="1" Grid.Column="4"
+								   Value="{Binding MissilePlusTanks}" Minimum="0"
+								   ParsingNumberStyle="Integer" FormatString="0" />
+				</Grid>
+			</controls:GroupBox>
+
+			<!-- Health (Energy) -->
+			<controls:GroupBox>
+				<controls:GroupBox.Header>
+					<StackPanel Orientation="Horizontal" Spacing="5">
+						<Image Source="/Assets/Images/EnergyTank.png" Width="20" />
+						<TextBlock Text="Health" VerticalAlignment="Center" />
+					</StackPanel>
+				</controls:GroupBox.Header>
+
+				<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,20,2*,3*" Classes="ControlGrid">
+					<!-- First Column -->
+					<Label Grid.Row="0" Grid.Column="0"
+						   Content="Current Health:" Target="CurrentHealth" />
+					<NumericUpDown Name="CurrentHealth" Grid.Row="0" Grid.Column="1"
+								   Value="{Binding CurrentHealth}" Minimum="0"
+								   ParsingNumberStyle="Integer" FormatString="0" />
+
+					<Label Grid.Row="1" Grid.Column="0"
+						   Content="Max Health:" Target="MaxHealth" />
+					<NumericUpDown Name="MaxHealth" Grid.Row="1" Grid.Column="1"
+								   Value="{Binding MaxHealth}" Minimum="0"
+								   ParsingNumberStyle="Integer" FormatString="0" />
+
+					<!-- Second Column -->
+					<Label Grid.Row="0" Grid.Column="3"
+						   Content="Energy Tanks:" Target="EnergyTanks">
+						<ToolTip.Tip>
+							<x:String>
+								This is how many Energy Tanks the player has collected. This does not
+								directly affect the amount of missiles Samus can carry; it only affects
+								the game completion percentage.
+							</x:String>
+						</ToolTip.Tip>
+					</Label>
+					<NumericUpDown Name="EnergyTanks" Grid.Row="0" Grid.Column="4"
+								   Value="{Binding EnergyTanks}" Minimum="0"
+								   ParsingNumberStyle="Integer" FormatString="0" />
+
+					<Label Grid.Row="1" Grid.Column="3"
+						   Content="Energy Tank Parts:" Target="EnergyTankParts">
+						<ToolTip.Tip>
+							<x:String>
+								This is how many Energy Tank Parts the player currently has, as shown
+								in the Samus screen. Every fourth part collected resets this to 0 and
+								increases the number of Energy Tanks by 1.
+							</x:String>
+						</ToolTip.Tip>
+					</Label>
+					<NumericUpDown Name="EnergyTankParts" Grid.Row="1" Grid.Column="4"
+								   Value="{Binding EnergyTankParts}" Minimum="0" Maximum="3"
+								   ParsingNumberStyle="Integer" FormatString="0" />
+				</Grid>
+			</controls:GroupBox>
+
+			<Grid ColumnDefinitions="*,10,*">
+				<!-- Power Bombs -->
+				<controls:GroupBox Grid.Column="0">
+					<controls:GroupBox.Header>
+						<StackPanel Orientation="Horizontal" Spacing="5">
+							<Image Source="/Assets/Images/PowerBombTank.png" Width="20" />
+							<TextBlock Text="Power Bombs" VerticalAlignment="Center" />
+						</StackPanel>
+					</controls:GroupBox.Header>
+
+					<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*" Classes="ControlGrid">
+						<!-- First Column -->
+						<Label Grid.Row="0" Grid.Column="0"
+							   Content="Current Power Bombs:" Target="CurrentPowerBombs" />
+						<NumericUpDown Name="CurrentPowerBombs" Grid.Row="0" Grid.Column="1"
+									   Value="{Binding CurrentPowerBombs}" Minimum="0"
+									   ParsingNumberStyle="Integer" FormatString="0" />
+
+						<Label Grid.Row="1" Grid.Column="0"
+							   Content="Max Power Bombs:" Target="MaxPowerBombs" />
+						<NumericUpDown Name="MaxPowerBombs" Grid.Row="1" Grid.Column="1"
+									   Value="{Binding MaxPowerBombs}" Minimum="0"
+									   ParsingNumberStyle="Integer" FormatString="0" />
+					</Grid>
+				</controls:GroupBox>
+
+				<!-- Aeion -->
+				<controls:GroupBox Grid.Column="2">
+					<controls:GroupBox.Header>
+						<StackPanel Orientation="Horizontal" Spacing="5">
+							<Image Source="/Assets/Images/AeionOrb.png" Width="20" />
+							<TextBlock Text="Aeion" VerticalAlignment="Center" />
+						</StackPanel>
+					</controls:GroupBox.Header>
+
+					<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*" Classes="ControlGrid">
+						<!-- First Column -->
+						<Label Grid.Row="0" Grid.Column="0"
+							   Content="Current Aeion:" Target="CurrentAeion" />
+						<NumericUpDown Name="CurrentAeion" Grid.Row="0" Grid.Column="1"
+									   Value="{Binding CurrentAeion}" Minimum="0"
+									   ParsingNumberStyle="Integer" FormatString="0" />
+
+						<Label Grid.Row="1" Grid.Column="0"
+							   Content="Max Aeion:" Target="MaxAeion" />
+						<NumericUpDown Name="MaxAeion" Grid.Row="1" Grid.Column="1"
+									   Value="{Binding MaxAeion}" Minimum="0"
+									   ParsingNumberStyle="Integer" FormatString="0" />
+					</Grid>
+				</controls:GroupBox>
 			</Grid>
-		</controls:GroupBox>
 
-		<controls:GroupBox>
-			<controls:GroupBox.Header>
-				<StackPanel Orientation="Horizontal" Spacing="5">
-					<Image Source="/Assets/Images/EnergyTank.png" Width="20" />
-					<TextBlock Text="Health" VerticalAlignment="Center" />
-				</StackPanel>
-			</controls:GroupBox.Header>
+			<controls:GroupBox>
+				<controls:GroupBox.Header>
+					<StackPanel Orientation="Horizontal" Spacing="5">
+						<Image Source="/Assets/Images/ItemCube.png" Width="20" />
+						<TextBlock Text="Power-ups" VerticalAlignment="Center" />
+					</StackPanel>
+				</controls:GroupBox.Header>
 
-			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,20,2*,3*" Classes="ControlGrid">
-				<!-- First Column -->
-				<Label Grid.Row="0" Grid.Column="0"
-					   Content="Current Health:" Target="CurrentHealth" />
-				<NumericUpDown Name="CurrentHealth" Grid.Row="0" Grid.Column="1"
-							   Value="{Binding CurrentHealth}" Minimum="0"
-							   ParsingNumberStyle="Integer" FormatString="0" />
+				<WrapPanel HorizontalAlignment="Center">
+					<WrapPanel.Styles>
+						<Style Selector="StackPanel">
+							<Setter Property="Margin" Value="20" />
+							<Setter Property="Spacing" Value="5" />
+						</Style>
+					</WrapPanel.Styles>
 
-				<Label Grid.Row="1" Grid.Column="0"
-					   Content="Max Health:" Target="MaxHealth" />
-				<NumericUpDown Name="MaxHealth" Grid.Row="1" Grid.Column="1"
-							   Value="{Binding MaxHealth}" Minimum="0"
-							   ParsingNumberStyle="Integer" FormatString="0" />
+					<StackPanel>
+						<TextBlock Text="Charge Beam Upgrades:" />
+						<CheckBox IsChecked="{Binding ChargeBeam}">Charge Beam</CheckBox>
+						<CheckBox IsChecked="{Binding DiffusionBeam}">Diffusion Beam</CheckBox>
+					</StackPanel>
 
-				<!-- Second Column -->
-				<Label Grid.Row="0" Grid.Column="3"
-					   Content="Energy Tanks:" Target="EnergyTanks">
-					<ToolTip.Tip>
-						<x:String>
-							This is how many Energy Tanks the player has collected. This does not
-							directly affect the amount of missiles Samus can carry; it only affects
-							the game completion percentage.
-						</x:String>
-					</ToolTip.Tip>
-				</Label>
-				<NumericUpDown Name="EnergyTanks" Grid.Row="0" Grid.Column="4"
-							   Value="{Binding EnergyTanks}" Minimum="0"
-							   ParsingNumberStyle="Integer" FormatString="0" />
+					<StackPanel>
+						<TextBlock Text="Beam Upgrades:" />
+						<CheckBox IsChecked="{Binding WideBeam}">Wide Beam</CheckBox>
+						<CheckBox IsChecked="{Binding PlasmaBeam}">Plasma Beam</CheckBox>
+						<CheckBox IsChecked="{Binding WaveBeam}">Wave Beam</CheckBox>
+					</StackPanel>
 
-				<Label Grid.Row="1" Grid.Column="3"
-					   Content="Energy Tank Parts:" Target="EnergyTankParts">
-					<ToolTip.Tip>
-						<x:String>
-							This is how many Energy Tank Parts the player currently has, as shown
-							in the Samus screen. Every fourth part collected resets this to 0 and
-							increases the number of Energy Tanks by 1.
-						</x:String>
-					</ToolTip.Tip>
-				</Label>
-				<NumericUpDown Name="EnergyTankParts" Grid.Row="1" Grid.Column="4"
-							   Value="{Binding EnergyTankParts}" Minimum="0" Maximum="3"
-							   ParsingNumberStyle="Integer" FormatString="0" />
-			</Grid>
-		</controls:GroupBox>
+					<StackPanel>
+						<TextBlock Text="Suit Upgrades:" />
+						<CheckBox IsChecked="{Binding VariaSuit}">Varia Suit</CheckBox>
+						<CheckBox IsChecked="{Binding GravitySuit}">Gravity Suit</CheckBox>
+					</StackPanel>
 
-		<controls:GroupBox>
-			<controls:GroupBox.Header>
-				<StackPanel Orientation="Horizontal" Spacing="5">
-					<Image Source="/Assets/Images/AeionOrb.png" Width="20" />
-					<TextBlock Text="Aeion" VerticalAlignment="Center" />
-				</StackPanel>
-			</controls:GroupBox.Header>
+					<StackPanel>
+						<TextBlock Text="Bomb Upgrades:" />
+						<CheckBox IsChecked="{Binding Bomb}">Bomb</CheckBox>
+						<CheckBox IsChecked="{Binding CrossBomb}">Cross Bomb</CheckBox>
+						<CheckBox IsChecked="{Binding PowerBomb}">Power Bomb</CheckBox>
+					</StackPanel>
 
-			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,20,2*,3*" Classes="ControlGrid">
-				<!-- First Column -->
-				<Label Grid.Row="0" Grid.Column="0"
-					   Content="Current Aeion:" Target="CurrentAeion" />
-				<NumericUpDown Name="CurrentAeion" Grid.Row="0" Grid.Column="1"
-							   Value="{Binding CurrentAeion}" Minimum="0"
-							   ParsingNumberStyle="Integer" FormatString="0" />
+					<StackPanel>
+						<TextBlock Text="Missile Upgrades:" />
+						<CheckBox IsChecked="{Binding SuperMissile}">Super Missile</CheckBox>
+						<CheckBox IsChecked="{Binding IceMissile}">Ice Missile</CheckBox>
+						<CheckBox IsChecked="{Binding StormMissile}">Storm Missile</CheckBox>
+					</StackPanel>
 
-				<Label Grid.Row="1" Grid.Column="0"
-					   Content="Max Aeion:" Target="MaxAeion" />
-				<NumericUpDown Name="MaxAeion" Grid.Row="1" Grid.Column="1"
-							   Value="{Binding MaxAeion}" Minimum="0"
-							   ParsingNumberStyle="Integer" FormatString="0" />
-			</Grid>
-		</controls:GroupBox>
-	</StackPanel>
+					<StackPanel>
+						<TextBlock Text="Jump Upgrades:" />
+						<CheckBox IsChecked="{Binding SpinBoost}">Spin Boost</CheckBox>
+						<CheckBox IsChecked="{Binding SpaceJump}">Space Jump</CheckBox>
+					</StackPanel>
+
+					<StackPanel>
+						<TextBlock Text="Aeion Upgrades:" />
+						<CheckBox IsChecked="{Binding PhantomCloak}">Phantom Cloak</CheckBox>
+						<CheckBox IsChecked="{Binding FlashShift}">Flash Shift</CheckBox>
+						<CheckBox IsChecked="{Binding PulseRadar}">Pulse Radar</CheckBox>
+					</StackPanel>
+
+					<StackPanel>
+						<TextBlock Text="Misc. Upgrades:" />
+						<StackPanel Orientation="Horizontal" Margin="0" Spacing="40">
+							<StackPanel Margin="0">
+								<CheckBox IsChecked="{Binding FloorSlide}">Floor Slide</CheckBox>
+								<CheckBox IsChecked="{Binding SpiderMagnet}">Spider Magnet</CheckBox>
+								<CheckBox IsChecked="{Binding MorphBall}">Morph Ball</CheckBox>
+							</StackPanel>
+							<StackPanel Margin="0">
+								<CheckBox IsChecked="{Binding SpeedBooster}">Speed Booster</CheckBox>
+								<CheckBox IsChecked="{Binding GrappleBeam}">Grapple Beam</CheckBox>
+								<CheckBox IsChecked="{Binding ScrewAttack}">Screw Attack</CheckBox>
+							</StackPanel>
+						</StackPanel>
+					</StackPanel>
+				</WrapPanel>
+			</controls:GroupBox>
+		</StackPanel>
+	</ScrollViewer>
 </UserControl>

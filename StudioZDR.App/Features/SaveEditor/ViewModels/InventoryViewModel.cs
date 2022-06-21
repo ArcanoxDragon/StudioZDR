@@ -73,6 +73,22 @@ public class InventoryViewModel : ViewModelBase, IActivatableViewModel
 
 	#endregion
 
+	#region Power Bombs
+
+	public int MaxPowerBombs
+	{
+		get => PlayerInventory.MaxPowerBombs;
+		set => SetDataModelValue(m => m.MaxPowerBombs, value);
+	}
+
+	public int CurrentPowerBombs
+	{
+		get => PlayerInventory.CurrentPowerBombs;
+		set => SetDataModelValue(m => m.CurrentPowerBombs, value);
+	}
+
+	#endregion
+
 	#region Aeion
 
 	public int MaxAeion
@@ -85,6 +101,154 @@ public class InventoryViewModel : ViewModelBase, IActivatableViewModel
 	{
 		get => PlayerInventory.CurrentAeion;
 		set => SetDataModelValue(m => m.CurrentAeion, value);
+	}
+
+	#endregion
+
+	#region Power-ups
+
+	public bool ChargeBeam
+	{
+		get => PlayerInventory.ChargeBeam;
+		set => SetDataModelValue(m => m.ChargeBeam, value);
+	}
+
+	public bool DiffusionBeam
+	{
+		get => PlayerInventory.DiffusionBeam;
+		set => SetDataModelValue(m => m.DiffusionBeam, value);
+	}
+
+	public bool WideBeam
+	{
+		get => PlayerInventory.WideBeam;
+		set => SetDataModelValue(m => m.WideBeam, value);
+	}
+
+	public bool PlasmaBeam
+	{
+		get => PlayerInventory.PlasmaBeam;
+		set => SetDataModelValue(m => m.PlasmaBeam, value);
+	}
+
+	public bool WaveBeam
+	{
+		get => PlayerInventory.WaveBeam;
+		set => SetDataModelValue(m => m.WaveBeam, value);
+	}
+
+	public bool VariaSuit
+	{
+		get => PlayerInventory.VariaSuit;
+		set => SetDataModelValue(m => m.VariaSuit, value);
+	}
+
+	public bool GravitySuit
+	{
+		get => PlayerInventory.GravitySuit;
+		set => SetDataModelValue(m => m.GravitySuit, value);
+	}
+
+	public bool Bomb
+	{
+		get => PlayerInventory.Bomb;
+		set => SetDataModelValue(m => m.Bomb, value);
+	}
+
+	public bool CrossBomb
+	{
+		get => PlayerInventory.CrossBomb;
+		set => SetDataModelValue(m => m.CrossBomb, value);
+	}
+
+	public bool PowerBomb
+	{
+		get => PlayerInventory.PowerBomb;
+		set => SetDataModelValue(m => m.PowerBomb, value);
+	}
+
+	public bool SuperMissile
+	{
+		get => PlayerInventory.SuperMissile;
+		set => SetDataModelValue(m => m.SuperMissile, value);
+	}
+
+	public bool IceMissile
+	{
+		get => PlayerInventory.IceMissile;
+		set => SetDataModelValue(m => m.IceMissile, value);
+	}
+
+	public bool StormMissile
+	{
+		get => PlayerInventory.StormMissile;
+		set => SetDataModelValue(m => m.StormMissile, value);
+	}
+
+	public bool SpinBoost
+	{
+		get => PlayerInventory.SpinBoost;
+		set => SetDataModelValue(m => m.SpinBoost, value);
+	}
+
+	public bool SpaceJump
+	{
+		get => PlayerInventory.SpaceJump;
+		set => SetDataModelValue(m => m.SpaceJump, value);
+	}
+
+	public bool FloorSlide
+	{
+		get => PlayerInventory.FloorSlide;
+		set => SetDataModelValue(m => m.FloorSlide, value);
+	}
+
+	public bool SpiderMagnet
+	{
+		get => PlayerInventory.SpiderMagnet;
+		set => SetDataModelValue(m => m.SpiderMagnet, value);
+	}
+
+	public bool MorphBall
+	{
+		get => PlayerInventory.MorphBall;
+		set => SetDataModelValue(m => m.MorphBall, value);
+	}
+
+	public bool SpeedBooster
+	{
+		get => PlayerInventory.SpeedBooster;
+		set => SetDataModelValue(m => m.SpeedBooster, value);
+	}
+
+	public bool GrappleBeam
+	{
+		get => PlayerInventory.GrappleBeam;
+		set => SetDataModelValue(m => m.GrappleBeam, value);
+	}
+
+	public bool ScrewAttack
+	{
+		get => PlayerInventory.ScrewAttack;
+		set => SetDataModelValue(m => m.ScrewAttack, value);
+	}
+
+	public bool PhantomCloak
+	{
+		get => PlayerInventory.PhantomCloak;
+		set => SetDataModelValue(m => m.PhantomCloak, value);
+	}
+
+	public bool FlashShift
+	{
+		get => PlayerInventory.FlashShift;
+		set => SetDataModelValue(m => m.FlashShift, value);
+	}
+
+	public bool PulseRadar
+	{
+		get => PlayerInventory.PulseRadar;
+		set => SetDataModelValue(m => m.PulseRadar, value);
 	}
 
 	#endregion
