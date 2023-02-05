@@ -78,6 +78,16 @@ internal static class Constants
 
 	public static class BlackboardProperties
 	{
+		public static class Player
+		{
+			#region Randovania
+
+			public const string RandoGameInitialized = "RANDO_GAME_INITIALIZED";
+			public const string SeedHash             = "THIS_RANDO_IDENTIFIER";
+
+			#endregion
+		}
+
 		public static class PlayerInventory
 		{
 			#region Missiles
@@ -155,6 +165,7 @@ internal static class Constants
 	{
 		public static class Common
 		{
+			public const string Player          = "PLAYER";
 			public const string PlayerInventory = "PLAYER_INVENTORY";
 		}
 	}

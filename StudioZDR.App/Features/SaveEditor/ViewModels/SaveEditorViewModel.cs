@@ -36,6 +36,12 @@ public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel, IWindow
 			this.WhenAnyValue(m => m.OpenedProfile, p => p is null ? null : new InventoryViewModel(p.Inventory))
 				.ToPropertyEx(this, m => m.Inventory);
 
+			this.WhenAnyValue(m => m.OpenedProfile, p => p is null ? null : new RandovaniaDataViewModel(p.RandovaniaData))
+				.ToPropertyEx(this, m => m.RandovaniaData);
+
+			this.WhenAnyValue(m => m.OpenedProfile, (SaveProfile? p) => p?.HasRandovaniaData ?? false)
+				.ToPropertyEx(this, m => m.HasRandovaniaData);
+
 			#endregion
 
 			#region Change Tracking
@@ -43,6 +49,12 @@ public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel, IWindow
 			this.WhenAnyValue(m => m.Inventory)
 				.WhereNotNull()
 				.SelectMany(i => i.WhenAnyPropertyChanged())
+				.Subscribe(_ => HasChanges = true)
+				.DisposeWith(disposables);
+
+			this.WhenAnyValue(m => m.RandovaniaData)
+				.WhereNotNull()
+				.SelectMany(rd => rd.WhenAnyPropertyChanged())
 				.Subscribe(_ => HasChanges = true)
 				.DisposeWith(disposables);
 
@@ -92,6 +104,16 @@ public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel, IWindow
 
 	[ObservableAsProperty]
 	public InventoryViewModel? Inventory { get; }
+
+	[ObservableAsProperty]
+	public RandovaniaDataViewModel? RandovaniaData { get; }
+
+	#endregion
+
+	#region Other Properties
+
+	[ObservableAsProperty]
+	public bool HasRandovaniaData { get; }
 
 	#endregion
 

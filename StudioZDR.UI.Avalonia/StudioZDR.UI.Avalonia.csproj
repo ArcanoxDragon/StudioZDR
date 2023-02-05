@@ -31,4 +31,15 @@
 		<ProjectReference Include="..\3rdParty\Material.Icons.Avalonia\Material.Icons.Avalonia\Material.Icons.Avalonia.csproj" />
 		<ProjectReference Include="..\StudioZDR.App\StudioZDR.App.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <AvaloniaXaml Update="Features\SaveEditor\Views\RandovaniaDataView.axaml">
+	    <SubType>Designer</SubType>
+	  </AvaloniaXaml>
+	</ItemGroup>
+	<ItemGroup>
+	  <Compile Update="Features\SaveEditor\Views\RandovaniaDataView.axaml.cs">
+	    <SubType>Code</SubType>
+	    <DependentUpon>RandovaniaDataView.axaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
 </Project>

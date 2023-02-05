@@ -1,12 +1,9 @@
-﻿using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using MercuryEngine.Data.Core.Utility;
-using StudioZDR.App.Features.SaveEditor.DataModels;
+﻿using StudioZDR.App.Features.SaveEditor.DataModels;
 using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.App.Features.SaveEditor.ViewModels;
 
-public class InventoryViewModel : ViewModelBase, IActivatableViewModel
+public class InventoryViewModel : ViewModelWithDataModel<PlayerInventory>, IActivatableViewModel
 {
 	public InventoryViewModel(PlayerInventory playerInventory)
 	{
@@ -14,6 +11,8 @@ public class InventoryViewModel : ViewModelBase, IActivatableViewModel
 	}
 
 	public ViewModelActivator Activator { get; } = new();
+
+	protected override PlayerInventory DataModel => PlayerInventory;
 
 	private PlayerInventory PlayerInventory { get; }
 
@@ -258,14 +257,4 @@ public class InventoryViewModel : ViewModelBase, IActivatableViewModel
 	}
 
 	#endregion
-
-	private void SetDataModelValue<TValue>(Expression<Func<PlayerInventory, TValue>> expression, TValue value, [CallerMemberName] string? propertyName = default)
-	{
-		var property = ExpressionUtility.GetProperty(expression);
-		var propertyValue = (TValue?) property.GetValue(PlayerInventory);
-
-		this.RaiseAndSetIfChanged(ref propertyValue, value, propertyName);
-
-		property.SetValue(PlayerInventory, propertyValue);
-	}
 }

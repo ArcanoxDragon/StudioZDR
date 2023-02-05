@@ -34,9 +34,13 @@ public class SaveProfile
 		this.samus = samusBmssv;
 
 		Inventory = new PlayerInventory(commonBmssv);
+		RandovaniaData = new RandovaniaData(commonBmssv);
 	}
 
-	public PlayerInventory Inventory { get; }
+	public PlayerInventory Inventory      { get; }
+	public RandovaniaData  RandovaniaData { get; }
+
+	public bool HasRandovaniaData => RandovaniaData.RandoGameInitialized;
 
 	public async Task SaveAsync(string profileFolder, CancellationToken cancellationToken = default)
 	{

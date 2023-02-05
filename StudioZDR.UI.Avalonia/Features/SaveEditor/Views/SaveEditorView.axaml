@@ -48,6 +48,9 @@
 				<TabItem Header="Inventory">
 					<ContentControl Content="{Binding Inventory}" />
 				</TabItem>
+				<TabItem Header="Randovania Data" IsVisible="{Binding HasRandovaniaData}">
+					<ContentControl Content="{Binding RandovaniaData}" />
+				</TabItem>
 			</TabControl>
 
 			<TextBlock RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True"
