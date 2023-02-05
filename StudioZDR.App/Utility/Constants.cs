@@ -28,6 +28,7 @@ internal static class Constants
 
 			public const int MaxPowerBombs     = 0;
 			public const int CurrentPowerBombs = 0;
+			public const int PowerBombTanks    = 0;
 
 			#endregion
 
@@ -101,6 +102,7 @@ internal static class Constants
 
 			public const string MaxPowerBombs     = "ITEM_WEAPON_POWER_BOMB_MAX";
 			public const string CurrentPowerBombs = "ITEM_WEAPON_POWER_BOMB_CURRENT";
+			public const string PowerBombTanks    = "ITEM_POWER_BOMB_TANKS";
 
 			#endregion
 

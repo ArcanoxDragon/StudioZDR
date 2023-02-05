@@ -91,6 +91,12 @@ public class PlayerInventory
 		set => Inventory.PutValue(Properties.CurrentPowerBombs, (float) value);
 	}
 
+	public int PowerBombTanks
+	{
+		get => Inventory.TryGetFloat(Properties.PowerBombTanks, out var value) ? (int) value : Defaults.PowerBombTanks;
+		set => Inventory.PutValue(Properties.PowerBombTanks, (float) value);
+	}
+
 	#endregion
 
 	#region Aeion

@@ -87,6 +87,12 @@ public class InventoryViewModel : ViewModelBase, IActivatableViewModel
 		set => SetDataModelValue(m => m.CurrentPowerBombs, value);
 	}
 
+	public int PowerBombTanks
+	{
+		get => PlayerInventory.PowerBombTanks;
+		set => SetDataModelValue(m => m.PowerBombTanks, value);
+	}
+
 	#endregion
 
 	#region Aeion

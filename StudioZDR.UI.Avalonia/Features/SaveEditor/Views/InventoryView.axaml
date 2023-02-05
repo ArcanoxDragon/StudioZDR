@@ -129,7 +129,7 @@
 						</StackPanel>
 					</controls:GroupBox.Header>
 
-					<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*" Classes="ControlGrid">
+					<Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="2*,3*" Classes="ControlGrid">
 						<!-- First Column -->
 						<Label Grid.Row="0" Grid.Column="0"
 							   Content="Current Power Bombs:" Target="CurrentPowerBombs" />
@@ -141,6 +141,12 @@
 							   Content="Max Power Bombs:" Target="MaxPowerBombs" />
 						<NumericUpDown Name="MaxPowerBombs" Grid.Row="1" Grid.Column="1"
 									   Value="{Binding MaxPowerBombs}" Minimum="0"
+									   ParsingNumberStyle="Integer" FormatString="0" />
+
+						<Label Grid.Row="2" Grid.Column="0"
+							   Content="Power Bomb Tanks:" Target="PowerBombTanks" />
+						<NumericUpDown Name="PowerBombTanks" Grid.Row="2" Grid.Column="1"
+									   Value="{Binding PowerBombTanks}" Minimum="0"
 									   ParsingNumberStyle="Integer" FormatString="0" />
 					</Grid>
 				</controls:GroupBox>
