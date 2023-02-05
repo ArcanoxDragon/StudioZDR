@@ -1,22 +1,17 @@
-﻿using System.Reflection;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using StudioZDR.App.Features;
 using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.UI.Avalonia.Framework;
 
 public class FeatureViewLocator : IDataTemplate
 {
-	private static readonly Assembly AppAssembly = typeof(IFeature).Assembly;
-	private static readonly Assembly UiAssembly  = typeof(FeatureViewLocator).Assembly;
-
-	private static readonly string AppAssemblyName = AppAssembly.GetName().Name!;
-	private static readonly string UiAssemblyName  = UiAssembly.GetName().Name!;
+	private const string AppNamespaceName = $"{nameof(StudioZDR)}.{nameof(StudioZDR.App)}";
+	private const string UiNamespaceName  = $"{nameof(StudioZDR)}.{nameof(StudioZDR.UI)}.{nameof(StudioZDR.UI.Avalonia)}";
 
 	public IControl Build(object? data)
 	{
-		var name = data?.GetType().FullName!.Replace("ViewModel", "View").Replace(AppAssemblyName, UiAssemblyName);
+		var name = data?.GetType().FullName!.Replace("ViewModel", "View").Replace(AppNamespaceName, UiNamespaceName);
 		var type = name is null ? null : Type.GetType(name);
 
 		if (type == null)
