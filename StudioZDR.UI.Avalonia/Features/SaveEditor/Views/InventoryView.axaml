@@ -94,8 +94,8 @@
 						<ToolTip.Tip>
 							<x:String>
 								This is how many Energy Tanks the player has collected. This does not
-								directly affect the amount of missiles Samus can carry; it only affects
-								the game completion percentage.
+								directly affect Samus's maximum health; it only affects the game
+								completion percentage.
 							</x:String>
 						</ToolTip.Tip>
 					</Label>
