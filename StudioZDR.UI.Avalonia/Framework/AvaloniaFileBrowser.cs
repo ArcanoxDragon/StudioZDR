@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using StudioZDR.App.Framework;
-using AvaloniaFileDialogFilter = Avalonia.Controls.FileDialogFilter;
 using FileDialogFilter = StudioZDR.App.Framework.FileDialogFilter;
 
 namespace StudioZDR.UI.Avalonia.Framework;
@@ -17,28 +16,40 @@ public class AvaloniaFileBrowser : IFileBrowser
 		this.windowContext = windowContext;
 	}
 
+	private IStorageProvider StorageProvider => this.windowContext.CurrentWindow.StorageProvider;
+
 	public async Task<string?> OpenFileAsync(string? title = null, IEnumerable<FileDialogFilter>? filters = null)
 	{
-		var dialog = new OpenFileDialog { Title = title };
+		var options = new FilePickerOpenOptions { Title = title };
 
 		if (filters != null)
-			dialog.Filters.AddRange(filters.Select(ToAvaloniaFilter));
+			options.FileTypeFilter = filters.Select(ToAvaloniaFilter).ToList();
 
-		var result = await dialog.ShowAsync(this.windowContext.CurrentWindow);
+		var files = await StorageProvider.OpenFilePickerAsync(options);
 
-		if (result is not { Length: 1 })
+		if (files is not { Count: 1 })
 			return null;
 
-		return result.Single();
+		var file = files.Single();
+
+		if (!file.TryGetUri(out var uri))
+			return null;
+
+		return uri.AbsolutePath;
 	}
 
 	public async Task<string?> OpenFolderAsync(string? title = null)
 	{
-		var dialog = new OpenFolderDialog { Title = title };
+		var options = new FolderPickerOpenOptions { Title = title };
+		var folders = await StorageProvider.OpenFolderPickerAsync(options);
+		var folder = folders.SingleOrDefault();
 
-		return await dialog.ShowAsync(this.windowContext.CurrentWindow);
+		if (folder == null || !folder.TryGetUri(out var uri))
+			return null;
+
+		return uri.AbsolutePath;
 	}
 
-	private static AvaloniaFileDialogFilter ToAvaloniaFilter(FileDialogFilter filter)
-		=> new() { Name = filter.Name, Extensions = filter.Extensions.ToList() };
+	private static FilePickerFileType ToAvaloniaFilter(FileDialogFilter filter)
+		=> new(filter.Name) { Patterns = filter.Extensions.ToList() };
 }
