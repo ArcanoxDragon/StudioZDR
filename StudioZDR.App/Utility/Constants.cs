@@ -175,7 +175,7 @@ internal static class Constants
 		public static class Profile
 		{
 			public const string Common    = "common.bmssv";
-			public const string PKProfile = "pkprfl.bmssv";
+			public const string PkProfile = "pkprfl.bmssv";
 			public const string Samus     = "samus.bmssv";
 		}
 	}
