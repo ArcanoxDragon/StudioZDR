@@ -1,14 +1,16 @@
 <Application xmlns="https://github.com/avaloniaui"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:local="using:StudioZDR.UI.Avalonia"
-			 x:Class="StudioZDR.UI.Avalonia.App">
+			 xmlns:avicons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			 x:Class="StudioZDR.UI.Avalonia.App"
+			 RequestedThemeVariant="Dark">
 	<Application.DataTemplates>
 		<local:ViewLocator />
 	</Application.DataTemplates>
 
 	<Application.Styles>
-		<FluentTheme Mode="Dark" DensityStyle="Compact" />
-		<StyleInclude Source="avares://Material.Icons.Avalonia/App.xaml" />
+		<FluentTheme DensityStyle="Compact" />
+		<avicons:MaterialIconStyles />
 		<StyleInclude Source="/Styles/AppStyles.axaml" />
 	</Application.Styles>
 </Application>

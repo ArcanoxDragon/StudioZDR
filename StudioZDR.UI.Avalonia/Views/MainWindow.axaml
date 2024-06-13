@@ -14,7 +14,7 @@
 		CanResize="False"
 		WindowStartupLocation="CenterScreen"
 		Title="Studio ZDR"
-		TransparencyLevelHint="AcrylicBlur"
+		TransparencyLevelHint="Mica, AcrylicBlur"
 		ExtendClientAreaToDecorationsHint="True"
 		ExtendClientAreaTitleBarHeightHint="-1"
 		Background="#80000000">
@@ -31,7 +31,7 @@
 				Welcome to Studio ZDR!
 			</Label>
 
-			<ItemsControl Items="{Binding Features}">
+			<ItemsControl ItemsSource="{Binding Features}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
 						<Button Height="80"
@@ -39,11 +39,11 @@
 								HorizontalAlignment="Stretch"
 								HorizontalContentAlignment="Center"
 								VerticalContentAlignment="Center"
-								Command="{ReflectionBinding #Window.ViewModel.LaunchFeature}"
+								Command="{Binding #Window.HandleLaunchFeature}"
 								CommandParameter="{Binding}"
 								ToolTip.Tip="{Binding Description}">
 							<StackPanel Orientation="Horizontal" Spacing="10">
-								<avalonia:MaterialIcon Kind="{Binding IconKind}" Width="24" Height="24"/>
+								<avalonia:MaterialIcon Kind="{Binding IconKind}" Width="24" Height="24" />
 								<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
 							</StackPanel>
 						</Button>

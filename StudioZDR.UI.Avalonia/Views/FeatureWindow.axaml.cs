@@ -1,5 +1,5 @@
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using Avalonia.Controls.Mixins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using ReactiveUI;

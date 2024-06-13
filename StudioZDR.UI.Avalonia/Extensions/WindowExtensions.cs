@@ -11,7 +11,7 @@ internal static class WindowExtensions
 		if (primaryScreen is null)
 			return;
 
-		var windowRect = PixelRect.FromRect(window.Bounds, primaryScreen.PixelDensity);
+		var windowRect = PixelRect.FromRect(window.Bounds, primaryScreen.Scaling);
 		var centeredWindowRect = primaryScreen.WorkingArea.CenterRect(windowRect);
 
 		window.Position = centeredWindowRect.Position;

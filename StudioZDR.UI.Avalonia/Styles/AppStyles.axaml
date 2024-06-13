@@ -2,5 +2,7 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<StyleInclude Source="/Styles/Dialog.axaml" />
 	<StyleInclude Source="/Styles/Grid.axaml" />
+	<StyleInclude Source="/Styles/Menu.axaml" />
+	<StyleInclude Source="/Styles/TabControl.axaml" />
 	<StyleInclude Source="/Styles/Window.axaml" />
 </Styles>

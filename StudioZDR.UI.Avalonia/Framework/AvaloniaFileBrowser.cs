@@ -7,16 +7,9 @@ using FileDialogFilter = StudioZDR.App.Framework.FileDialogFilter;
 
 namespace StudioZDR.UI.Avalonia.Framework;
 
-public class AvaloniaFileBrowser : IFileBrowser
+public class AvaloniaFileBrowser(WindowContext windowContext) : IFileBrowser
 {
-	private readonly WindowContext windowContext;
-
-	public AvaloniaFileBrowser(WindowContext windowContext)
-	{
-		this.windowContext = windowContext;
-	}
-
-	private IStorageProvider StorageProvider => this.windowContext.CurrentWindow.StorageProvider;
+	private IStorageProvider StorageProvider => windowContext.CurrentWindow.StorageProvider;
 
 	public async Task<string?> OpenFileAsync(string? title = null, IEnumerable<FileDialogFilter>? filters = null)
 	{
@@ -32,10 +25,7 @@ public class AvaloniaFileBrowser : IFileBrowser
 
 		var file = files.Single();
 
-		if (!file.TryGetUri(out var uri))
-			return null;
-
-		return uri.AbsolutePath;
+		return file.Path.AbsolutePath;
 	}
 
 	public async Task<string?> OpenFolderAsync(string? title = null)
@@ -44,10 +34,7 @@ public class AvaloniaFileBrowser : IFileBrowser
 		var folders = await StorageProvider.OpenFolderPickerAsync(options);
 		var folder = folders.SingleOrDefault();
 
-		if (folder == null || !folder.TryGetUri(out var uri))
-			return null;
-
-		return uri.AbsolutePath;
+		return folder?.Path.AbsolutePath;
 	}
 
 	private static FilePickerFileType ToAvaloniaFilter(FileDialogFilter filter)

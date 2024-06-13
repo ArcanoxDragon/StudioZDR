@@ -1,0 +1,22 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<Border Width="600" Padding="20">
+			<TabControl>
+				<TabItem Header="Tab 1" />
+				<TabItem Header="Tab 2" />
+				<TabItem Header="Tab 3" />
+				<TabItem Header="Tab 4 With a Very Long Name" />
+			</TabControl>
+		</Border>
+	</Design.PreviewWith>
+
+	<Style Selector="TabControl > TabItem">
+		<Setter Property="FontSize" Value="18" />
+		<Setter Property="Margin" Value="8,0,0,0" />
+	</Style>
+
+	<Style Selector="TabControl > TabItem:nth-child(1)">
+		<Setter Property="Margin" Value="0" />
+	</Style>
+</Styles>

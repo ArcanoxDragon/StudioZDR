@@ -3,18 +3,10 @@ using StudioZDR.App.Framework;
 
 namespace StudioZDR.App.ViewModels;
 
-public class MainWindowViewModel : ViewModelBase
+public class MainWindowViewModel(IEnumerable<IFeature> allFeatures, IFeatureLauncher featureLauncher) : ViewModelBase
 {
-	private readonly IFeatureLauncher featureLauncher;
-
-	public MainWindowViewModel(IEnumerable<IFeature> allFeatures, IFeatureLauncher featureLauncher)
-	{
-		this.featureLauncher = featureLauncher;
-		Features = allFeatures.ToList();
-	}
-
-	public List<IFeature> Features { get; }
+	public List<IFeature> Features { get; } = allFeatures.ToList();
 
 	public void LaunchFeature(IFeature feature)
-		=> this.featureLauncher.LaunchFeature(feature);
+		=> featureLauncher.LaunchFeature(feature);
 }

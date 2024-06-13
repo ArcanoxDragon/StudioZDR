@@ -14,7 +14,7 @@
 			<Label Grid.Row="0" Grid.Column="0"
 				   Content="Seed Hash:" Target="RandoSeedHash" />
 			<TextBox Name="RandoSeedHash" Grid.Row="0" Grid.Column="1"
-					 Text="{Binding RandoSeedHash}" MaxLength="8" />
+					 Text="{Binding RandoSeedHash}" />
 		</Grid>
 	</StackPanel>
 </UserControl>

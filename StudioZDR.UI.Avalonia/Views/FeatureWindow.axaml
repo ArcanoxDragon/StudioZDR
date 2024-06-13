@@ -11,6 +11,7 @@
 		Title="{Binding Feature.Name, FallbackValue='Studio ZDR'}"
 		WindowStartupLocation="CenterScreen"
 		Content="{Binding FeatureViewModel}"
+		Padding="2,0,2,0"
 		Width="1280"
 		Height="800">
 	<Window.DataTemplates>

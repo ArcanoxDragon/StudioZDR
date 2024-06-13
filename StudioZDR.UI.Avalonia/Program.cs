@@ -27,16 +27,13 @@ internal class Program
 		builder.RegisterModule<AvaloniaModule>();
 
 		return AppBuilder.Configure<App>()
-						 .UsePlatformDetect()
-						 .LogToTrace()
-						 .UseReactiveUI()
-						 .With(new Win32PlatformOptions {
-							 UseWindowsUIComposition = true,
-						 })
-						 .AfterPlatformServicesSetup(_ => {
-							 App.Container = builder.Build();
+			.UsePlatformDetect()
+			.LogToTrace()
+			.UseReactiveUI()
+			.AfterPlatformServicesSetup(_ => {
+				App.Container = builder.Build();
 
-							 resolver.SetLifetimeScope(App.Container);
-						 });
+				resolver.SetLifetimeScope(App.Container);
+			});
 	}
 }
