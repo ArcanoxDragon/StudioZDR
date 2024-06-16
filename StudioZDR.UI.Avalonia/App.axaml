@@ -2,6 +2,7 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:local="using:StudioZDR.UI.Avalonia"
 			 xmlns:avicons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			 xmlns:fa="clr-namespace:FluentAvalonia.Styling;assembly=FluentAvalonia"
 			 x:Class="StudioZDR.UI.Avalonia.App"
 			 RequestedThemeVariant="Dark">
 	<Application.DataTemplates>
@@ -9,7 +10,7 @@
 	</Application.DataTemplates>
 
 	<Application.Styles>
-		<FluentTheme DensityStyle="Compact" />
+		<fa:FluentAvaloniaTheme PreferSystemTheme="False" />
 		<avicons:MaterialIconStyles />
 		<StyleInclude Source="/Styles/AppStyles.axaml" />
 	</Application.Styles>

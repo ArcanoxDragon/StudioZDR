@@ -3,11 +3,13 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="clr-namespace:StudioZDR.App.Features.SaveEditor.ViewModels;assembly=StudioZDR.App"
-			 mc:Ignorable="d"
+			 xmlns:framework="clr-namespace:StudioZDR.UI.Avalonia.Framework"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
 			 x:Class="StudioZDR.UI.Avalonia.Features.SaveEditor.Views.SaveEditorView"
 			 x:DataType="vm:SaveEditorViewModel"
 			 x:CompileBindings="True"
-			 Name="View">
+			 Name="View"
+			 framework:FeatureView.PreferredSize="1000, 960">
 	<UserControl.KeyBindings>
 		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFile}" />
 		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFile}">
@@ -41,9 +43,8 @@
 			</MenuItem>
 		</Menu>
 
-		<RelativePanel>
-			<TabControl RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True"
-						RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"
+		<Grid>
+			<TabControl Grid.Row="0" Grid.Column="0"
 						IsVisible="{Binding IsProfileOpened}">
 				<TabItem Header="Inventory">
 					<ContentControl Content="{Binding Inventory}" />
@@ -53,8 +54,10 @@
 				</TabItem>
 			</TabControl>
 
-			<TextBlock RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True"
-					   Text="Open a profile to begin!">
+			<TextBlock Grid.Row="0" Grid.Column="0"
+					   Text="Open a profile to begin!"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center">
 				<TextBlock.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
 						<Binding Path="!IsProfileOpened" />
@@ -64,19 +67,17 @@
 			</TextBlock>
 
 			<!-- Transluscent backdrop of "please wait" message -->
-			<Border RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True"
-					RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"
+			<Border Grid.Row="0" Grid.Column="0"
 					Background="Black" Opacity="0.5" IsVisible="{Binding IsBusy}" />
 
 			<!-- "Please wait" message itself -->
-			<Border RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True"
-					RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"
+			<Border Grid.Row="0" Grid.Column="0"
 					IsVisible="{Binding IsBusy}">
 				<StackPanel Orientation="Vertical" Spacing="20" HorizontalAlignment="Center" VerticalAlignment="Center">
 					<TextBlock Text="Please wait..." HorizontalAlignment="Center" />
-					<ProgressBar IsIndeterminate="True" />
+					<ProgressBar IsIndeterminate="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
 				</StackPanel>
 			</Border>
-		</RelativePanel>
+		</Grid>
 	</DockPanel>
 </UserControl>

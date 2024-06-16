@@ -22,10 +22,6 @@ namespace StudioZDR.UI.Avalonia.Views.Dialogs
 		public AlertDialog()
 		{
 			InitializeComponent();
-
-#if DEBUG
-			this.AttachDevTools();
-#endif
 		}
 
 		/// <summary>

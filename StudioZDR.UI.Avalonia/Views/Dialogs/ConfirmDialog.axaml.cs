@@ -27,10 +27,6 @@ namespace StudioZDR.UI.Avalonia.Views.Dialogs
 		public ConfirmDialog()
 		{
 			InitializeComponent();
-
-#if DEBUG
-			this.AttachDevTools();
-#endif
 		}
 
 		/// <summary>
