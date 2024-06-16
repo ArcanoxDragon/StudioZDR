@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 
 namespace StudioZDR.UI.Avalonia.Features.SaveEditor.Views
 {
@@ -8,11 +7,6 @@ namespace StudioZDR.UI.Avalonia.Features.SaveEditor.Views
 		public InventoryView()
 		{
 			InitializeComponent();
-		}
-
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
 		}
 	}
 }
