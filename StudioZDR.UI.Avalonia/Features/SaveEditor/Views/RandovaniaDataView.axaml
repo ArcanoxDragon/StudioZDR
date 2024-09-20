@@ -3,18 +3,58 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:viewModels="clr-namespace:StudioZDR.App.Features.SaveEditor.ViewModels;assembly=StudioZDR.App"
-			 mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+			 xmlns:controls="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
 			 x:Class="StudioZDR.UI.Avalonia.Features.SaveEditor.Views.RandovaniaDataView"
 			 x:DataType="viewModels:RandovaniaDataViewModel"
 			 x:CompileBindings="True"
 			 MinWidth="600">
 	<StackPanel Orientation="Vertical" Spacing="10" Margin="10">
-		<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*,20,2*,3*" Classes="ControlGrid">
-			<!-- First Column -->
-			<Label Grid.Row="0" Grid.Column="0"
-				   Content="Seed Hash:" Target="RandoSeedHash" />
-			<TextBox Name="RandoSeedHash" Grid.Row="0" Grid.Column="1"
-					 Text="{Binding RandoSeedHash}" />
-		</Grid>
+		<controls:GroupBox Header="Metadata">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*" Classes="ControlGrid">
+				<Label Grid.Row="0" Grid.Column="0"
+					   Content="Seed Hash:" Target="RandoSeedHash" />
+				<TextBox Name="RandoSeedHash" Grid.Row="0" Grid.Column="1"
+						 MaxLength="8"
+						 Text="{Binding SeedHash}" />
+
+				<Label Grid.Row="1" Grid.Column="0"
+					   Content="World ID:" Target="RandoWorldId" />
+				<TextBox Name="RandoWorldId" Grid.Row="1" Grid.Column="1"
+						 MaxLength="36"
+						 Text="{Binding WorldId}" />
+			</Grid>
+		</controls:GroupBox>
+
+		<controls:GroupBox Header="Metroid DNA">
+			<StackPanel>
+				<TextBlock FontSize="12" FontWeight="Thin" Margin="0,0,0,8">
+					If the world requires less than 12 DNA, all DNA items after the number required should be checked.
+					<LineBreak />
+					For example, if the world only requires 3 DNA, then items 4 through 12 should all be checked.
+				</TextBlock>
+
+				<Grid ColumnDefinitions="*,5,*,5,*">
+					<StackPanel Grid.Column="0">
+						<CheckBox IsChecked="{Binding MetroidDna1}">DNA 1</CheckBox>
+						<CheckBox IsChecked="{Binding MetroidDna2}">DNA 2</CheckBox>
+						<CheckBox IsChecked="{Binding MetroidDna3}">DNA 3</CheckBox>
+						<CheckBox IsChecked="{Binding MetroidDna4}">DNA 4</CheckBox>
+					</StackPanel>
+					<StackPanel Grid.Column="2">
+						<CheckBox IsChecked="{Binding MetroidDna5}">DNA 5</CheckBox>
+						<CheckBox IsChecked="{Binding MetroidDna6}">DNA 6</CheckBox>
+						<CheckBox IsChecked="{Binding MetroidDna7}">DNA 7</CheckBox>
+						<CheckBox IsChecked="{Binding MetroidDna8}">DNA 8</CheckBox>
+					</StackPanel>
+					<StackPanel Grid.Column="4">
+						<CheckBox IsChecked="{Binding MetroidDna9}">DNA 9</CheckBox>
+						<CheckBox IsChecked="{Binding MetroidDna10}">DNA 10</CheckBox>
+						<CheckBox IsChecked="{Binding MetroidDna11}">DNA 11</CheckBox>
+						<CheckBox IsChecked="{Binding MetroidDna12}">DNA 12</CheckBox>
+					</StackPanel>
+				</Grid>
+			</StackPanel>
+		</controls:GroupBox>
 	</StackPanel>
 </UserControl>

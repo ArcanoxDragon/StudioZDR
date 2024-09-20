@@ -158,6 +158,25 @@ internal static class Constants
 			public const string PulseRadar   = "ITEM_SONAR";
 
 			#endregion
+
+			#region Rando DNA
+
+			public const string MetroidDnaPrefix = "ITEM_RANDO_ARTIFACT";
+
+			public const string MetroidDna1  = $"{MetroidDnaPrefix}_1";
+			public const string MetroidDna2  = $"{MetroidDnaPrefix}_2";
+			public const string MetroidDna3  = $"{MetroidDnaPrefix}_3";
+			public const string MetroidDna4  = $"{MetroidDnaPrefix}_4";
+			public const string MetroidDna5  = $"{MetroidDnaPrefix}_5";
+			public const string MetroidDna6  = $"{MetroidDnaPrefix}_6";
+			public const string MetroidDna7  = $"{MetroidDnaPrefix}_7";
+			public const string MetroidDna8  = $"{MetroidDnaPrefix}_8";
+			public const string MetroidDna9  = $"{MetroidDnaPrefix}_9";
+			public const string MetroidDna10 = $"{MetroidDnaPrefix}_10";
+			public const string MetroidDna11 = $"{MetroidDnaPrefix}_11";
+			public const string MetroidDna12 = $"{MetroidDnaPrefix}_12";
+
+			#endregion
 		}
 	}
 
