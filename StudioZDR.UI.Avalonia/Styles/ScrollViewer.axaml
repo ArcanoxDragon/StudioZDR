@@ -1,0 +1,25 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<Border Width="300" Height="200">
+			<ScrollViewer>
+				<StackPanel>
+					<CheckBox>This is item number 1</CheckBox>
+					<CheckBox>This is item number 2</CheckBox>
+					<CheckBox>This is item number 3</CheckBox>
+					<CheckBox>This is item number 4</CheckBox>
+					<CheckBox>This is item number 5</CheckBox>
+					<CheckBox>This is item number 6</CheckBox>
+					<CheckBox>This is item number 7</CheckBox>
+					<CheckBox>This is item number 8</CheckBox>
+					<CheckBox>This is item number 9</CheckBox>
+					<CheckBox>This is item number 10</CheckBox>
+				</StackPanel>
+			</ScrollViewer>
+		</Border>
+	</Design.PreviewWith>
+
+	<Style Selector="ScrollViewer">
+		<Setter Property="Padding" Value="0,0,12,0" />
+	</Style>
+</Styles>

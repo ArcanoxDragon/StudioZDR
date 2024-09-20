@@ -16,16 +16,14 @@
 		Title="Studio ZDR"
 		TransparencyLevelHint="Mica, AcrylicBlur"
 		ExtendClientAreaToDecorationsHint="True"
-		ExtendClientAreaTitleBarHeightHint="-1"
-		Background="#80000000">
+		ExtendClientAreaTitleBarHeightHint="-1">
 
-	<DockPanel>
-		<ExperimentalAcrylicBorder IsHitTestVisible="False">
-			<ExperimentalAcrylicBorder.Material>
-				<ExperimentalAcrylicMaterial />
-			</ExperimentalAcrylicBorder.Material>
-		</ExperimentalAcrylicBorder>
+	<Window.Resources>
+		<!-- ReSharper disable once Xaml.RedundantResource -->
+		<SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="{DynamicResource ApplicationPageBackgroundTheme}" Opacity="0.75" />
+	</Window.Resources>
 
+	<Grid>
 		<StackPanel Margin="100,40" Spacing="10">
 			<Label FontSize="30" Margin="0,0,0,40" HorizontalAlignment="Center">
 				Welcome to Studio ZDR!
@@ -51,5 +49,5 @@
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
 		</StackPanel>
-	</DockPanel>
+	</Grid>
 </Window>

@@ -3,7 +3,7 @@
 				xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 				xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 				xmlns:controls="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
-				mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+				mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="200"
 				x:Class="StudioZDR.UI.Avalonia.Views.Controls.GroupBox">
 
 	<ContentControl.Styles>
@@ -15,7 +15,7 @@
 		</Style>
 
 		<Style Selector="ContentPresenter.Header">
-			<Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
+			<Setter Property="Background" Value="{DynamicResource ApplicationPageBackgroundThemeBrush}" />
 			<Setter Property="Margin" Value="12,0,0,0" />
 			<Setter Property="Padding" Value="5,0,5,0" />
 			<Setter Property="HorizontalAlignment" Value="Left" />
@@ -25,23 +25,12 @@
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate>
-						<Grid RowDefinitions="Auto,Auto,*">
+						<Grid RowDefinitions="Auto,Auto,*,1">
 							<Border Grid.Row="1" Grid.RowSpan="2" Classes="ContentBorder">
 								<ContentPresenter Content="{TemplateBinding Content}" />
 							</Border>
 
-							<ContentPresenter Grid.Row="0" Grid.RowSpan="2" Classes="Header" Content="{TemplateBinding Header}">
-								<ContentPresenter.ContentTemplate>
-									<DataTemplate>
-										<ContentPresenter Content="{Binding}" />
-									</DataTemplate>
-								</ContentPresenter.ContentTemplate>
-								<ContentPresenter.DataTemplates>
-									<DataTemplate DataType="x:String">
-										<TextBlock Text="{Binding}" />
-									</DataTemplate>
-								</ContentPresenter.DataTemplates>
-							</ContentPresenter>
+							<ContentPresenter Grid.Row="0" Grid.RowSpan="2" Classes="Header" Content="{TemplateBinding Header}" />
 						</Grid>
 					</ControlTemplate>
 				</Setter.Value>

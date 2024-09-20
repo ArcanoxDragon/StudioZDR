@@ -8,13 +8,24 @@
 		x:Class="StudioZDR.UI.Avalonia.Views.FeatureWindow"
 		x:DataType="vm:FeatureWindowViewModel"
 		x:CompileBindings="True"
-		Title="{Binding Feature.Name, FallbackValue='Studio ZDR'}"
+		Title="{Binding WindowTitle}"
 		WindowStartupLocation="CenterScreen"
-		Content="{Binding FeatureViewModel}"
-		Padding="2,0,2,0"
 		Width="1280"
-		Height="800">
+		Height="800"
+		ExtendClientAreaToDecorationsHint="True"
+		ExtendClientAreaTitleBarHeightHint="-1">
+
 	<Window.DataTemplates>
 		<framework:FeatureViewLocator />
 	</Window.DataTemplates>
+
+	<Grid RowDefinitions="Auto,*">
+		<TextBlock Grid.Row="0"
+				   Padding="0,8,0,8"
+				   HorizontalAlignment="Center"
+				   IsHitTestVisible="False"
+				   Text="{Binding WindowTitle}" />
+
+		<ContentControl Grid.Row="0" Grid.RowSpan="2" Content="{Binding FeatureViewModel}" />
+	</Grid>
 </Window>

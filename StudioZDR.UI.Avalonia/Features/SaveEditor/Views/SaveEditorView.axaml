@@ -25,7 +25,7 @@
 	</UserControl.KeyBindings>
 
 	<DockPanel>
-		<Menu DockPanel.Dock="Top">
+		<Menu DockPanel.Dock="Top" HorizontalAlignment="Left">
 			<MenuItem Header="_File">
 				<MenuItem Header="_Open..." InputGesture="Ctrl+O" Command="{Binding OpenFile}" />
 				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFile}">
@@ -44,8 +44,7 @@
 		</Menu>
 
 		<Grid>
-			<TabControl Grid.Row="0" Grid.Column="0"
-						IsVisible="{Binding IsProfileOpened}">
+			<TabControl Grid.Row="0" Grid.Column="0" IsVisible="{Binding IsProfileOpened}">
 				<TabItem Header="Inventory">
 					<ContentControl Content="{Binding Inventory}" />
 				</TabItem>

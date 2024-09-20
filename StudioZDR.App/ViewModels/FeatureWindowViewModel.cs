@@ -28,6 +28,12 @@ public class FeatureWindowViewModel : ViewModelBase, IActivatableViewModel
 				.CombineLatest(this.WhenAnyValue(m => m.OwningWindow))
 				.Subscribe(t => t.First.ParentWindow = t.Second)
 				.DisposeWith(disposables);
+
+			this.WhenAnyValue(m => m.Feature)
+				.DistinctUntilChanged()
+				.Select(feature => $"Studio ZDR - {feature?.Name}".TrimEnd(' ', '-'))
+				.ToPropertyEx(this, m => m.WindowTitle)
+				.DisposeWith(disposables);
 		});
 	}
 
@@ -41,4 +47,7 @@ public class FeatureWindowViewModel : ViewModelBase, IActivatableViewModel
 
 	[ObservableAsProperty]
 	public ViewModelBase? FeatureViewModel { get; }
+
+	[ObservableAsProperty]
+	public string WindowTitle { get; } = null!;
 }
