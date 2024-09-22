@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MercuryEngine.Data.Definiti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MercuryEngine.Data.Types", "MercuryEngine.Data\src\MercuryEngine.Data.Types\MercuryEngine.Data.Types.csproj", "{5B3034AB-364F-4939-B3EB-BEEC2818BF16}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MercuryEngine.Data.Test", "MercuryEngine.Data\test\MercuryEngine.Data.Test\MercuryEngine.Data.Test.csproj", "{D21C7525-F9BF-4077-AD8F-73D5BD9110E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MercuryEngine.Data.Tests", "MercuryEngine.Data\test\MercuryEngine.Data.Tests\MercuryEngine.Data.Tests.csproj", "{D21C7525-F9BF-4077-AD8F-73D5BD9110E9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1C479344-E2CD-4312-B37E-101DF1C18724}"
 EndProject
