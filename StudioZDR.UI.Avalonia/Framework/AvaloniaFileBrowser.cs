@@ -25,7 +25,7 @@ public class AvaloniaFileBrowser(WindowContext windowContext) : IFileBrowser
 
 		var file = files.Single();
 
-		return file.Path.AbsolutePath;
+		return file.TryGetLocalPath();
 	}
 
 	public async Task<string?> OpenFolderAsync(string? title = null)
@@ -34,7 +34,7 @@ public class AvaloniaFileBrowser(WindowContext windowContext) : IFileBrowser
 		var folders = await StorageProvider.OpenFolderPickerAsync(options);
 		var folder = folders.SingleOrDefault();
 
-		return folder?.Path.AbsolutePath;
+		return folder?.TryGetLocalPath();
 	}
 
 	private static FilePickerFileType ToAvaloniaFilter(FileDialogFilter filter)
