@@ -116,4 +116,20 @@ public class RandovaniaData
 	}
 
 	#endregion
+
+	#region Upgrades
+
+	public int FlashShiftUpgrades
+	{
+		get => Inventory.TryGetFloat(Properties.FlashShiftUpgrades, out var value) ? (int) value : 0;
+		set => Inventory.PutValue(Properties.FlashShiftUpgrades, (float) value);
+	}
+
+	public int SpeedBoosterUpgrades
+	{
+		get => Inventory.TryGetFloat(Properties.SpeedBoosterUpgrades, out var value) ? (int) value : 0;
+		set => Inventory.PutValue(Properties.SpeedBoosterUpgrades, (float) value);
+	}
+
+	#endregion
 }

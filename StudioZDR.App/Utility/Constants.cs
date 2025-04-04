@@ -177,6 +177,13 @@ internal static class Constants
 			public const string MetroidDna12 = $"{MetroidDnaPrefix}_12";
 
 			#endregion
+
+			#region Rando Upgrades
+
+			public const string FlashShiftUpgrades   = "ITEM_UPGRADE_FLASH_SHIFT_CHAIN";
+			public const string SpeedBoosterUpgrades = "ITEM_UPGRADE_SPEED_BOOST_CHARGE";
+
+			#endregion
 		}
 	}
 

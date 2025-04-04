@@ -132,6 +132,22 @@ public class RandovaniaDataViewModel : ViewModelWithDataModel<RandovaniaData>
 
 	#endregion
 
+	#region Upgrades
+
+	public int FlashShiftUpgrades
+	{
+		get => RandovaniaData.FlashShiftUpgrades;
+		set => SetDataModelValue(m => m.FlashShiftUpgrades, value);
+	}
+
+	public int SpeedBoosterUpgrades
+	{
+		get => RandovaniaData.SpeedBoosterUpgrades;
+		set => SetDataModelValue(m => m.SpeedBoosterUpgrades, value);
+	}
+
+	#endregion
+
 	private void UpdateRawSeedHash()
 		=> RandovaniaData.RandoSeedHash = $"{this.seedHash}{this.worldId}";
 }

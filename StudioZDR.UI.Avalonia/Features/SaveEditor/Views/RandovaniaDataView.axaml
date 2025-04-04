@@ -26,6 +26,23 @@
 			</Grid>
 		</controls:GroupBox>
 
+		<controls:GroupBox Header="Upgrades">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*" Classes="ControlGrid">
+				<!-- First Column -->
+				<Label Grid.Row="0" Grid.Column="0"
+					   Content="Flash Shift Upgrades:" Target="FlasShiftUpgrades" />
+				<NumericUpDown Name="FlasShiftUpgrades" Grid.Row="0" Grid.Column="1"
+							   Value="{Binding FlashShiftUpgrades}" Minimum="0"
+							   ParsingNumberStyle="Integer" FormatString="0" />
+
+				<Label Grid.Row="1" Grid.Column="0"
+					   Content="Speed Booster Upgrades:" Target="SpeedBoosterUpgrades" />
+				<NumericUpDown Name="SpeedBoosterUpgrades" Grid.Row="1" Grid.Column="1"
+							   Value="{Binding SpeedBoosterUpgrades}" Minimum="0"
+							   ParsingNumberStyle="Integer" FormatString="0" />
+			</Grid>
+		</controls:GroupBox>
+
 		<controls:GroupBox Header="Metroid DNA">
 			<StackPanel>
 				<TextBlock FontSize="12" FontWeight="Thin" Margin="0,0,0,8">
