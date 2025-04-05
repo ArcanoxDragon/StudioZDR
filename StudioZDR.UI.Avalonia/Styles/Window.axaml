@@ -18,8 +18,50 @@
 		<Setter Property="Icon" Value="/Assets/AppIcon.ico" />
 	</Style>
 
+	<Style Selector="Window.Immersive">
+		<Setter Property="ExtendClientAreaToDecorationsHint" Value="True" />
+	</Style>
+
+	<Style Selector="Window.Acrylic">
+		<Setter Property="Background">
+			<SolidColorBrush Color="{DynamicResource ApplicationPageBackgroundTheme}" Opacity="0.75" />
+		</Setter>
+		<Setter Property="TransparencyLevelHint" Value="Mica, AcrylicBlur" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Panel>
+					<ExperimentalAcrylicBorder CornerRadius="{TemplateBinding CornerRadius}">
+						<ExperimentalAcrylicBorder.Material>
+							<ExperimentalAcrylicMaterial TintColor="{DynamicResource ApplicationPageBackgroundTheme}"
+														 FallbackColor="{DynamicResource ApplicationPageBackgroundTheme}"
+														 TintOpacity="1"
+														 BackgroundSource="Digger"
+														 MaterialOpacity="0.85" />
+						</ExperimentalAcrylicBorder.Material>
+					</ExperimentalAcrylicBorder>
+
+					<Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
+					<Border Background="{TemplateBinding Background}" IsHitTestVisible="False" />
+					<Panel Background="Transparent" Margin="{TemplateBinding WindowDecorationMargin}" />
+
+					<VisualLayerManager>
+						<VisualLayerManager.ChromeOverlayLayer>
+							<TitleBar />
+						</VisualLayerManager.ChromeOverlayLayer>
+						<ContentPresenter Name="PART_ContentPresenter"
+										  ContentTemplate="{TemplateBinding ContentTemplate}"
+										  Content="{TemplateBinding Content}"
+										  Margin="{TemplateBinding Padding}"
+										  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+										  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+					</VisualLayerManager>
+				</Panel>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
 	<Style Selector="Window[IsActive=True] /template/ Border:nth-child(2)">
-		<Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight1}"/>
-		<Setter Property="BorderThickness" Value="0.9"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight1}" />
+		<Setter Property="BorderThickness" Value="0.9" />
 	</Style>
 </Styles>

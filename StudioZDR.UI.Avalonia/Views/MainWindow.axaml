@@ -9,19 +9,12 @@
 		x:DataType="vm:MainWindowViewModel"
 		x:CompileBindings="True"
 		Name="Window"
+		Classes="Immersive Acrylic"
 		Width="600"
 		SizeToContent="Height"
 		CanResize="False"
 		WindowStartupLocation="CenterScreen"
-		Title="Studio ZDR"
-		TransparencyLevelHint="Mica, AcrylicBlur"
-		ExtendClientAreaToDecorationsHint="True"
-		ExtendClientAreaTitleBarHeightHint="-1">
-
-	<Window.Resources>
-		<!-- ReSharper disable once Xaml.RedundantResource -->
-		<SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="{DynamicResource ApplicationPageBackgroundTheme}" Opacity="0.75" />
-	</Window.Resources>
+		Title="Studio ZDR">
 
 	<Grid>
 		<StackPanel Margin="20" Spacing="10">

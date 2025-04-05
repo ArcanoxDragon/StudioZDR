@@ -6,21 +6,31 @@
 		x:Class="StudioZDR.UI.Avalonia.Views.Dialogs.ConfirmDialog"
 		Name="Dialog"
 		WindowStartupLocation="CenterOwner"
-		Classes="Dialog"
+		Classes="Dialog Immersive Acrylic"
 		SizeToContent="WidthAndHeight"
-		CanResize="False">
-	<Grid RowDefinitions="*,Auto" Margin="10" MaxWidth="500">
-		<TextBlock Grid.Row="0" Text="{Binding #Dialog.Message}" TextWrapping="Wrap" />
+		CanResize="False"
+		ExtendClientAreaToDecorationsHint="True"
+		ExtendClientAreaTitleBarHeightHint="-1">
+	<Grid RowDefinitions="Auto,*">
+		<TextBlock Grid.Row="0"
+				   Padding="0,8,0,8"
+				   HorizontalAlignment="Center"
+				   IsHitTestVisible="False"
+				   Text="{Binding #Dialog.Title}" />
 
-		<StackPanel Grid.Row="1" Orientation="Horizontal" Classes="ButtonContainer">
-			<Button Content="{Binding #Dialog.PositiveText}"
-					IsDefault="True"
-					Command="{Binding #Dialog.OnPositiveButtonClicked}"
-					Classes.accent="{Binding #Dialog.PositiveButtonAccent}" />
+		<Grid Grid.Row="1" RowDefinitions="*,Auto" Margin="10" MaxWidth="500">
+			<TextBlock Grid.Row="0" Text="{Binding #Dialog.Message}" TextWrapping="Wrap" />
 
-			<Button Content="{Binding #Dialog.NegativeText}"
-					IsCancel="True"
-					Command="{Binding #Dialog.OnNegativeButtonClicked}" />
-		</StackPanel>
+			<StackPanel Grid.Row="1" Orientation="Horizontal" Classes="ButtonContainer">
+				<Button Content="{Binding #Dialog.PositiveText}"
+						IsDefault="True"
+						Command="{Binding #Dialog.OnPositiveButtonClicked}"
+						Classes.accent="{Binding #Dialog.PositiveButtonAccent}" />
+
+				<Button Content="{Binding #Dialog.NegativeText}"
+						IsCancel="True"
+						Command="{Binding #Dialog.OnNegativeButtonClicked}" />
+			</StackPanel>
+		</Grid>
 	</Grid>
 </Window>

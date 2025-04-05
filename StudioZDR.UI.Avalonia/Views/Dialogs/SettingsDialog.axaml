@@ -9,50 +9,60 @@
 		x:DataType="viewModels:SettingsDialogViewModel"
 		Name="Dialog"
 		WindowStartupLocation="CenterOwner"
-		Classes="Dialog"
+		Classes="Dialog Immersive Acrylic"
 		SizeToContent="Height"
 		CanResize="False"
 		Width="800"
 		MinHeight="300"
-		Title="Settings - Studio ZDR">
-	<Grid Margin="10" RowDefinitions="*,10,Auto">
-		<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto" Classes="ControlGrid">
-			<Label Grid.Row="0" Grid.Column="0"
-				   Target="RomFsLocation">
-				RomFS Path:
-			</Label>
+		Title="Settings - Studio ZDR"
+		ExtendClientAreaToDecorationsHint="True"
+		ExtendClientAreaTitleBarHeightHint="-1">
+	<Grid RowDefinitions="Auto,*">
+		<TextBlock Grid.Row="0"
+				   Padding="0,8,0,8"
+				   HorizontalAlignment="Center"
+				   IsHitTestVisible="False"
+				   Text="{Binding #Dialog.Title}" />
 
-			<TextBox Grid.Row="0" Grid.Column="1"
-					 Name="RomFsLocation"
-					 Text="{Binding RomFsLocation}"
-					 Watermark="Browse for your RomFS directory"
-					 IsReadOnly="True" />
+		<Grid Grid.Row="1" Margin="10" RowDefinitions="*,10,Auto">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto" Classes="ControlGrid">
+				<Label Grid.Row="0" Grid.Column="0"
+					   Target="RomFsLocation">
+					RomFS Path:
+				</Label>
 
-			<Button Grid.Row="0" Grid.Column="2"
-					Command="{Binding BrowseForRomFsCommand}"
-					MinWidth="0"
-					ToolTip.Tip="Browse">
-				...
-			</Button>
+				<TextBox Grid.Row="0" Grid.Column="1"
+						 Name="RomFsLocation"
+						 Text="{Binding RomFsLocation}"
+						 Watermark="Browse for your RomFS directory"
+						 IsReadOnly="True" />
 
-			<TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
-					   Foreground="{DynamicResource TextFillColorSecondary}"
-					   TextWrapping="Wrap">
-				Choose the directory where your extracted Metroid Dread &quot;RomFS&quot; files
-				are located. These files are obtained by using a modded Nintendo Switch to
-				&quot;dump&quot; your copy of Metroid Dread, which is the process of extracting
-				the game's data files so that other software can access them.
-			</TextBlock>
+				<Button Grid.Row="0" Grid.Column="2"
+						Command="{Binding BrowseForRomFsCommand}"
+						MinWidth="0"
+						ToolTip.Tip="Browse">
+					...
+				</Button>
+
+				<TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+						   Foreground="{DynamicResource TextFillColorSecondary}"
+						   TextWrapping="Wrap">
+					Choose the directory where your extracted Metroid Dread &quot;RomFS&quot; files
+					are located. These files are obtained by using a modded Nintendo Switch to
+					&quot;dump&quot; your copy of Metroid Dread, which is the process of extracting
+					the game's data files so that other software can access them.
+				</TextBlock>
+			</Grid>
+
+			<StackPanel Grid.Row="2" Classes="ButtonContainer">
+				<Button IsDefault="True" Classes="accent" Command="{Binding SaveCommand}">
+					_Save
+				</Button>
+
+				<Button Command="{Binding CancelCommand}">
+					_Cancel
+				</Button>
+			</StackPanel>
 		</Grid>
-
-		<StackPanel Grid.Row="2" Classes="ButtonContainer">
-			<Button IsDefault="True" Classes="accent" Command="{Binding SaveCommand}">
-				_Save
-			</Button>
-
-			<Button Command="{Binding CancelCommand}">
-				_Cancel
-			</Button>
-		</StackPanel>
 	</Grid>
 </Window>
