@@ -15,6 +15,7 @@ public abstract class FeatureModule : Module, IFeature, INotifyPropertyChanged
 	public abstract string Name          { get; }
 	public abstract string Description   { get; }
 	public abstract Type   ViewModelType { get; }
+	public abstract int    DisplayOrder  { get; }
 
 	public virtual MaterialIconKind IconKind => MaterialIconKind.ToyBrick;
 

@@ -8,6 +8,7 @@ public interface IFeature
 	string           Description        { get; }
 	MaterialIconKind IconKind           { get; }
 	Type             ViewModelType      { get; }
+	int              DisplayOrder       { get; }
 	bool             IsAvailable        { get; }
 	string?          UnavailableMessage { get; }
 }
