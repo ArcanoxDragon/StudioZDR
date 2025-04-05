@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using StudioZDR.App.Framework;
 using StudioZDR.UI.Avalonia.Views.Dialogs;
