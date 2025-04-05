@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using DynamicData.Binding;
@@ -61,22 +60,16 @@ public partial class SaveEditorViewModel : ViewModelBase
 
 			#endregion
 
-			var isProfileOpened = this.WhenAnyValue(m => m.IsProfileOpened);
-
-			OpenFile = ReactiveCommand.CreateFromTask(OpenFileAsync).DisposeWith(disposables);
-			OpenFile.ThrownExceptions
+			OpenFileCommand.ThrownExceptions
 				.Subscribe(ex => this.dialogs.AlertAsync("Error Opening Profile", $"An error occurred while opening the profile: {ex}"))
 				.DisposeWith(disposables);
 
-			SaveFile = ReactiveCommand.CreateFromTask<bool>(SaveFileAsync, isProfileOpened).DisposeWith(disposables);
-			SaveFile.ThrownExceptions
+			SaveFileCommand.ThrownExceptions
 				.Subscribe(ex => this.dialogs.AlertAsync("Error Saving Profile", $"An error occurred while saving the profile: {ex}"))
 				.DisposeWith(disposables);
 
-			Close = ReactiveCommand.CreateFromTask(CloseAsync).DisposeWith(disposables);
-
-			OpenFile.IsExecuting
-				.CombineLatest(SaveFile.IsExecuting, (a, b) => a || b)
+			Observable.CombineLatest(OpenFileCommand.IsExecuting, SaveFileCommand.IsExecuting)
+				.Select(values => values.Any(v => v))
 				.ToProperty(this, m => m.IsBusy, out this._isBusyHelper)
 				.DisposeWith(disposables);
 		});
@@ -122,15 +115,7 @@ public partial class SaveEditorViewModel : ViewModelBase
 
 	#region Commands
 
-	[Reactive]
-	public partial ReactiveCommand<Unit, Unit>? OpenFile { get; set; }
-
-	[Reactive]
-	public partial ReactiveCommand<bool, Unit>? SaveFile { get; set; }
-
-	[Reactive]
-	public partial ReactiveCommand<Unit, Unit>? Close { get; set; }
-
+	[ReactiveCommand]
 	private async Task<bool> ConfirmUnsavedChangesAsync()
 	{
 		if (OpenedProfilePath is null || !HasChanges)
@@ -142,6 +127,7 @@ public partial class SaveEditorViewModel : ViewModelBase
 		);
 	}
 
+	[ReactiveCommand]
 	private async Task OpenFileAsync()
 	{
 		if (!await ConfirmUnsavedChangesAsync())
@@ -156,6 +142,7 @@ public partial class SaveEditorViewModel : ViewModelBase
 		OpenedProfilePath = profileFolder;
 	}
 
+	[ReactiveCommand(CanExecute = nameof(IsProfileOpened))]
 	private async Task SaveFileAsync(bool saveAs)
 	{
 		if (!IsProfileOpened)
@@ -174,6 +161,7 @@ public partial class SaveEditorViewModel : ViewModelBase
 		await OpenedProfile.SaveAsync(OpenedProfilePath);
 	}
 
+	[ReactiveCommand]
 	private async Task CloseAsync()
 	{
 		if (await ConfirmUnsavedChangesAsync())

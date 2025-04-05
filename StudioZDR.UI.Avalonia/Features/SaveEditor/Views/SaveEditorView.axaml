@@ -11,13 +11,13 @@
 			 Name="View"
 			 framework:FeatureView.PreferredSize="1000, 960">
 	<UserControl.KeyBindings>
-		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFile}" />
-		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFile}">
+		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
+		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFileCommand}">
 			<KeyBinding.CommandParameter>
 				<x:Boolean>False</x:Boolean>
 			</KeyBinding.CommandParameter>
 		</KeyBinding>
-		<KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveFile}">
+		<KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveFileCommand}">
 			<KeyBinding.CommandParameter>
 				<x:Boolean>True</x:Boolean>
 			</KeyBinding.CommandParameter>
@@ -27,19 +27,19 @@
 	<DockPanel>
 		<Menu DockPanel.Dock="Top" HorizontalAlignment="Left">
 			<MenuItem Header="_File">
-				<MenuItem Header="_Open..." InputGesture="Ctrl+O" Command="{Binding OpenFile}" />
-				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFile}">
+				<MenuItem Header="_Open..." InputGesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
+				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFileCommand}">
 					<MenuItem.CommandParameter>
 						<x:Boolean>False</x:Boolean>
 					</MenuItem.CommandParameter>
 				</MenuItem>
-				<MenuItem Header="Save _As..." InputGesture="Ctrl+Shift+S" Command="{Binding SaveFile}">
+				<MenuItem Header="Save _As..." InputGesture="Ctrl+Shift+S" Command="{Binding SaveFileCommand}">
 					<MenuItem.CommandParameter>
 						<x:Boolean>True</x:Boolean>
 					</MenuItem.CommandParameter>
 				</MenuItem>
 				<Separator />
-				<MenuItem Header="_Close" Command="{Binding Close}" />
+				<MenuItem Header="_Close" Command="{Binding CloseCommand}" />
 			</MenuItem>
 		</Menu>
 
