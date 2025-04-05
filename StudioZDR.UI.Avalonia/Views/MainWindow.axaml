@@ -16,6 +16,13 @@
 		WindowStartupLocation="CenterScreen"
 		Title="Studio ZDR">
 
+	<Window.Styles>
+		<Style Selector="Button.FeatureUnavailable /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBackgroundBrush}" />
+			<Setter Property="BorderThickness" Value="2" />
+		</Style>
+	</Window.Styles>
+
 	<Grid>
 		<StackPanel Margin="20" Spacing="10">
 			<Label FontSize="30" Margin="0,20,0,40" HorizontalAlignment="Center">
@@ -25,17 +32,35 @@
 			<ItemsControl Margin="80,20" ItemsSource="{Binding Features}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<Button Height="80"
+						<Button Height="100"
 								FontSize="20"
 								HorizontalAlignment="Stretch"
 								HorizontalContentAlignment="Center"
 								VerticalContentAlignment="Center"
 								Command="{Binding #Window.ViewModel.LaunchFeatureCommand}"
 								CommandParameter="{Binding}"
+								Classes.FeatureUnavailable="{Binding !IsAvailable}"
+								IsEnabled="{Binding IsAvailable}"
 								ToolTip.Tip="{Binding Description}">
-							<StackPanel Orientation="Horizontal" Spacing="10">
-								<avalonia:MaterialIcon Kind="{Binding IconKind}" Width="24" Height="24" />
-								<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+							<StackPanel Spacing="10">
+								<StackPanel Orientation="Horizontal"
+											Spacing="10"
+											HorizontalAlignment="Center">
+									<avalonia:MaterialIcon Kind="{Binding IconKind}" Width="24" Height="24" />
+									<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+								</StackPanel>
+
+								<TextBlock IsVisible="{Binding !IsAvailable}"
+										   FontSize="14"
+										   TextAlignment="Center"
+										   TextWrapping="Wrap">
+									<TextBlock.Foreground>
+										<SolidColorBrush Color="{DynamicResource SystemFillColorCritical}" Opacity="0.65" />
+									</TextBlock.Foreground>
+
+									<Run Text="Feature unavailable:&#10;" />
+									<Run Text="{Binding UnavailableMessage, FallbackValue='The feature is unavailable'}" />
+								</TextBlock>
 							</StackPanel>
 						</Button>
 					</DataTemplate>
