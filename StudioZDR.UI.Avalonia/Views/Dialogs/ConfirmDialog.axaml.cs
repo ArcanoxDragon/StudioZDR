@@ -22,6 +22,10 @@ namespace StudioZDR.UI.Avalonia.Views.Dialogs
 			"_No",
 			validate: value => value != null!);
 
+		public static readonly StyledProperty<bool> PositiveButtonAccentProperty = AvaloniaProperty.Register<ConfirmDialog, bool>(
+			nameof(PositiveButtonAccent),
+			true);
+
 		#endregion
 
 		public ConfirmDialog()
@@ -54,6 +58,15 @@ namespace StudioZDR.UI.Avalonia.Views.Dialogs
 		{
 			get => GetValue(NegativeTextProperty);
 			set => SetValue(NegativeTextProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets whether or not the "positive" button uses the accent color.
+		/// </summary>
+		public bool PositiveButtonAccent
+		{
+			get => GetValue(PositiveButtonAccentProperty);
+			set => SetValue(PositiveButtonAccentProperty, value);
 		}
 
 		private void InitializeComponent()

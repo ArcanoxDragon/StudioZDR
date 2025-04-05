@@ -13,8 +13,14 @@
 		<TextBlock Grid.Row="0" Text="{Binding #Dialog.Message}" TextWrapping="Wrap" />
 
 		<StackPanel Grid.Row="1" Orientation="Horizontal" Classes="ButtonContainer">
-			<Button Content="{Binding #Dialog.PositiveText}" IsDefault="True" Command="{Binding #Dialog.OnPositiveButtonClicked}" />
-			<Button Content="{Binding #Dialog.NegativeText}" IsCancel="True" Command="{Binding #Dialog.OnNegativeButtonClicked}" />
+			<Button Content="{Binding #Dialog.PositiveText}"
+					IsDefault="True"
+					Command="{Binding #Dialog.OnPositiveButtonClicked}"
+					Classes.accent="{Binding #Dialog.PositiveButtonAccent}" />
+
+			<Button Content="{Binding #Dialog.NegativeText}"
+					IsCancel="True"
+					Command="{Binding #Dialog.OnNegativeButtonClicked}" />
 		</StackPanel>
 	</Grid>
 </Window>

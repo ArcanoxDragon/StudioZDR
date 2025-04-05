@@ -15,5 +15,6 @@
 		<Setter Property="Margin" Value="0,20,0,0" />
 		<Setter Property="Spacing" Value="10" />
 		<Setter Property="HorizontalAlignment" Value="Center" />
+		<Setter Property="Orientation" Value="Horizontal" />
 	</Style>
 </Styles>

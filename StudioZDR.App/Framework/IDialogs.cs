@@ -3,5 +3,5 @@
 public interface IDialogs
 {
 	Task AlertAsync(string title, string message, string? buttonText = null);
-	Task<bool> ConfirmAsync(string title, string message, string? positiveText = null, string? negativeText = null);
+	Task<bool> ConfirmAsync(string title, string message, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true);
 }

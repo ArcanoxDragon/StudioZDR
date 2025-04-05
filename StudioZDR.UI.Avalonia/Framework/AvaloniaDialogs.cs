@@ -40,9 +40,9 @@ public class AvaloniaDialogs : IDialogs
 		return dialog.ShowDialog(ParentWindow);
 	}
 
-	public Task<bool> ConfirmAsync(string title, string message, string? positiveText = null, string? negativeText = null)
+	public Task<bool> ConfirmAsync(string title, string message, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
 	{
-		var dialog = new ConfirmDialog { Title = title, Message = message };
+		var dialog = new ConfirmDialog { Title = title, Message = message, PositiveButtonAccent = positiveButtonAccent };
 
 		if (positiveText != null)
 			dialog.PositiveText = positiveText;
