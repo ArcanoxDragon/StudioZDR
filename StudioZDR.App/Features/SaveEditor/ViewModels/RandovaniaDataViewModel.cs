@@ -24,8 +24,6 @@ public class RandovaniaDataViewModel : ViewModelWithDataModel<RandovaniaData>
 		}
 	}
 
-	public ViewModelActivator Activator { get; } = new();
-
 	protected override RandovaniaData DataModel => RandovaniaData;
 
 	private RandovaniaData RandovaniaData { get; }

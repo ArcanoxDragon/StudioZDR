@@ -1,53 +1,50 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using StudioZDR.App.Features;
 using StudioZDR.App.Framework;
 
 namespace StudioZDR.App.ViewModels;
 
 [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
-public class FeatureWindowViewModel : ViewModelBase, IActivatableViewModel
+public partial class FeatureWindowViewModel : ViewModelBase
 {
 	public FeatureWindowViewModel(ViewModelFactory viewModelFactory)
 	{
+		this._windowTitle = string.Empty;
+
+		// Initialize the view model automatically
+		this.WhenAnyValue(m => m.Feature)
+			.WhereNotNull()
+			.DistinctUntilChanged()
+			.Select(feature => viewModelFactory.Create(feature.ViewModelType))
+			.ToProperty(this, m => m.FeatureViewModel, out this._featureViewModelHelper);
+
+		// Update window title automatically
+		this.WhenAnyValue(m => m.Feature)
+			.SelectMany(feature => feature?.WhenAnyValue(f => f.Name) ?? Observable.Return(string.Empty))
+			.DistinctUntilChanged()
+			.Select(featureName => $"Studio ZDR - {featureName}".TrimEnd(' ', '-'))
+			.ToProperty(this, m => m.WindowTitle, out this._windowTitleHelper);
+
 		this.WhenActivated(disposables => {
-			// Initialize the view model automatically
-			this.WhenAnyValue(m => m.Feature)
-				.WhereNotNull()
-				.DistinctUntilChanged()
-				.Select(feature => viewModelFactory.Create(feature.ViewModelType))
-				.ToPropertyEx(this, m => m.FeatureViewModel)
-				.DisposeWith(disposables);
-
-			// Hook up window with feature's ViewModel if able
-			this.WhenAnyValue(m => m.FeatureViewModel)
-				.WhereNotNull()
-				.OfType<IWindowAware>()
-				.CombineLatest(this.WhenAnyValue(m => m.OwningWindow))
-				.Subscribe(t => t.First.ParentWindow = t.Second)
-				.DisposeWith(disposables);
-
-			this.WhenAnyValue(m => m.Feature)
-				.DistinctUntilChanged()
-				.Select(feature => $"Studio ZDR - {feature?.Name}".TrimEnd(' ', '-'))
-				.ToPropertyEx(this, m => m.WindowTitle)
-				.DisposeWith(disposables);
+			Disposable.Create(() => {
+				Feature = null;
+				OwningWindow = null;
+			}).DisposeWith(disposables);
 		});
 	}
 
-	public ViewModelActivator Activator { get; } = new();
+	[Reactive]
+	public partial IWindowContext? OwningWindow { get; set; }
 
 	[Reactive]
-	public IWindow? OwningWindow { get; set; }
-
-	[Reactive]
-	public IFeature? Feature { get; set; }
+	public partial IFeature? Feature { get; set; }
 
 	[ObservableAsProperty]
-	public ViewModelBase? FeatureViewModel { get; }
+	public partial ViewModelBase? FeatureViewModel { get; }
 
-	[ObservableAsProperty]
-	public string WindowTitle { get; } = null!;
+	[ObservableAsProperty(InitialValue = "")]
+	public partial string WindowTitle { get; }
 }

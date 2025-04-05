@@ -3,14 +3,12 @@ using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.App.Features.SaveEditor.ViewModels;
 
-public class InventoryViewModel : ViewModelWithDataModel<PlayerInventory>, IActivatableViewModel
+public class InventoryViewModel : ViewModelWithDataModel<PlayerInventory>
 {
 	public InventoryViewModel(PlayerInventory playerInventory)
 	{
 		PlayerInventory = playerInventory;
 	}
-
-	public ViewModelActivator Activator { get; } = new();
 
 	protected override PlayerInventory DataModel => PlayerInventory;
 

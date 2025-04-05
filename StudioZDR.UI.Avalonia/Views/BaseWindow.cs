@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Disposables;
 using ReactiveUI;
+using StudioZDR.App.Framework;
 using StudioZDR.UI.Avalonia.Framework;
 
 namespace StudioZDR.UI.Avalonia.Views;
@@ -15,13 +16,19 @@ where TViewModel : class
 			// Create a new lifetime scope for the life of this window
 			this.lifetimeScope = App.Container.BeginLifetimeScope(ConfigureServicesInternal).DisposeWith(disposables);
 
-			// Also set the scope to null when disposing
-			Disposable.Create(() => this.lifetimeScope = null).DisposeWith(disposables);
-
 			// Populate the ViewModel from the scope
-			ViewModel = GetRequiredService<TViewModel>();
+			ViewModel = InitializeViewModel();
+
+			Disposable.Create(() => {
+				// Set the ViewModel and scope to null when disposing
+				ViewModel = null;
+				this.lifetimeScope = null;
+			}).DisposeWith(disposables);
 		});
 	}
+
+	protected virtual TViewModel InitializeViewModel()
+		=> GetRequiredService<TViewModel>();
 
 	protected T? GetService<T>()
 	where T : class
@@ -39,7 +46,7 @@ where TViewModel : class
 	protected void ConfigureServicesInternal(ContainerBuilder builder)
 	{
 		// Register a WindowContext for this Window
-		builder.RegisterInstance(new WindowContext(this));
+		builder.RegisterInstance(new WindowContext(this)).AsSelf().As<IWindowContext>();
 
 		// Register the ViewModel type
 		builder.RegisterType<TViewModel>().SingleInstance();

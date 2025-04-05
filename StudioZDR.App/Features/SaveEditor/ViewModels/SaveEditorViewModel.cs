@@ -3,47 +3,48 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using DynamicData.Binding;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using StudioZDR.App.Features.SaveEditor.DataModels;
 using StudioZDR.App.Framework;
 using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.App.Features.SaveEditor.ViewModels;
 
-[SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
-public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel, IWindowAware
+public partial class SaveEditorViewModel : ViewModelBase
 {
-	private readonly IFileBrowser fileBrowser;
-	private readonly IDialogs     dialogs;
+	private readonly IFileBrowser   fileBrowser;
+	private readonly IDialogs       dialogs;
+	private readonly IWindowContext windowContext;
 
-	public SaveEditorViewModel(IFileBrowser fileBrowser, IDialogs dialogs)
+	public SaveEditorViewModel(IFileBrowser fileBrowser, IDialogs dialogs, IWindowContext windowContext)
 	{
 		this.fileBrowser = fileBrowser;
 		this.dialogs = dialogs;
+		this.windowContext = windowContext;
+
+		this.WhenAnyValue(m => m.OpenedProfile)
+			.Select(profile => profile != null)
+			.ToProperty(this, m => m.IsProfileOpened, out this._isProfileOpenedHelper);
+
+		// Reset "HasChanges" when a new profile is loaded
+		this.WhenAnyValue(m => m.OpenedProfile)
+			.DistinctUntilChanged()
+			.Subscribe(_ => HasChanges = false);
+
+		#region Child ViewModel Connections
+
+		this.WhenAnyValue(m => m.OpenedProfile, p => p is null ? null : new InventoryViewModel(p.Inventory))
+			.ToProperty(this, m => m.Inventory, out this._inventoryHelper);
+
+		this.WhenAnyValue(m => m.OpenedProfile, p => p is null ? null : new RandovaniaDataViewModel(p.RandovaniaData))
+			.ToProperty(this, m => m.RandovaniaData, out this._randovaniaDataHelper);
+
+		this.WhenAnyValue(m => m.OpenedProfile, (SaveProfile? p) => p?.HasRandovaniaData ?? false)
+			.ToProperty(this, m => m.HasRandovaniaData, out this._hasRandovaniaDataHelper);
+
+		#endregion
 
 		this.WhenActivated(disposables => {
-			this.WhenAnyValue(m => m.OpenedProfile)
-				.Select(profile => profile != null)
-				.ToPropertyEx(this, m => m.IsProfileOpened);
-
-			// Reset "HasChanges" when a new profile is loaded
-			this.WhenAnyValue(m => m.OpenedProfile)
-				.DistinctUntilChanged()
-				.Subscribe(_ => HasChanges = false);
-
-			#region Child ViewModel Connections
-
-			this.WhenAnyValue(m => m.OpenedProfile, p => p is null ? null : new InventoryViewModel(p.Inventory))
-				.ToPropertyEx(this, m => m.Inventory);
-
-			this.WhenAnyValue(m => m.OpenedProfile, p => p is null ? null : new RandovaniaDataViewModel(p.RandovaniaData))
-				.ToPropertyEx(this, m => m.RandovaniaData);
-
-			this.WhenAnyValue(m => m.OpenedProfile, (SaveProfile? p) => p?.HasRandovaniaData ?? false)
-				.ToPropertyEx(this, m => m.HasRandovaniaData);
-
-			#endregion
-
 			#region Change Tracking
 
 			this.WhenAnyValue(m => m.Inventory)
@@ -63,70 +64,72 @@ public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel, IWindow
 			var isProfileOpened = this.WhenAnyValue(m => m.IsProfileOpened);
 
 			OpenFile = ReactiveCommand.CreateFromTask(OpenFileAsync).DisposeWith(disposables);
-			OpenFile.ThrownExceptions.Subscribe(ex => this.dialogs.AlertAsync("Error Opening Profile", $"An error occurred while opening the profile: {ex}"));
+			OpenFile.ThrownExceptions
+				.Subscribe(ex => this.dialogs.AlertAsync("Error Opening Profile", $"An error occurred while opening the profile: {ex}"))
+				.DisposeWith(disposables);
 
 			SaveFile = ReactiveCommand.CreateFromTask<bool>(SaveFileAsync, isProfileOpened).DisposeWith(disposables);
-			SaveFile.ThrownExceptions.Subscribe(ex => this.dialogs.AlertAsync("Error Saving Profile", $"An error occurred while saving the profile: {ex}"));
+			SaveFile.ThrownExceptions
+				.Subscribe(ex => this.dialogs.AlertAsync("Error Saving Profile", $"An error occurred while saving the profile: {ex}"))
+				.DisposeWith(disposables);
 
 			Close = ReactiveCommand.CreateFromTask(CloseAsync).DisposeWith(disposables);
 
 			OpenFile.IsExecuting
-					.CombineLatest(SaveFile.IsExecuting, (a, b) => a || b)
-					.ToPropertyEx(this, m => m.IsBusy);
+				.CombineLatest(SaveFile.IsExecuting, (a, b) => a || b)
+				.ToProperty(this, m => m.IsBusy, out this._isBusyHelper)
+				.DisposeWith(disposables);
 		});
 	}
 
-	public ViewModelActivator Activator    { get; } = new();
-	public IWindow?           ParentWindow { get; set; }
-
 	[Reactive]
-	public bool HasChanges { get; private set; }
+	public partial bool HasChanges { get; private set; }
 
-	[ObservableAsProperty]
-	public bool IsBusy { get; }
+	[ObservableAsProperty(ReadOnly = false)]
+	public partial bool IsBusy { get; }
 
 	#region Profile
 
 	[ObservableAsProperty]
 	[MemberNotNullWhen(true, nameof(OpenedProfile))]
 	[MemberNotNullWhen(true, nameof(OpenedProfilePath))]
-	public bool IsProfileOpened { get; }
+	public partial bool IsProfileOpened { get; }
 
 	[Reactive]
-	public SaveProfile? OpenedProfile { get; set; }
+	public partial SaveProfile? OpenedProfile { get; set; }
 
 	[Reactive]
-	public string? OpenedProfilePath { get; set; }
+	public partial string? OpenedProfilePath { get; set; }
 
 	#endregion
 
 	#region Child ViewModels
 
 	[ObservableAsProperty]
-	public InventoryViewModel? Inventory { get; }
+	public partial InventoryViewModel? Inventory { get; }
 
 	[ObservableAsProperty]
-	public RandovaniaDataViewModel? RandovaniaData { get; }
+	public partial RandovaniaDataViewModel? RandovaniaData { get; }
 
 	#endregion
 
 	#region Other Properties
 
 	[ObservableAsProperty]
-	public bool HasRandovaniaData { get; }
+	public partial bool HasRandovaniaData { get; }
 
 	#endregion
 
 	#region Commands
 
 	[Reactive]
-	public ReactiveCommand<Unit, Unit>? OpenFile { get; set; }
+	public partial ReactiveCommand<Unit, Unit>? OpenFile { get; set; }
 
 	[Reactive]
-	public ReactiveCommand<bool, Unit>? SaveFile { get; set; }
+	public partial ReactiveCommand<bool, Unit>? SaveFile { get; set; }
 
 	[Reactive]
-	public ReactiveCommand<Unit, Unit>? Close { get; set; }
+	public partial ReactiveCommand<Unit, Unit>? Close { get; set; }
 
 	private async Task<bool> ConfirmUnsavedChangesAsync()
 	{
@@ -134,9 +137,9 @@ public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel, IWindow
 			return true;
 
 		return await this.dialogs.ConfirmAsync(
-				   "Unsaved Changes",
-				   "You have unsaved changes. If you open another profile, your changes will be lost.\n\nContinue?"
-			   );
+			"Unsaved Changes",
+			"You have unsaved changes. If you open another profile, your changes will be lost.\n\nContinue?"
+		);
 	}
 
 	private async Task OpenFileAsync()
@@ -174,7 +177,7 @@ public class SaveEditorViewModel : ViewModelBase, IActivatableViewModel, IWindow
 	private async Task CloseAsync()
 	{
 		if (await ConfirmUnsavedChangesAsync())
-			ParentWindow?.Close();
+			this.windowContext.Close();
 	}
 
 	#endregion

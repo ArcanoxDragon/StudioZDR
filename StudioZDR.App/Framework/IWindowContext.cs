@@ -1,6 +1,6 @@
 ﻿namespace StudioZDR.App.Framework;
 
-public interface IWindow
+public interface IWindowContext
 {
 	void Close();
 }
