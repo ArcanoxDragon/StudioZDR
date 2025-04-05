@@ -9,7 +9,7 @@
 		x:DataType="viewModels:SettingsDialogViewModel"
 		Name="Dialog"
 		WindowStartupLocation="CenterOwner"
-		Classes="Dialog Immersive Acrylic"
+		Classes="Dialog NoControlButtons Immersive Acrylic"
 		SizeToContent="Height"
 		CanResize="False"
 		Width="800"

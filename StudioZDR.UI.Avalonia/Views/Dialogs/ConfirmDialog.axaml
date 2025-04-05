@@ -6,7 +6,7 @@
 		x:Class="StudioZDR.UI.Avalonia.Views.Dialogs.ConfirmDialog"
 		Name="Dialog"
 		WindowStartupLocation="CenterOwner"
-		Classes="Dialog Immersive Acrylic"
+		Classes="Dialog NoControlButtons Immersive Acrylic"
 		SizeToContent="WidthAndHeight"
 		CanResize="False"
 		ExtendClientAreaToDecorationsHint="True"
@@ -18,7 +18,7 @@
 				   IsHitTestVisible="False"
 				   Text="{Binding #Dialog.Title}" />
 
-		<Grid Grid.Row="1" RowDefinitions="*,Auto" Margin="10" MaxWidth="500">
+		<Grid Grid.Row="1" RowDefinitions="*,Auto" Margin="20,10" MaxWidth="600">
 			<TextBlock Grid.Row="0" Text="{Binding #Dialog.Message}" TextWrapping="Wrap" />
 
 			<StackPanel Grid.Row="1" Orientation="Horizontal" Classes="ButtonContainer">

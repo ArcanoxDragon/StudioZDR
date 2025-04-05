@@ -6,11 +6,12 @@
 		x:Class="StudioZDR.UI.Avalonia.Views.Dialogs.AlertDialog"
 		Name="Dialog"
 		WindowStartupLocation="CenterOwner"
-		Classes="Dialog Immersive Acrylic"
+		Classes="Dialog NoControlButtons Immersive Acrylic"
 		SizeToContent="WidthAndHeight"
 		CanResize="False"
 		ExtendClientAreaToDecorationsHint="True"
-		ExtendClientAreaTitleBarHeightHint="-1">
+		ExtendClientAreaTitleBarHeightHint="-1"
+		MinWidth="400">
 	<Grid RowDefinitions="Auto,*">
 		<TextBlock Grid.Row="0"
 				   Padding="0,8,0,8"
@@ -18,7 +19,7 @@
 				   IsHitTestVisible="False"
 				   Text="{Binding #Dialog.Title}" />
 
-		<Grid Grid.Row="1" RowDefinitions="*,Auto" Margin="10" MaxWidth="500">
+		<Grid Grid.Row="1" RowDefinitions="*,Auto" Margin="20,10" MaxWidth="600">
 			<TextBlock Grid.Row="0" Text="{Binding #Dialog.Message}" TextWrapping="Wrap" />
 
 			<StackPanel Grid.Row="1" Orientation="Horizontal" Classes="ButtonContainer">

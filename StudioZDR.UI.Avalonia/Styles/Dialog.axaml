@@ -17,4 +17,10 @@
 		<Setter Property="MinWidth" Value="150" />
 		<Setter Property="HorizontalContentAlignment" Value="Center" />
 	</Style>
+
+	<Style
+		Selector="Window.Dialog.NoControlButtons CaptionButtons Button#PART_MinimizeButton, 
+					 Window.Dialog.NoControlButtons CaptionButtons Button#PART_RestoreButton">
+		<Setter Property="IsVisible" Value="False" />
+	</Style>
 </Styles>
