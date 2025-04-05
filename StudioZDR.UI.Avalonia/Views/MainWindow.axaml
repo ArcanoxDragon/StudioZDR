@@ -24,12 +24,12 @@
 	</Window.Resources>
 
 	<Grid>
-		<StackPanel Margin="100,40" Spacing="10">
-			<Label FontSize="30" Margin="0,0,0,40" HorizontalAlignment="Center">
+		<StackPanel Margin="20" Spacing="10">
+			<Label FontSize="30" Margin="0,20,0,40" HorizontalAlignment="Center">
 				Welcome to Studio ZDR!
 			</Label>
 
-			<ItemsControl ItemsSource="{Binding Features}">
+			<ItemsControl Margin="80,20" ItemsSource="{Binding Features}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
 						<Button Height="80"
@@ -48,6 +48,12 @@
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
+
+			<Button HorizontalAlignment="Right"
+					Command="{Binding #Window.OpenSettingsCommand}"
+					ToolTip.Tip="Settings">
+				<avalonia:MaterialIcon Kind="Settings" Width="20" Height="20" />
+			</Button>
 		</StackPanel>
 	</Grid>
 </Window>
