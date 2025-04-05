@@ -1,8 +1,13 @@
 ﻿namespace StudioZDR.App.Utility;
 
-internal static class Constants
+public static class ZdrConstants
 {
-	public static class BlackboardDefaults
+	public static class Application
+	{
+		public const string AppDataFolderName = "StudioZDR";
+	}
+
+	internal static class BlackboardDefaults
 	{
 		public static class PlayerInventory
 		{
@@ -76,7 +81,7 @@ internal static class Constants
 		}
 	}
 
-	public static class BlackboardProperties
+	internal static class BlackboardProperties
 	{
 		public static class Player
 		{
@@ -187,7 +192,7 @@ internal static class Constants
 		}
 	}
 
-	public static class BlackboardSections
+	internal static class BlackboardSections
 	{
 		public static class Common
 		{
@@ -196,7 +201,7 @@ internal static class Constants
 		}
 	}
 
-	public static class FileNames
+	internal static class FileNames
 	{
 		public static class Profile
 		{

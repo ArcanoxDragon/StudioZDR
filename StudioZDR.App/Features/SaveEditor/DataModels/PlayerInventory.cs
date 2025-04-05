@@ -1,8 +1,8 @@
 ﻿using MercuryEngine.Data.Formats;
 using MercuryEngine.Data.Types.DreadTypes;
 using StudioZDR.App.Utility;
-using Defaults = StudioZDR.App.Utility.Constants.BlackboardDefaults.PlayerInventory;
-using Properties = StudioZDR.App.Utility.Constants.BlackboardProperties.PlayerInventory;
+using Defaults = StudioZDR.App.Utility.ZdrConstants.BlackboardDefaults.PlayerInventory;
+using Properties = StudioZDR.App.Utility.ZdrConstants.BlackboardProperties.PlayerInventory;
 
 namespace StudioZDR.App.Features.SaveEditor.DataModels;
 
@@ -10,10 +10,10 @@ public class PlayerInventory
 {
 	public PlayerInventory(Bmssv commonBmssv)
 	{
-		if (!commonBmssv.Sections.TryGetValue(Constants.BlackboardSections.Common.PlayerInventory, out var inventorySection))
+		if (!commonBmssv.Sections.TryGetValue(ZdrConstants.BlackboardSections.Common.PlayerInventory, out var inventorySection))
 		{
 			inventorySection = new CBlackboard__CSection();
-			commonBmssv.Sections.Add(Constants.BlackboardSections.Common.PlayerInventory, inventorySection);
+			commonBmssv.Sections.Add(ZdrConstants.BlackboardSections.Common.PlayerInventory, inventorySection);
 		}
 
 		Inventory = inventorySection;

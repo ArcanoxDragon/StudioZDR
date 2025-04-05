@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>$(MainTargetFramework)</TargetFramework>
@@ -8,6 +8,8 @@
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="8.2.1" />
 		<PackageReference Include="Material.Icons" Version="2.3.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
 		<PackageReference Include="ReactiveUI" Version="20.2.45" />
 		<PackageReference Include="ReactiveUI.SourceGenerators" Version="2.1.27">
 		  <PrivateAssets>all</PrivateAssets>

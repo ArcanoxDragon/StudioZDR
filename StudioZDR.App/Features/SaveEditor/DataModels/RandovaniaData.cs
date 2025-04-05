@@ -1,7 +1,7 @@
 ﻿using MercuryEngine.Data.Formats;
 using MercuryEngine.Data.Types.DreadTypes;
 using StudioZDR.App.Utility;
-using Properties = StudioZDR.App.Utility.Constants.BlackboardProperties.PlayerInventory;
+using Properties = StudioZDR.App.Utility.ZdrConstants.BlackboardProperties.PlayerInventory;
 
 namespace StudioZDR.App.Features.SaveEditor.DataModels;
 
@@ -9,18 +9,18 @@ public class RandovaniaData
 {
 	public RandovaniaData(Bmssv commonBmssv)
 	{
-		if (!commonBmssv.Sections.TryGetValue(Constants.BlackboardSections.Common.Player, out var playerSection))
+		if (!commonBmssv.Sections.TryGetValue(ZdrConstants.BlackboardSections.Common.Player, out var playerSection))
 		{
 			playerSection = new CBlackboard__CSection();
-			commonBmssv.Sections.Add(Constants.BlackboardSections.Common.Player, playerSection);
+			commonBmssv.Sections.Add(ZdrConstants.BlackboardSections.Common.Player, playerSection);
 		}
 
 		Player = playerSection;
 
-		if (!commonBmssv.Sections.TryGetValue(Constants.BlackboardSections.Common.PlayerInventory, out var inventorySection))
+		if (!commonBmssv.Sections.TryGetValue(ZdrConstants.BlackboardSections.Common.PlayerInventory, out var inventorySection))
 		{
 			inventorySection = new CBlackboard__CSection();
-			commonBmssv.Sections.Add(Constants.BlackboardSections.Common.PlayerInventory, inventorySection);
+			commonBmssv.Sections.Add(ZdrConstants.BlackboardSections.Common.PlayerInventory, inventorySection);
 		}
 
 		Inventory = inventorySection;
@@ -31,14 +31,14 @@ public class RandovaniaData
 
 	public bool RandoGameInitialized
 	{
-		get => Player.TryGetBoolean(Constants.BlackboardProperties.Player.RandoGameInitialized, out var value) && value;
-		set => Player.PutValue(Constants.BlackboardProperties.Player.RandoGameInitialized, value);
+		get => Player.TryGetBoolean(ZdrConstants.BlackboardProperties.Player.RandoGameInitialized, out var value) && value;
+		set => Player.PutValue(ZdrConstants.BlackboardProperties.Player.RandoGameInitialized, value);
 	}
 
 	public string RandoSeedHash
 	{
-		get => Player.TryGetString(Constants.BlackboardProperties.Player.SeedHash, out var value) ? value : string.Empty;
-		set => Player.PutValue(Constants.BlackboardProperties.Player.SeedHash, value);
+		get => Player.TryGetString(ZdrConstants.BlackboardProperties.Player.SeedHash, out var value) ? value : string.Empty;
+		set => Player.PutValue(ZdrConstants.BlackboardProperties.Player.SeedHash, value);
 	}
 
 	#region DNA

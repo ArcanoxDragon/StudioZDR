@@ -7,14 +7,14 @@ public class SaveProfile
 {
 	public static async Task<SaveProfile> LoadFromAsync(string profileFolder, CancellationToken cancellationToken = default)
 	{
-		var commonPath = Path.Combine(profileFolder, Constants.FileNames.Profile.Common);
-		var samusPath = Path.Combine(profileFolder, Constants.FileNames.Profile.Samus);
+		var commonPath = Path.Combine(profileFolder, ZdrConstants.FileNames.Profile.Common);
+		var samusPath = Path.Combine(profileFolder, ZdrConstants.FileNames.Profile.Samus);
 
 		if (!File.Exists(commonPath))
-			throw new FileNotFoundException($"A \"{Constants.FileNames.Profile.Common}\" file was not found in the provided profile folder");
+			throw new FileNotFoundException($"A \"{ZdrConstants.FileNames.Profile.Common}\" file was not found in the provided profile folder");
 
 		if (!File.Exists(samusPath))
-			throw new FileNotFoundException($"A \"{Constants.FileNames.Profile.Samus}\" file was not found in the provided profile folder");
+			throw new FileNotFoundException($"A \"{ZdrConstants.FileNames.Profile.Samus}\" file was not found in the provided profile folder");
 
 		await using var commonStream = File.Open(commonPath, FileMode.Open, FileAccess.Read);
 		var commonBmssv = await Bmssv.FromAsync(commonStream, cancellationToken);
@@ -44,8 +44,8 @@ public class SaveProfile
 
 	public async Task SaveAsync(string profileFolder, CancellationToken cancellationToken = default)
 	{
-		var commonPath = Path.Combine(profileFolder, Constants.FileNames.Profile.Common);
-		var samusPath = Path.Combine(profileFolder, Constants.FileNames.Profile.Samus);
+		var commonPath = Path.Combine(profileFolder, ZdrConstants.FileNames.Profile.Common);
+		var samusPath = Path.Combine(profileFolder, ZdrConstants.FileNames.Profile.Samus);
 
 		await using var commonStream = File.Open(commonPath, FileMode.Create, FileAccess.Write);
 

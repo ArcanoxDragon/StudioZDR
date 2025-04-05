@@ -37,7 +37,7 @@
 								HorizontalAlignment="Stretch"
 								HorizontalContentAlignment="Center"
 								VerticalContentAlignment="Center"
-								Command="{Binding #Window.HandleLaunchFeature}"
+								Command="{Binding #Window.ViewModel.LaunchFeatureCommand}"
 								CommandParameter="{Binding}"
 								ToolTip.Tip="{Binding Description}">
 							<StackPanel Orientation="Horizontal" Spacing="10">
