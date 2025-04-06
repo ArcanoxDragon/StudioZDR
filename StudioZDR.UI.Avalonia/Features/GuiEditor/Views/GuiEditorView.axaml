@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels;assembly=StudioZDR.App"
+			 xmlns:framework="clr-namespace:StudioZDR.UI.Avalonia.Framework"
+			 xmlns:controls="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
+			 x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.GuiEditorView"
+			 x:DataType="vm:GuiEditorViewModel"
+			 x:CompileBindings="True"
+			 Name="View"
+			 framework:FeatureView.PreferredSize="1000, 960">
+
+	<DockPanel>
+		<Menu DockPanel.Dock="Top" HorizontalAlignment="Left">
+			<MenuItem Header="_File">
+				<MenuItem Header="_Close" Command="{Binding CloseCommand}" />
+			</MenuItem>
+		</Menu>
+
+		<Grid ColumnDefinitions="2*,6*">
+			<ListBox ItemsSource="{Binding AvailableGuiFiles}"
+					 SelectedItem="{Binding SelectedGuiFile}">
+				<ListBox.Styles>
+					<Style Selector="ListBoxItem">
+						<Setter Property="MinHeight" Value="30" />
+					</Style>
+				</ListBox.Styles>
+			</ListBox>
+
+			<controls:DreadGuiComposition Grid.Column="1"
+										  RootContainer="{Binding OpenedGuiFile.Root.Value}"
+										  Margin="10"/>
+
+			<TextBlock Grid.Column="1"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   IsVisible="{Binding OpenFileException, Converter={x:Static ObjectConverters.IsNotNull}}"
+					   Foreground="{DynamicResource SystemFillColorCriticalBrush}">
+				<Run>Error loading</Run>
+				<Run Text="{Binding SelectedGuiFile, StringFormat='&quot;{0}&quot;:', Mode=OneWay}" />
+				<LineBreak />
+				<Run Text="{Binding OpenFileException.Message, FallbackValue=''}" />
+			</TextBlock>
+
+			<Panel Grid.Column="1"
+				   IsVisible="{Binding IsLoading}"
+				   Background="#55000000">
+				<StackPanel Margin="50" Spacing="10" VerticalAlignment="Center">
+					<TextBlock TextAlignment="Center">
+						Loading...
+					</TextBlock>
+
+					<ProgressBar IsIndeterminate="True" />
+				</StackPanel>
+			</Panel>
+		</Grid>
+	</DockPanel>
+</UserControl>
