@@ -1,18 +1,16 @@
-﻿using Avalonia.Controls;
+﻿using System.Reactive;
+using System.Reactive.Linq;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using StudioZDR.App.Framework;
 using StudioZDR.UI.Avalonia.Views.Dialogs;
 
 namespace StudioZDR.UI.Avalonia.Framework;
 
-public class AvaloniaDialogs : IDialogs
+public class AvaloniaDialogs(Func<WindowContext?> windowContextAccessor) : IDialogs
 {
-	private readonly Func<WindowContext?> windowContextAccessor;
-
-	public AvaloniaDialogs(Func<WindowContext?> windowContextAccessor)
-	{
-		this.windowContextAccessor = windowContextAccessor;
-	}
+	private readonly Func<WindowContext?> windowContextAccessor = windowContextAccessor;
 
 	private Window ParentWindow
 	{
@@ -30,25 +28,35 @@ public class AvaloniaDialogs : IDialogs
 		}
 	}
 
-	public Task AlertAsync(string title, string message, string? buttonText = null)
+	public IObservable<Unit> Alert(string title, string message, string? buttonText = null)
+		=> Observable.FromAsync(() => AlertAsync(title, message, buttonText));
+
+	public async Task AlertAsync(string title, string message, string? buttonText = null)
 	{
-		var dialog = new AlertDialog { Title = title, Message = message };
+		await Dispatcher.UIThread.InvokeAsync(async () => {
+			var dialog = new AlertDialog { Title = title, Message = message };
 
-		if (buttonText != null)
-			dialog.ButtonText = buttonText;
+			if (buttonText != null)
+				dialog.ButtonText = buttonText;
 
-		return dialog.ShowDialog(ParentWindow);
+			await dialog.ShowDialog(ParentWindow);
+		});
 	}
 
-	public Task<bool> ConfirmAsync(string title, string message, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
+	public IObservable<bool> Confirm(string title, string message, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
+		=> Observable.FromAsync(() => ConfirmAsync(title, message, positiveText, negativeText, positiveButtonAccent));
+
+	public async Task<bool> ConfirmAsync(string title, string message, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
 	{
-		var dialog = new ConfirmDialog { Title = title, Message = message, PositiveButtonAccent = positiveButtonAccent };
+		return await Dispatcher.UIThread.InvokeAsync(async () => {
+			var dialog = new ConfirmDialog { Title = title, Message = message, PositiveButtonAccent = positiveButtonAccent };
 
-		if (positiveText != null)
-			dialog.PositiveText = positiveText;
-		if (negativeText != null)
-			dialog.NegativeText = negativeText;
+			if (positiveText != null)
+				dialog.PositiveText = positiveText;
+			if (negativeText != null)
+				dialog.NegativeText = negativeText;
 
-		return dialog.ShowDialog<bool>(ParentWindow);
+			return await dialog.ShowDialog<bool>(ParentWindow);
+		});
 	}
 }

@@ -2,19 +2,19 @@
 
 namespace StudioZDR.App.Framework;
 
-public sealed class ViewModelFactory
+public sealed class ViewModelFactory(ILifetimeScope scope)
 {
-	private readonly ILifetimeScope scope;
-
-	public ViewModelFactory(ILifetimeScope scope)
-	{
-		this.scope = scope;
-	}
-
 	public T Create<T>()
 	where T : ViewModelBase
-		=> this.scope.Resolve<T>();
+		=> InitializeViewModel(scope.Resolve<T>());
 
 	public ViewModelBase Create(Type viewModelType)
-		=> (ViewModelBase) this.scope.Resolve(viewModelType);
+		=> InitializeViewModel((ViewModelBase) scope.Resolve(viewModelType));
+
+	private T InitializeViewModel<T>(T viewModel)
+	where T : ViewModelBase
+	{
+		viewModel.InstallDefaultServices(scope);
+		return viewModel;
+	}
 }

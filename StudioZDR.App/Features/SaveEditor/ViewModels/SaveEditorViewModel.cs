@@ -12,13 +12,11 @@ namespace StudioZDR.App.Features.SaveEditor.ViewModels;
 public partial class SaveEditorViewModel : ViewModelBase
 {
 	private readonly IFileBrowser   fileBrowser;
-	private readonly IDialogs       dialogs;
 	private readonly IWindowContext windowContext;
 
-	public SaveEditorViewModel(IFileBrowser fileBrowser, IDialogs dialogs, IWindowContext windowContext)
+	public SaveEditorViewModel(IFileBrowser fileBrowser, IWindowContext windowContext)
 	{
 		this.fileBrowser = fileBrowser;
-		this.dialogs = dialogs;
 		this.windowContext = windowContext;
 
 		this.WhenAnyValue(m => m.OpenedProfile)
@@ -61,11 +59,11 @@ public partial class SaveEditorViewModel : ViewModelBase
 			#endregion
 
 			OpenFileCommand.ThrownExceptions
-				.Subscribe(ex => this.dialogs.AlertAsync("Error Opening Profile", $"An error occurred while opening the profile: {ex}"))
+				.Subscribe(ex => Dialogs.AlertAsync("Error Opening Profile", $"An error occurred while opening the profile: {ex}"))
 				.DisposeWith(disposables);
 
 			SaveFileCommand.ThrownExceptions
-				.Subscribe(ex => this.dialogs.AlertAsync("Error Saving Profile", $"An error occurred while saving the profile: {ex}"))
+				.Subscribe(ex => Dialogs.AlertAsync("Error Saving Profile", $"An error occurred while saving the profile: {ex}"))
 				.DisposeWith(disposables);
 
 			Observable.CombineLatest(OpenFileCommand.IsExecuting, SaveFileCommand.IsExecuting)
@@ -121,7 +119,7 @@ public partial class SaveEditorViewModel : ViewModelBase
 		if (OpenedProfilePath is null || !HasChanges)
 			return true;
 
-		return await this.dialogs.ConfirmAsync(
+		return await Dialogs.ConfirmAsync(
 			"Unsaved Changes",
 			"You have unsaved changes. If you open another profile, your changes will be lost.\n\nContinue?"
 		);

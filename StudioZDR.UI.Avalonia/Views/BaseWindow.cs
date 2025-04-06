@@ -1,12 +1,13 @@
 ﻿using System.Reactive.Disposables;
 using ReactiveUI;
 using StudioZDR.App.Framework;
+using StudioZDR.App.ViewModels;
 using StudioZDR.UI.Avalonia.Framework;
 
 namespace StudioZDR.UI.Avalonia.Views;
 
 public class BaseWindow<TViewModel> : ReactiveWindow<TViewModel>
-where TViewModel : class
+where TViewModel : ViewModelBase
 {
 	private ILifetimeScope? lifetimeScope;
 
@@ -28,7 +29,14 @@ where TViewModel : class
 	}
 
 	protected virtual TViewModel InitializeViewModel()
-		=> GetRequiredService<TViewModel>();
+	{
+		var viewModelFactory = GetRequiredService<ViewModelFactory>();
+		var viewModel = viewModelFactory.Create<TViewModel>();
+
+		viewModel.InstallDefaultServices(this.lifetimeScope!);
+
+		return viewModel;
+	}
 
 	protected T? GetService<T>()
 	where T : class

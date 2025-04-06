@@ -4,6 +4,7 @@
 		<AssemblyName>StudioZDR</AssemblyName>
 		<OutputType>WinExe</OutputType>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+		<LangVersion>preview</LangVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">

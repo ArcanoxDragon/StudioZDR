@@ -9,23 +9,20 @@ public partial class SettingsDialogViewModel : ViewModelBase
 {
 	private readonly IWindowContext   windowContext;
 	private readonly ISettingsManager settingsManager;
-	private readonly IDialogs         dialogs;
 	private readonly IFileBrowser     fileBrowser;
 
 	public SettingsDialogViewModel(
 		IWindowContext windowContext,
 		ISettingsManager settingsManager,
-		IDialogs dialogs,
 		IFileBrowser fileBrowser,
-		IOptionsFactory<ApplicationSettings> settings
+		IOptionsSnapshot<ApplicationSettings> settings
 	)
 	{
 		this.windowContext = windowContext;
 		this.settingsManager = settingsManager;
-		this.dialogs = dialogs;
 		this.fileBrowser = fileBrowser;
 
-		RomFsLocation = settings.Create(Options.DefaultName).RomFsLocation ?? string.Empty;
+		RomFsLocation = settings.Value.RomFsLocation ?? string.Empty;
 	}
 
 	[Reactive]
@@ -41,7 +38,7 @@ public partial class SettingsDialogViewModel : ViewModelBase
 
 		if (!Directory.Exists(romFsFolder))
 		{
-			await this.dialogs.AlertAsync("Invalid RomFS Folder", "The folder you selected does not exist or is not valid.");
+			await Dialogs.AlertAsync("Invalid RomFS Folder", "The folder you selected does not exist or is not valid.");
 			return;
 		}
 
@@ -51,7 +48,7 @@ public partial class SettingsDialogViewModel : ViewModelBase
 
 		if (!packsExists || !systemExists || !configExists)
 		{
-			var confirmed = await this.dialogs.ConfirmAsync(
+			var confirmed = await Dialogs.ConfirmAsync(
 				"Invalid RomFS Folder",
 				"The folder you selected does not appear to be a Metroid Dread RomFS folder.\n" +
 				"Are you sure you want to choose this folder?",
