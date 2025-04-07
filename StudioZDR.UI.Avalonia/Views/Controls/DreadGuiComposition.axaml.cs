@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
 using MercuryEngine.Data.Types.DreadTypes;
+using StudioZDR.UI.Avalonia.Rendering;
 using StudioZDR.UI.Avalonia.Rendering.DreadGui;
 using StudioZDR.UI.Avalonia.Utility;
 
@@ -12,6 +13,7 @@ public partial class DreadGuiComposition : ContentControl
 	public static readonly StyledProperty<GUI__CDisplayObjectContainer?> RootContainerProperty
 		= AvaloniaProperty.Register<DreadGuiComposition, GUI__CDisplayObjectContainer?>(nameof(RootContainer));
 
+	private SpriteSheetManager?               spriteSheetManager;
 	private DreadGuiCompositionDrawOperation? drawOperation;
 
 	public DreadGuiComposition()
@@ -28,7 +30,9 @@ public partial class DreadGuiComposition : ContentControl
 	protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
 	{
 		base.OnAttachedToVisualTree(e);
-		this.drawOperation = new DreadGuiCompositionDrawOperation();
+		this.spriteSheetManager = App.Container.Resolve<SpriteSheetManager>();
+		this.spriteSheetManager.SpriteLoaded += OnSpriteLoaded;
+		this.drawOperation = new DreadGuiCompositionDrawOperation(this.spriteSheetManager);
 
 #if DEBUG
 		HotReloadHelper.MetadataUpdated += HandleMetadataReloaded;
@@ -39,6 +43,14 @@ public partial class DreadGuiComposition : ContentControl
 	{
 		base.OnDetachedFromVisualTree(e);
 		this.drawOperation = null;
+
+		if (this.spriteSheetManager != null)
+		{
+			this.spriteSheetManager.SpriteLoaded -= OnSpriteLoaded;
+			this.spriteSheetManager.Dispose();
+			this.spriteSheetManager = null;
+			GC.Collect(); // Can probably free up quite a bit chunk of memory now
+		}
 
 #if DEBUG
 		HotReloadHelper.MetadataUpdated -= HandleMetadataReloaded;
@@ -64,6 +76,10 @@ public partial class DreadGuiComposition : ContentControl
 		this.drawOperation.RootContainer = RootContainer;
 		context.Custom(this.drawOperation);
 	}
+
+	private void OnSpriteLoaded(string obj)
+		// Re-render when a sprite finishes loading
+		=> Dispatcher.UIThread.Invoke(InvalidateVisual);
 
 #if DEBUG
 	private void HandleMetadataReloaded(Type[]? reloadedTypes)

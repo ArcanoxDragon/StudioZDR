@@ -7,7 +7,7 @@ using StudioZDR.UI.Avalonia.Extensions;
 
 namespace StudioZDR.UI.Avalonia.Rendering.DreadGui;
 
-internal class DreadGuiCompositionDrawOperation : ICustomDrawOperation
+internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetManager) : ICustomDrawOperation
 {
 	private const double RenderAspectRatio = 16.0 / 9.0;
 
@@ -57,27 +57,46 @@ internal class DreadGuiCompositionDrawOperation : ICustomDrawOperation
 		if (obj is null)
 			return;
 
-		switch (obj)
-		{
-			case GUI__CDisplayObjectContainer container:
-				RenderContainer(context, container, parentBounds);
-				break;
-			case GUI__CSprite sprite:
-				RenderSprite(context, sprite, parentBounds);
-				break;
-		}
+		GetDisplayObjectRect(obj, parentBounds, out var origin);
 
-		if (!string.IsNullOrEmpty(obj.ID) && obj is GUI__CDisplayObjectContainer or GUI__CSprite)
-		{
-			var objBounds = GetDisplayObjectRect(obj, parentBounds);
-			var textWidth = context.Paint.MeasureText(obj.ID);
-			var textX = objBounds.X + objBounds.Width * 0.5 - textWidth * 0.5;
-			var textY = obj switch {
-				GUI__CDisplayObjectContainer => objBounds.Y + context.Paint.TextSize + 2,
-				_                            => objBounds.Y + objBounds.Height + context.Paint.TextSize + 2,
-			};
+		var originX = (float) origin.X;
+		var originY = (float) origin.Y;
 
-			RenderText(context, obj.ID, textX, textY);
+		using (context.Canvas.WithSavedState())
+		{
+			if (obj.Angle.HasValue || obj.ScaleX.HasValue || obj.ScaleY.HasValue)
+			{
+				if (obj.Angle.HasValue)
+					context.Canvas.RotateRadians(obj.Angle.Value, originX, originY);
+
+				if (obj.ScaleX.HasValue || obj.ScaleY.HasValue)
+					context.Canvas.Scale(obj.ScaleX ?? 1, obj.ScaleY ?? 1);
+			}
+
+			switch (obj)
+			{
+				case GUI__CDisplayObjectContainer container:
+					RenderContainer(context, container, parentBounds);
+					break;
+				case GUI__CSprite sprite:
+					RenderSprite(context, sprite, parentBounds);
+					break;
+				case GUI__CLabel label:
+					RenderLabel(context, label, parentBounds);
+					break;
+			}
+
+			/*if (!string.IsNullOrEmpty(obj.ID) && obj is GUI__CSprite)
+			{
+				var textWidth = context.Paint.MeasureText(obj.ID);
+				var textX = objBounds.X + objBounds.Width * 0.5 - textWidth * 0.5;
+				var textY = obj switch {
+					GUI__CDisplayObjectContainer => objBounds.Y + context.Paint.TextSize + 2,
+					_                            => objBounds.Y + objBounds.Height + context.Paint.TextSize + 2,
+				};
+
+				RenderText(context, obj.ID, textX, textY);
+			}*/
 		}
 	}
 
@@ -86,7 +105,7 @@ internal class DreadGuiCompositionDrawOperation : ICustomDrawOperation
 		// TODO: Visible toggle
 		var containerRect = GetDisplayObjectRect(container, parentBounds);
 
-		RenderDisplayObjectBounds(context, container, containerRect, ContainerBorderColor);
+		// RenderDisplayObjectBounds(context, container, containerRect, ContainerBorderColor);
 
 		foreach (var child in container.Children)
 			RenderDisplayObject(context, child, containerRect);
@@ -95,80 +114,134 @@ internal class DreadGuiCompositionDrawOperation : ICustomDrawOperation
 	private void RenderSprite(DreadGuiDrawContext context, GUI__CSprite sprite, Rect parentBounds)
 	{
 		// TODO: Visible toggle
-		// TODO: Texture
-		var spriteRect = GetDisplayObjectRect(sprite, parentBounds);
-		var spriteFillColor = new SKColor(
+		var spriteRect = GetDisplayObjectRect(sprite, parentBounds, out var origin);
+		var spriteTintColor = new SKColor(
 			(byte) ( 255 * ( sprite.ColorR ?? 1.0f ) ),
 			(byte) ( 255 * ( sprite.ColorG ?? 1.0f ) ),
 			(byte) ( 255 * ( sprite.ColorB ?? 1.0f ) ),
 			(byte) ( 255 * ( sprite.ColorA ?? 1.0f ) )
 		);
 
-		RenderDisplayObjectBounds(context, sprite, spriteRect, SpriteBorderColor, spriteFillColor);
+		// RenderDisplayObjectBounds(context, sprite, spriteRect, SpriteBorderColor);
+
+		using (context.Canvas.WithSavedState())
+		{
+			var originX = (float) origin.X;
+			var originY = (float) origin.Y;
+
+			if (sprite is { FlipX: true, FlipY: true })
+				context.Canvas.Scale(-1, -1, originX, originY);
+			else if (sprite.FlipX is true)
+				context.Canvas.Scale(-1, 1, originX, originY);
+			else if (sprite.FlipY is true)
+				context.Canvas.Scale(1, -1, originX, originY);
+
+			if (!string.IsNullOrEmpty(sprite.SpriteSheetItem) && spriteSheetManager.GetOrQueueSprite(sprite.SpriteSheetItem) is { } spriteBitmap)
+			{
+				using var spriteColorFilter = SKColorFilter.CreateBlendMode(spriteTintColor, SKBlendMode.Modulate);
+
+				context.Paint.BlendMode = SKBlendMode.SrcATop;
+				context.Paint.ColorFilter = spriteColorFilter;
+				context.Canvas.DrawBitmap(spriteBitmap, spriteRect.ToSKRect(), context.Paint);
+				context.Paint.ColorFilter = null;
+			}
+		}
+	}
+
+	private void RenderLabel(DreadGuiDrawContext context, GUI__CLabel label, Rect parentBounds)
+	{
+		const int TextSize = 20;
+		const int TextOffset = 8;
+		var labelRect = GetDisplayObjectRect(label, parentBounds);
+		var halfHeight = labelRect.Height / 2;
+		var textToDraw = ( label.Text ?? label.ID ?? "GUI::CLabel" ).Replace('|', '\n');
+
+		context.Paint.TextAlign = label.TextAlignment switch {
+			"Right"    => SKTextAlign.Right,
+			"Centered" => SKTextAlign.Center,
+			_          => SKTextAlign.Left,
+		};
+
+		var textX = context.Paint.TextAlign switch {
+			SKTextAlign.Right  => labelRect.X + labelRect.Width,
+			SKTextAlign.Center => labelRect.X + 0.5 * labelRect.Width,
+			_                  => labelRect.X,
+		};
+
+		RenderText(context, textToDraw, textX, labelRect.Y + halfHeight + TextOffset, TextSize);
+		context.Paint.TextAlign = SKTextAlign.Left;
 	}
 
 	private static void RenderDisplayObjectBounds(DreadGuiDrawContext context, GUI__CDisplayObject obj, Rect rect, SKColor borderColor, SKColor? fillColor = null)
 	{
 		const float CornerRadius = 4.0f;
 
-		// TODO: Push Scale, Angle
-
-		var centerX = (float) ( rect.X + rect.Width / 2 );
-		var centerY = (float) ( rect.Y + rect.Height / 2 );
-
-		using (context.Canvas.WithSavedState())
+		if (fillColor.HasValue)
 		{
-			if (obj.Angle.HasValue)
-			{
-				context.Canvas.Translate(centerX, centerY);
-				context.Canvas.RotateRadians(obj.Angle.Value);
-				context.Canvas.Translate(-centerX, -centerY);
-			}
-
-			if (fillColor.HasValue)
-			{
-				context.Paint.Style = SKPaintStyle.Fill;
-				context.Paint.Color = fillColor.Value;
-				context.Canvas.DrawRoundRect(rect.ToSKRect(), CornerRadius, CornerRadius, context.Paint);
-			}
-
-			context.Paint.Style = SKPaintStyle.Stroke;
-			context.Paint.Color = borderColor;
+			context.Paint.Style = SKPaintStyle.Fill;
+			context.Paint.Color = fillColor.Value;
 			context.Canvas.DrawRoundRect(rect.ToSKRect(), CornerRadius, CornerRadius, context.Paint);
 		}
+
+		context.Paint.Style = SKPaintStyle.Stroke;
+		context.Paint.Color = borderColor;
+		context.Canvas.DrawRoundRect(rect.ToSKRect(), CornerRadius, CornerRadius, context.Paint);
 	}
 
 	private Rect GetDisplayObjectRect(GUI__CDisplayObject obj, Rect parentBounds)
+		=> GetDisplayObjectRect(obj, parentBounds, out _);
+
+	private Rect GetDisplayObjectRect(GUI__CDisplayObject obj, Rect parentBounds, out Point origin)
 	{
 		var objWidth = ( obj.SizeX ?? 1.0 ) * RenderBounds.Width;
 		var objHeight = ( obj.SizeY ?? 1.0 ) * RenderBounds.Height;
 		var refX = parentBounds.X;
 		var refY = parentBounds.Y;
-		double objX, objY;
+		double boundsX, boundsY;
+		double originX, originY;
 
-		if (obj.CenterX.HasValue)
+		if (obj.RightX.HasValue)
+		{
+			var rightRefX = refX + parentBounds.Width;
+
+			originX = rightRefX - obj.RightX.Value * RenderBounds.Width;
+			boundsX = originX - objWidth;
+		}
+		else if (obj.CenterX.HasValue)
 		{
 			var centerRefX = refX + 0.5 * parentBounds.Width;
 
-			objX = centerRefX + obj.CenterX.Value * RenderBounds.Width - 0.5 * objWidth;
+			originX = centerRefX + obj.CenterX.Value * RenderBounds.Width;
+			boundsX = originX - 0.5 * objWidth;
 		}
 		else
 		{
-			objX = refX + ( obj.X ?? 0.0 ) * RenderBounds.Width;
+			originX = refX + ( obj.LeftX ?? obj.X ?? 0.0 ) * RenderBounds.Width;
+			boundsX = originX;
 		}
 
-		if (obj.CenterY.HasValue)
+		if (obj.BottomY.HasValue)
+		{
+			var bottomRefY = refY + parentBounds.Height;
+
+			originY = bottomRefY - obj.BottomY.Value * RenderBounds.Height;
+			boundsY = originY - objHeight;
+		}
+		else if (obj.CenterY.HasValue)
 		{
 			var centerRefY = refY + 0.5 * parentBounds.Height;
 
-			objY = centerRefY + obj.CenterY.Value * RenderBounds.Height - 0.5 * objHeight;
+			originY = centerRefY + obj.CenterY.Value * RenderBounds.Height;
+			boundsY = originY - 0.5 * objHeight;
 		}
 		else
 		{
-			objY = refY + ( obj.Y ?? 0.0 ) * RenderBounds.Height;
+			originY = refY + ( obj.TopY ?? obj.Y ?? 0.0 ) * RenderBounds.Height;
+			boundsY = originY;
 		}
 
-		return new Rect(objX, objY, objWidth, objHeight);
+		origin = new Point(originX, originY);
+		return new Rect(boundsX, boundsY, objWidth, objHeight);
 	}
 
 	private static Rect GetRenderBounds(Rect controlBounds)
@@ -197,20 +270,37 @@ internal class DreadGuiCompositionDrawOperation : ICustomDrawOperation
 		return new Rect(renderX, renderY, renderWidth, renderHeight).Deflate(2); // Deflated to give room for root corner radius
 	}
 
-	private static void RenderText(DreadGuiDrawContext context, string text, double x, double y)
+	private static void RenderText(DreadGuiDrawContext context, string text, double x, double y, double textSize = 14.0)
 	{
+		const double LineSeparation = 2;
+
+		var lines = text.Split('\n');
+
 		// Draw text shadow for contrast (text is drawn twice for darker shadow)
 		context.Paint.Style = SKPaintStyle.Fill;
 		context.Paint.Color = TextBlurColor;
 		context.Paint.MaskFilter = context.TextBlurFilter;
 		context.Paint.FakeBoldText = true;
-		context.Canvas.DrawText(text, (float) x, (float) y, context.Paint);
-		context.Canvas.DrawText(text, (float) x, (float) y, context.Paint);
+		context.Paint.TextSize = (float) textSize;
+		DrawLines(2);
 
 		// Draw normal text on top of shadow
 		context.Paint.Color = TextDrawColor;
 		context.Paint.MaskFilter = null;
 		context.Paint.FakeBoldText = false;
-		context.Canvas.DrawText(text, (float) x, (float) y, context.Paint);
+		DrawLines(1);
+
+		void DrawLines(int count)
+		{
+			var lineY = y;
+
+			foreach (var line in lines)
+			{
+				for (var i = 0; i < count; i++)
+					context.Canvas.DrawText(line, (float) x, (float) lineY, context.Paint);
+
+				lineY += textSize + LineSeparation;
+			}
+		}
 	}
 }

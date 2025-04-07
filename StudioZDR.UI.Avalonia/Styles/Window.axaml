@@ -34,9 +34,9 @@
 						<ExperimentalAcrylicBorder.Material>
 							<ExperimentalAcrylicMaterial TintColor="{DynamicResource ApplicationPageBackgroundTheme}"
 														 FallbackColor="{DynamicResource ApplicationPageBackgroundTheme}"
-														 TintOpacity="1"
+														 TintOpacity="0.75"
 														 BackgroundSource="Digger"
-														 MaterialOpacity="0.85" />
+														 MaterialOpacity="0.35" />
 						</ExperimentalAcrylicBorder.Material>
 					</ExperimentalAcrylicBorder>
 
