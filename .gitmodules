@@ -1,3 +1,7 @@
 [submodule "MercuryEngine.Data"]
 	path = MercuryEngine.Data
 	url = https://github.com/ArcanoxDragon/MercuryEngine.Data.git
+[submodule "StudioZDR.TegraSwizzle/tegra_swizzle"]
+	path = StudioZDR.TegraSwizzle/tegra_swizzle
+	url = https://github.com/ScanMountGoat/tegra_swizzle.git
+	branch = main
