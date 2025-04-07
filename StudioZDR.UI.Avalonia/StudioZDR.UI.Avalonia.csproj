@@ -5,6 +5,7 @@
 		<OutputType>WinExe</OutputType>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 		<LangVersion>preview</LangVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
@@ -13,6 +14,10 @@
 		<TrimMode>partial</TrimMode>
 		<SelfContained>true</SelfContained>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="StudioZDR.Tests" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
@@ -53,5 +58,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\StudioZDR.App\StudioZDR.App.csproj" />
+		<ProjectReference Include="..\StudioZDR.TegraSwizzle\StudioZDR.TegraSwizzle.csproj" />
 	</ItemGroup>
 </Project>
