@@ -8,12 +8,11 @@
 		x:Class="StudioZDR.UI.Avalonia.Views.FeatureWindow"
 		x:DataType="vm:FeatureWindowViewModel"
 		x:CompileBindings="True"
+		Classes="Immersive"
 		Title="{Binding WindowTitle}"
 		WindowStartupLocation="CenterScreen"
 		Width="1280"
-		Height="800"
-		ExtendClientAreaToDecorationsHint="True"
-		ExtendClientAreaTitleBarHeightHint="-1">
+		Height="800">
 
 	<Window.DataTemplates>
 		<framework:FeatureViewLocator />
