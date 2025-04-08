@@ -3,6 +3,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using MercuryEngine.Data.Types.DreadTypes;
 using SkiaSharp;
+using StudioZDR.App.Features.GuiEditor.ViewModels;
 using StudioZDR.UI.Avalonia.Extensions;
 
 namespace StudioZDR.UI.Avalonia.Rendering.DreadGui;
@@ -11,12 +12,19 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 {
 	private const double RenderAspectRatio = 16.0 / 9.0;
 
+	private const int RenderPassNormal  = 0;
+	private const int RenderPassOverlay = 1;
+	private const int RenderPassCount   = 2;
+
+	private static readonly SKColor HoverBorderColor    = new(0, 255, 255, 64);
+	private static readonly SKColor SelectedBorderColor = new(0, 255, 255);
+
 	private static readonly SKColor ContainerBorderColor = new(255, 0, 0);
 	private static readonly SKColor SpriteBorderColor    = new(0, 255, 0);
 	private static readonly SKColor TextDrawColor        = new(255, 255, 255);
 	private static readonly SKColor TextBlurColor        = new(0, 0, 0);
 
-	public GUI__CDisplayObjectContainer? RootContainer { get; set; }
+	public DreadGuiCompositionViewModel? ViewModel { get; set; }
 
 	public Rect Bounds
 	{
@@ -35,30 +43,38 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 	public void Render(ImmediateDrawingContext context)
 	{
-		if (RootContainer is not { } rootContainer)
+		if (ViewModel is not { Hierarchy: { } hierarchy } viewModel)
 			return;
 
 		using var guiDrawContext = new DreadGuiDrawContext(context);
 
-		RenderContainer(guiDrawContext, rootContainer, RenderBounds);
+		using (guiDrawContext.Canvas.WithSavedState())
+		{
+			var zoomFactor = (float) viewModel.ZoomFactor;
+			var centerX = (float) ( RenderBounds.Width / 2 );
+			var centerY = (float) ( RenderBounds.Height / 2 );
+
+			guiDrawContext.Canvas.Translate(viewModel.PanOffset.X, viewModel.PanOffset.Y);
+			guiDrawContext.Canvas.Scale(zoomFactor, zoomFactor, centerX, centerY);
+
+			for (var renderPass = 0; renderPass < RenderPassCount; renderPass++)
+			{
+				RenderDisplayObjectNode(guiDrawContext, hierarchy, RenderBounds, renderPass);
+			}
+		}
 	}
 
 	public void Dispose() { }
 
 	public bool Equals(ICustomDrawOperation? other)
-		=> other switch {
-			null                                       => false,
-			DreadGuiCompositionDrawOperation otherThis => ReferenceEquals(RootContainer, otherThis.RootContainer),
-			_                                          => ReferenceEquals(this, other),
-		};
+		=> ReferenceEquals(other, this);
 
-	private void RenderDisplayObject(DreadGuiDrawContext context, GUI__CDisplayObject? obj, Rect parentBounds)
+	private void RenderDisplayObjectNode(DreadGuiDrawContext context, GuiCompositionNodeViewModel? node, Rect parentBounds, int renderPass)
 	{
-		if (obj is null)
+		if (node is not { DisplayObject: { } obj })
 			return;
 
-		GetDisplayObjectRect(obj, parentBounds, out var origin);
-
+		var objBounds = GetDisplayObjectRect(obj, parentBounds, out var origin);
 		var originX = (float) origin.X;
 		var originY = (float) origin.Y;
 
@@ -70,51 +86,55 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 					context.Canvas.RotateRadians(obj.Angle.Value, originX, originY);
 
 				if (obj.ScaleX.HasValue || obj.ScaleY.HasValue)
-					context.Canvas.Scale(obj.ScaleX ?? 1, obj.ScaleY ?? 1);
+					context.Canvas.Scale(obj.ScaleX ?? 1, obj.ScaleY ?? 1, originX, originY);
 			}
 
-			switch (obj)
+			if (renderPass == RenderPassNormal && node.IsVisible)
 			{
-				case GUI__CDisplayObjectContainer container:
-					RenderContainer(context, container, parentBounds);
-					break;
-				case GUI__CSprite sprite:
-					RenderSprite(context, sprite, parentBounds);
-					break;
-				case GUI__CLabel label:
-					RenderLabel(context, label, parentBounds);
-					break;
+				switch (obj)
+				{
+					case GUI__CSprite sprite:
+						RenderSprite(context, sprite, parentBounds);
+						break;
+					case GUI__CLabel label:
+						RenderLabel(context, label, parentBounds);
+						break;
+				}
+			}
+			else if (renderPass == RenderPassOverlay)
+			{
+				context.Paint.Color = new SKColor(255, 255, 255);
+
+				if (ReferenceEquals(obj, ViewModel?.SelectedObject))
+					RenderDisplayObjectBounds(context, objBounds, SelectedBorderColor);
+				else if (ReferenceEquals(obj, ViewModel?.HoveredObject))
+					RenderDisplayObjectBounds(context, objBounds, HoverBorderColor);
 			}
 
-			/*if (!string.IsNullOrEmpty(obj.ID) && obj is GUI__CSprite)
+			if (node.IsVisible)
 			{
-				var textWidth = context.Paint.MeasureText(obj.ID);
-				var textX = objBounds.X + objBounds.Width * 0.5 - textWidth * 0.5;
-				var textY = obj switch {
-					GUI__CDisplayObjectContainer => objBounds.Y + context.Paint.TextSize + 2,
-					_                            => objBounds.Y + objBounds.Height + context.Paint.TextSize + 2,
-				};
+				foreach (var childNode in node.Children)
+					RenderDisplayObjectNode(context, childNode, objBounds, renderPass);
+			}
 
-				RenderText(context, obj.ID, textX, textY);
-			}*/
+			// if (!string.IsNullOrEmpty(obj.ID) && obj is GUI__CDisplayObjectContainer)
+			// {
+			// 	var textWidth = context.Paint.MeasureText(obj.ID);
+			// 	var textX = objBounds.X + objBounds.Width * 0.5 - textWidth * 0.5;
+			// 	var textY = obj switch {
+			// 		// GUI__CDisplayObjectContainer => objBounds.Y + context.Paint.TextSize + 2,
+			// 		_ => objBounds.Y + objBounds.Height + context.Paint.TextSize + 2,
+			// 	};
+			//
+			// 	RenderText(context, obj.ID, textX, textY);
+			// }
 		}
-	}
-
-	private void RenderContainer(DreadGuiDrawContext context, GUI__CDisplayObjectContainer container, Rect parentBounds)
-	{
-		// TODO: Visible toggle
-		var containerRect = GetDisplayObjectRect(container, parentBounds);
-
-		// RenderDisplayObjectBounds(context, container, containerRect, ContainerBorderColor);
-
-		foreach (var child in container.Children)
-			RenderDisplayObject(context, child, containerRect);
 	}
 
 	private void RenderSprite(DreadGuiDrawContext context, GUI__CSprite sprite, Rect parentBounds)
 	{
 		// TODO: Visible toggle
-		var spriteRect = GetDisplayObjectRect(sprite, parentBounds, out var origin);
+		var spriteRect = GetDisplayObjectRect(sprite, parentBounds);
 		var spriteTintColor = new SKColor(
 			(byte) ( 255 * ( sprite.ColorR ?? 1.0f ) ),
 			(byte) ( 255 * ( sprite.ColorG ?? 1.0f ) ),
@@ -126,15 +146,15 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 		using (context.Canvas.WithSavedState())
 		{
-			var originX = (float) origin.X;
-			var originY = (float) origin.Y;
+			var centerX = (float) ( spriteRect.X + 0.5 * spriteRect.Width );
+			var centerY = (float) ( spriteRect.Y + 0.5 * spriteRect.Height );
 
 			if (sprite is { FlipX: true, FlipY: true })
-				context.Canvas.Scale(-1, -1, originX, originY);
+				context.Canvas.Scale(-1, -1, centerX, centerY);
 			else if (sprite.FlipX is true)
-				context.Canvas.Scale(-1, 1, originX, originY);
+				context.Canvas.Scale(-1, 1, centerX, centerY);
 			else if (sprite.FlipY is true)
-				context.Canvas.Scale(1, -1, originX, originY);
+				context.Canvas.Scale(1, -1, centerX, centerY);
 
 			if (!string.IsNullOrEmpty(sprite.SpriteSheetItem) && spriteSheetManager.GetOrQueueSprite(sprite.SpriteSheetItem) is { } spriteBitmap)
 			{
@@ -172,7 +192,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 		context.Paint.TextAlign = SKTextAlign.Left;
 	}
 
-	private static void RenderDisplayObjectBounds(DreadGuiDrawContext context, GUI__CDisplayObject obj, Rect rect, SKColor borderColor, SKColor? fillColor = null)
+	private static void RenderDisplayObjectBounds(DreadGuiDrawContext context, Rect rect, SKColor borderColor, SKColor? fillColor = null)
 	{
 		const float CornerRadius = 4.0f;
 
@@ -186,6 +206,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 		context.Paint.Style = SKPaintStyle.Stroke;
 		context.Paint.Color = borderColor;
 		context.Canvas.DrawRoundRect(rect.ToSKRect(), CornerRadius, CornerRadius, context.Paint);
+		context.Paint.Color = new SKColor(255, 255, 255);
 	}
 
 	private Rect GetDisplayObjectRect(GUI__CDisplayObject obj, Rect parentBounds)

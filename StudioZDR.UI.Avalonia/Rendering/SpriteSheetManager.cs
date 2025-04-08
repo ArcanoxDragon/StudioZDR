@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Reactive.Subjects;
 using MercuryEngine.Data.Formats;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,8 +12,9 @@ internal class SpriteSheetManager : IDisposable
 {
 	private const string GlobalSpriteSheetName = "global";
 
-	private readonly ConcurrentDictionary<string, SpriteSheet> loadedSpriteSheets = [];
-	private readonly ConcurrentDictionary<string, bool>        failedSprites      = [];
+	private readonly ConcurrentDictionary<string, SpriteSheet> loadedSpriteSheets  = [];
+	private readonly ConcurrentDictionary<string, bool>        failedSprites       = [];
+	private readonly Subject<string>                           spriteLoadedSubject = new();
 	private readonly Func<string, SpriteSheet>                 spriteSheetFactory;
 	private readonly ApplicationSettings                       settings;
 	private readonly ILogger<SpriteSheetManager>               logger;
@@ -29,7 +31,7 @@ internal class SpriteSheetManager : IDisposable
 		this.logger = logger;
 	}
 
-	public event Action<string>? SpriteLoaded;
+	public IObservable<string> SpriteLoaded => this.spriteLoadedSubject;
 
 	public SKBitmap? GetOrQueueSprite(string spriteName)
 	{
@@ -78,6 +80,7 @@ internal class SpriteSheetManager : IDisposable
 		}
 
 		this.loadedSpriteSheets.Clear();
+		this.spriteLoadedSubject.Dispose();
 	}
 
 	private SpriteSheet CreateSpriteSheet(string name)
@@ -91,7 +94,7 @@ internal class SpriteSheetManager : IDisposable
 		if (!bmsss.SpriteSheets.TryGetValue(name, out var dreadSpriteSheet))
 			throw new ApplicationException($"Sprite sheet file \"sprites_{name}.bmsss\" does not contain a sprite sheet named \"{name}\"");
 
-		SpriteSheet spriteSheet = new SpriteSheet(name, this.settings.RomFsLocation!, dreadSpriteSheet, this.logger);
+		var spriteSheet = new SpriteSheet(name, this.settings.RomFsLocation!, dreadSpriteSheet, this.logger);
 
 		spriteSheet.SpriteLoaded += OnSpriteSheetSpriteLoaded;
 
@@ -103,6 +106,6 @@ internal class SpriteSheetManager : IDisposable
 		if (sender is not SpriteSheet spriteSheet)
 			return;
 
-		SpriteLoaded?.Invoke($"{spriteSheet.Name}/{spriteName}");
+		this.spriteLoadedSubject.OnNext($"{spriteSheet.Name}/{spriteName}");
 	}
 }

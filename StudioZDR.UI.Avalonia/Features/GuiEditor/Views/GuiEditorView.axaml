@@ -5,13 +5,14 @@
 			 xmlns:vm="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels;assembly=StudioZDR.App"
 			 xmlns:framework="clr-namespace:StudioZDR.UI.Avalonia.Framework"
 			 xmlns:controls="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
-			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
+			 xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			 xmlns:views="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views"
+			 mc:Ignorable="d" d:DesignWidth="1600" d:DesignHeight="800"
 			 x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.GuiEditorView"
 			 x:DataType="vm:GuiEditorViewModel"
 			 x:CompileBindings="True"
 			 Name="View"
-			 framework:FeatureView.PreferredSize="1000, 960">
-
+			 framework:FeatureView.PreferredSize="1600, 1200">
 	<DockPanel>
 		<Menu DockPanel.Dock="Top" HorizontalAlignment="Left">
 			<MenuItem Header="_File">
@@ -19,7 +20,15 @@
 			</MenuItem>
 		</Menu>
 
-		<Grid ColumnDefinitions="2*,6*">
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="300" MinWidth="200" />
+				<ColumnDefinition Width="4" />
+				<ColumnDefinition />
+				<ColumnDefinition Width="4" />
+				<ColumnDefinition Width="300" MinWidth="300" />
+			</Grid.ColumnDefinitions>
+
 			<ListBox ItemsSource="{Binding AvailableGuiFiles}"
 					 SelectedItem="{Binding SelectedGuiFile}">
 				<ListBox.Styles>
@@ -29,11 +38,15 @@
 				</ListBox.Styles>
 			</ListBox>
 
-			<controls:DreadGuiComposition Grid.Column="1"
-										  RootContainer="{Binding OpenedGuiFile.Root.Value}"
-										  Margin="10"/>
+			<GridSplitter Grid.Column="1"
+						  ResizeBehavior="PreviousAndNext"
+						  ResizeDirection="Columns" />
 
-			<TextBlock Grid.Column="1"
+			<controls:GuiCompositionEditor Grid.Column="2"
+										   DataContext="{Binding GuiCompositionViewModel}"
+										   Margin="10" />
+
+			<TextBlock Grid.Column="2"
 					   HorizontalAlignment="Center"
 					   VerticalAlignment="Center"
 					   IsVisible="{Binding OpenFileException, Converter={x:Static ObjectConverters.IsNotNull}}"
@@ -44,7 +57,7 @@
 				<Run Text="{Binding OpenFileException.Message, FallbackValue=''}" />
 			</TextBlock>
 
-			<Panel Grid.Column="1"
+			<Panel Grid.Column="2"
 				   IsVisible="{Binding IsLoading}"
 				   Background="#55000000">
 				<StackPanel Margin="50" Spacing="10" VerticalAlignment="Center">
@@ -55,6 +68,39 @@
 					<ProgressBar IsIndeterminate="True" />
 				</StackPanel>
 			</Panel>
+
+			<GridSplitter Grid.Column="3"
+						  ResizeBehavior="PreviousAndNext"
+						  ResizeDirection="Columns" />
+
+			<TreeView Grid.Column="4"
+					  ItemsSource="{Binding GuiCompositionViewModel.Hierarchy.Children}"
+					  SelectedItem="{Binding GuiCompositionViewModel.SelectedNode}"
+					  PointerMoved="TreeView_OnPointerMoved"
+					  PointerExited="TreeView_OnPointerExited">
+				<TreeView.ItemTemplate>
+					<TreeDataTemplate ItemsSource="{Binding Children}">
+						<!-- Transparent background on Grid allows it to detect pointer events, e.g. for double clicking -->
+						<Grid ColumnDefinitions="*,60"
+							  Background="Transparent">
+							<StackPanel Spacing="4">
+								<TextBlock Text="{Binding Name}" />
+								<TextBlock Text="{Binding TypeName}"
+										   FontSize="10"
+										   Foreground="{DynamicResource TextFillColorSecondary}" />
+							</StackPanel>
+
+							<Button Grid.Column="1"
+									HorizontalAlignment="Center"
+									VerticalAlignment="Center"
+									Command="{Binding ToggleVisibleCommand}"
+									CommandParameter="{Binding #View.IsShiftPressed}">
+								<avalonia:MaterialIcon Kind="{Binding IsVisible, Converter={x:Static views:GuiEditorView.IsVisibleIconConverter}}" />
+							</Button>
+						</Grid>
+					</TreeDataTemplate>
+				</TreeView.ItemTemplate>
+			</TreeView>
 		</Grid>
 	</DockPanel>
 </UserControl>

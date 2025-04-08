@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using MercuryEngine.Data.Formats;
 using Microsoft.Extensions.Options;
@@ -23,12 +22,16 @@ public partial class GuiEditorViewModel : ViewModelBase
 		this.settings = settings.Value;
 
 		this.WhenAnyValue(m => m.SelectedGuiFile)
-			.Do(_ => {
-				OpenedGuiFile = null;
-				OpenFileException = null;
-			})
 			.ObserveOn(TaskPoolScheduler)
 			.InvokeCommand(LoadGuiFileCommand!);
+
+		this.WhenAnyValue(m => m.OpenedGuiFile)
+			.Select(bmscp => new DreadGuiCompositionViewModel(bmscp?.Root.Value))
+			.ObserveOn(MainThreadScheduler)
+			.Subscribe(model => {
+				GuiCompositionViewModel?.Dispose();
+				GuiCompositionViewModel = model;
+			});
 
 		LoadGuiFileCommand.IsExecuting
 			.ToProperty(this, m => m.IsLoading, out this._isLoadingHelper);
@@ -42,6 +45,11 @@ public partial class GuiEditorViewModel : ViewModelBase
 			Observable.StartAsync(() => Task.Run(GetAvailableGuiFilesAsync), MainThreadScheduler)
 				.Subscribe(files => AvailableGuiFiles = files)
 				.DisposeWith(disposables);
+
+			Disposable.Create(() => {
+				GuiCompositionViewModel?.Dispose();
+				GuiCompositionViewModel = null;
+			}).DisposeWith(disposables);
 		});
 	}
 
@@ -53,6 +61,9 @@ public partial class GuiEditorViewModel : ViewModelBase
 
 	[Reactive]
 	public partial Bmscp? OpenedGuiFile { get; set; }
+
+	[Reactive]
+	public partial DreadGuiCompositionViewModel? GuiCompositionViewModel { get; private set; }
 
 	[ObservableAsProperty]
 	public partial bool IsLoading { get; }
@@ -91,7 +102,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 	[ReactiveCommand(OutputScheduler = nameof(TaskPoolScheduler))]
 	private async Task<Bmscp?> LoadGuiFileAsync(string? file, CancellationToken cancellationToken)
 	{
-		Debug.WriteLine($"Starting on thread: {Environment.CurrentManagedThreadId}");
+		OpenedGuiFile = null;
+		OpenFileException = null;
 
 		if (string.IsNullOrEmpty(file))
 			return null;
