@@ -2,6 +2,7 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using MercuryEngine.Data.Formats;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReactiveUI.SourceGenerators;
 using StudioZDR.App.Configuration;
@@ -16,17 +17,24 @@ public partial class GuiEditorViewModel : ViewModelBase
 	private readonly IWindowContext      windowContext;
 	private readonly ApplicationSettings settings;
 
-	public GuiEditorViewModel(IWindowContext windowContext, IOptionsSnapshot<ApplicationSettings> settings)
+	public GuiEditorViewModel(
+		IWindowContext windowContext,
+		IOptionsSnapshot<ApplicationSettings> settings,
+		ILogger<GuiEditorViewModel> logger
+	)
 	{
 		this.windowContext = windowContext;
 		this.settings = settings.Value;
 
 		OpenFileCommand
-			.HandleExceptionsWith(ex => Dialogs.Alert(
-									  "Error",
-									  "Could not obtain the list of available GUI composition files:\n\n" +
-									  $"{ex.GetType().Name}: {ex.Message}",
-									  "Dismiss"))
+			.HandleExceptionsWith(ex => {
+				logger.LogError(ex, "An exception was thrown while loading all available GUI files");
+				return Dialogs.Alert(
+					"Error",
+					"Could not obtain the list of available GUI composition files:\n\n" +
+					$"{ex.GetType().Name}: {ex.Message}",
+					"Dismiss");
+			})
 			.WhereNotNull()
 			.Subscribe(file => OpenedFilePath = file);
 
@@ -47,6 +55,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 
 		LoadGuiFileCommand
 			.HandleExceptions(exceptions => exceptions.ObserveOn(MainThreadScheduler).Subscribe(ex => {
+				logger.LogError(ex, "An exception was thrown while loading \"{FilePath}\"", OpenedFilePath);
 				OpenFileException = ex;
 				OpenedFilePath = null;
 			}))
@@ -63,11 +72,14 @@ public partial class GuiEditorViewModel : ViewModelBase
 			.ToProperty(this, m => m.IsSaving, out this._isSavingHelper);
 
 		SaveFileCommand
-			.HandleExceptionsWith(ex => Dialogs.Alert(
-									  "Error",
-									  "An error occurred while saving the GUI composition:\n\n" +
-									  $"{ex.GetType().Name}: {ex.Message}",
-									  "Dismiss"))
+			.HandleExceptionsWith(ex => {
+				logger.LogError(ex, "An exception was thrown while saving \"{FilePath}\"", OpenedFilePath);
+				return Dialogs.Alert(
+					"Error",
+					"An error occurred while saving the GUI composition:\n\n" +
+					$"{ex.GetType().Name}: {ex.Message}",
+					"Dismiss");
+			})
 			.ObserveOn(MainThreadScheduler)
 			.Subscribe();
 

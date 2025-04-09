@@ -160,7 +160,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 	private void AttachSubscriptions()
 	{
 		this.disposables?.Dispose();
-		this.disposables = new CompositeDisposable();
+		this.disposables = [];
 
 		this.spriteSheetManager.SpriteLoaded
 			.ObserveOn(RxApp.MainThreadScheduler)

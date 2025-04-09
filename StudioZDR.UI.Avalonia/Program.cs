@@ -35,7 +35,7 @@ internal class Program
 				.MinimumLevel.Information()
 #endif
 				.Enrich.FromLogContext()
-				.WriteTo.File(logPath)
+				.WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
 				.CreateLogger();
 
 			logging.AddConsole();
