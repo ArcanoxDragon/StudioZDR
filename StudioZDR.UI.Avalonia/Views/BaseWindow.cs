@@ -1,4 +1,5 @@
-﻿using System.Reactive.Disposables;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reactive.Disposables;
 using ReactiveUI;
 using StudioZDR.App.Framework;
 using StudioZDR.App.ViewModels;
@@ -6,7 +7,10 @@ using StudioZDR.UI.Avalonia.Framework;
 
 namespace StudioZDR.UI.Avalonia.Views;
 
-public class BaseWindow<TViewModel> : ReactiveWindow<TViewModel>
+public class BaseWindow<
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+	TViewModel
+> : ReactiveWindow<TViewModel>
 where TViewModel : ViewModelBase
 {
 	private ILifetimeScope? lifetimeScope;

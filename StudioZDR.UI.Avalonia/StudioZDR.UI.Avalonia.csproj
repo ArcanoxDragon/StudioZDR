@@ -3,17 +3,26 @@
 		<TargetFramework>$(MainTargetFramework)</TargetFramework>
 		<AssemblyName>StudioZDR</AssemblyName>
 		<OutputType>WinExe</OutputType>
-		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 		<LangVersion>preview</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
+	<!-- Trimming-related properties -->
+	<PropertyGroup>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimMode>full</TrimMode>
+		<InvariantGlobalization>true</InvariantGlobalization>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
 		<PublishSingleFile>true</PublishSingleFile>
-		<PublishTrimmed>true</PublishTrimmed>
-		<TrimMode>partial</TrimMode>
 		<SelfContained>true</SelfContained>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<TrimmerRootAssembly Include="StudioZDR" />
+		<TrimmerRootAssembly Include="StudioZDR.App" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="StudioZDR.Tests" />
