@@ -1,12 +1,16 @@
 ﻿using System.Collections.ObjectModel;
+using System.Reactive;
+using System.Reactive.Subjects;
 using MercuryEngine.Data.Types.DreadTypes;
 using ReactiveUI.SourceGenerators;
 using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.App.Features.GuiEditor.ViewModels;
 
-public partial class GuiCompositionNodeViewModel : ViewModelBase
+public sealed partial class GuiCompositionNodeViewModel : ViewModelBase, IDisposable
 {
+	private readonly Subject<Unit> displayObjectChanges = new();
+
 	public GuiCompositionNodeViewModel()
 	{
 		this._name = "<no name>";
@@ -14,21 +18,23 @@ public partial class GuiCompositionNodeViewModel : ViewModelBase
 		this._isVisible = true;
 		this._children = [];
 
-		this.WhenAnyValue(m => m.DisplayObject, o => o?.ID ?? "<no name>")
-			.ToProperty(this, m => m.Name, out this._nameHelper);
+		this.WhenAnyValue(m => m.DisplayObject, GetObjectName)
+			.Subscribe(name => Name = name);
 
-		this.WhenAnyValue(m => m.DisplayObject, (GUI__CDisplayObject? o) => o?.TypeName ?? "Unknown Type")
-			.ToProperty(this, m => m.TypeName, out this._typeNameHelper);
+		this.WhenAnyValue(m => m.DisplayObject, GetObjectTypeName)
+			.Subscribe(typeName => TypeName = typeName);
 	}
 
 	[Reactive]
 	public partial GUI__CDisplayObject? DisplayObject { get; set; }
 
-	[ObservableAsProperty]
-	public partial string Name { get; }
+	public IObservable<Unit> DisplayObjectChanges => this.displayObjectChanges;
 
-	[ObservableAsProperty]
-	public partial string TypeName { get; }
+	[Reactive]
+	public partial string Name { get; private set; }
+
+	[Reactive]
+	public partial string TypeName { get; private set; }
 
 	[Reactive]
 	public partial bool IsVisible { get; set; }
@@ -45,6 +51,25 @@ public partial class GuiCompositionNodeViewModel : ViewModelBase
 			IsVisible = !IsVisible;
 	}
 
+	public void NotifyOfDisplayObjectChange(string? propertyName = null)
+	{
+		this.displayObjectChanges.OnNext(Unit.Default);
+
+		// Make it look like the DisplayObject property changed too (for view binding purposes)
+		this.RaisePropertyChanged(nameof(DisplayObject));
+
+		if (propertyName is nameof(GUI__CDisplayObject.ID))
+			Name = GetObjectName(DisplayObject);
+	}
+
+	public void Dispose()
+	{
+		this.displayObjectChanges.Dispose();
+
+		foreach (var child in Children)
+			child.Dispose();
+	}
+
 	private void SetVisibleWithChildren(bool visible)
 	{
 		IsVisible = visible;
@@ -52,4 +77,10 @@ public partial class GuiCompositionNodeViewModel : ViewModelBase
 		foreach (var child in Children)
 			child.SetVisibleWithChildren(visible);
 	}
+
+	private static string GetObjectTypeName(GUI__CDisplayObject? o)
+		=> o?.TypeName ?? "Unknown Type";
+
+	private static string GetObjectName(GUI__CDisplayObject? o)
+		=> o?.ID ?? "<no name>";
 }

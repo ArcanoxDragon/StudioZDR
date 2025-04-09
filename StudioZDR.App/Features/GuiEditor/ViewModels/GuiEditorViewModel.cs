@@ -56,7 +56,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 		CanSaveFile = Observable.Return(this.settings.IsOutputLocationValid)
 			.CombineLatest(
 				this.WhenAnyValue(m => m.OpenedGuiFile),
-				(outputValid, openedFile) => outputValid && openedFile != null);
+				(outputValid, openedFile) => outputValid && openedFile != null)
+			.ObserveOn(MainThreadScheduler);
 
 		SaveFileCommand.IsExecuting
 			.ToProperty(this, m => m.IsSaving, out this._isSavingHelper);
@@ -188,6 +189,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 
 		if (string.IsNullOrEmpty(guiFilePath) || !this.settings.IsRomFsLocationValid)
 			return null;
+
+		await TaskPoolScheduler.Yield(cancellationToken);
 
 		if (this.settings.IsOutputLocationValid)
 		{

@@ -1,39 +1,101 @@
-<reactiveUi:ReactiveUserControl xmlns="https://github.com/avaloniaui"
-								xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-								xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-								xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-								xmlns:reactiveUi="http://reactiveui.net"
-								xmlns:viewModels="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels;assembly=StudioZDR.App"
-								xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-								xmlns:views="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views"
-								mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
-								x:TypeArguments="viewModels:DreadGuiCompositionViewModel"
-								x:DataType="viewModels:DreadGuiCompositionViewModel"
-								x:CompileBindings="True"
-								x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.GuiCompositionEditor">
+<reactiveUi:ReactiveUserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:reactiveUi="http://reactiveui.net"
+	xmlns:viewModels="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels;assembly=StudioZDR.App"
+	xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+	xmlns:views="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views"
+	xmlns:dataTemplates="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.DataTemplates"
+	mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="700"
+	x:TypeArguments="viewModels:DreadGuiCompositionViewModel"
+	x:DataType="viewModels:DreadGuiCompositionViewModel"
+	x:CompileBindings="True"
+	x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.GuiCompositionEditor"
+	Name="EditorView">
 
-	<Grid RowDefinitions="*,Auto"
-		  ColumnDefinitions="80,*,80">
-		<views:GuiCompositionCanvas Grid.ColumnSpan="3" ViewModel="{Binding}" />
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition />
+			<ColumnDefinition Width="6" />
+			<ColumnDefinition Width="400" MinWidth="300" />
+		</Grid.ColumnDefinitions>
 
-		<Label Grid.Row="1" Grid.Column="0"
-			   HorizontalAlignment="Center"
-			   VerticalAlignment="Center"
-			   Target="ZoomSlider"
-			   Content="{Binding ZoomFactor, StringFormat='{}{0:P0}', FallbackValue='100%'}" />
+		<Grid RowDefinitions="*,Auto"
+			  ColumnDefinitions="80,*,80">
+			<views:GuiCompositionCanvas Grid.ColumnSpan="3" ViewModel="{Binding}" />
 
-		<Slider Grid.Row="1" Grid.Column="1"
-				x:Name="ZoomSlider"
-				Value="{Binding ZoomLevel}"
-				Minimum="{x:Static views:GuiCompositionCanvas.MinimumZoomLevel}"
-				Maximum="{x:Static views:GuiCompositionCanvas.MaximumZoomLevel}" />
+			<Label Grid.Row="1" Grid.Column="0"
+				   HorizontalAlignment="Center"
+				   VerticalAlignment="Center"
+				   Target="ZoomSlider"
+				   Content="{Binding ZoomFactor, StringFormat='{}{0:P0}', FallbackValue='100%'}" />
 
-		<Button Grid.Row="1" Grid.Column="2"
-				HorizontalAlignment="Center"
-				Command="{Binding ResetZoomAndPanCommand}"
-				ToolTip.Tip="Reset Zoom">
-			<avalonia:MaterialIcon Kind="MagnifyExpand" />
-		</Button>
+			<Slider Grid.Row="1" Grid.Column="1"
+					x:Name="ZoomSlider"
+					Value="{Binding ZoomLevel}"
+					Minimum="{x:Static views:GuiCompositionCanvas.MinimumZoomLevel}"
+					Maximum="{x:Static views:GuiCompositionCanvas.MaximumZoomLevel}" />
+
+			<Button Grid.Row="1" Grid.Column="2"
+					HorizontalAlignment="Center"
+					Command="{Binding ResetZoomAndPanCommand}"
+					ToolTip.Tip="Reset Zoom">
+				<avalonia:MaterialIcon Kind="MagnifyExpand" />
+			</Button>
+		</Grid>
+
+		<GridSplitter Grid.Column="1"
+					  ResizeBehavior="PreviousAndNext"
+					  ResizeDirection="Columns" />
+
+		<Grid Grid.Column="2">
+			<Grid.RowDefinitions>
+				<RowDefinition MinHeight="200" />
+				<RowDefinition Height="6" />
+				<RowDefinition MinHeight="200" />
+			</Grid.RowDefinitions>
+
+			<TreeView Grid.Row="0"
+					  ItemsSource="{Binding Hierarchy.Children}"
+					  SelectedItems="{Binding SelectedNodes}"
+					  SelectionMode="Multiple"
+					  PointerMoved="TreeView_OnPointerMoved"
+					  PointerExited="TreeView_OnPointerExited">
+				<TreeView.ItemTemplate>
+					<TreeDataTemplate ItemsSource="{Binding Children}">
+						<!-- Transparent background on Grid allows it to detect pointer events, e.g. for double clicking -->
+						<Grid ColumnDefinitions="*,60"
+							  Background="Transparent">
+							<StackPanel Spacing="4">
+								<TextBlock Text="{Binding Name}" />
+								<TextBlock Text="{Binding TypeName}"
+										   FontSize="10"
+										   Foreground="{DynamicResource TextFillColorSecondary}" />
+							</StackPanel>
+
+							<Button Grid.Column="1"
+									HorizontalAlignment="Center"
+									VerticalAlignment="Center"
+									Click="ToggleVisible_OnClick">
+								<avalonia:MaterialIcon Kind="{Binding IsVisible, Converter={x:Static views:GuiCompositionEditor.IsVisibleIconConverter}}" />
+							</Button>
+						</Grid>
+					</TreeDataTemplate>
+				</TreeView.ItemTemplate>
+			</TreeView>
+
+			<GridSplitter Grid.Row="1"
+						  ResizeBehavior="PreviousAndNext"
+						  ResizeDirection="Rows" />
+
+			<ContentControl Grid.Row="2"
+							Content="{Binding SelectedNodes}">
+				<ContentControl.ContentTemplate>
+					<dataTemplates:DisplayObjectPropertiesTemplate />
+				</ContentControl.ContentTemplate>
+			</ContentControl>
+		</Grid>
 	</Grid>
-
 </reactiveUi:ReactiveUserControl>

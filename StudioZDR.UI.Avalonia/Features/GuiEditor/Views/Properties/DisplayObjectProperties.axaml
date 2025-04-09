@@ -1,0 +1,32 @@
+<ContentControl xmlns="https://github.com/avaloniaui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+				xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+				mc:Ignorable="d"
+				d:DesignWidth="600" d:DesignHeight="400"
+				x:CompileBindings="True"
+				x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties.DisplayObjectProperties"
+				Name="Control">
+	<Grid ColumnDefinitions="Auto,*"
+		  RowDefinitions="Auto,Auto"
+		  Classes="ControlGrid"
+		  IsEnabled="{Binding #Control.ViewModel.CanEdit}">
+		<Label Target="IdTextBox">
+			ID:
+		</Label>
+
+		<TextBox Grid.Row="0" Grid.Column="1"
+				 x:Name="IdTextBox"
+				 Text="{Binding #Control.ViewModel.Id}"
+				 Watermark="{Binding #Control.ViewModel.IdWatermark}" />
+
+		<Label Grid.Row="1" Grid.Column="0"
+			   Target="VisibleCheckBox">
+			Visible:
+		</Label>
+
+		<CheckBox Grid.Row="1" Grid.Column="1"
+				  x:Name="VisibleCheckBox"
+				  IsChecked="{Binding #Control.ViewModel.IsVisible}" />
+	</Grid>
+</ContentControl>

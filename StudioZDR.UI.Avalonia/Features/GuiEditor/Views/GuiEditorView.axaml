@@ -4,7 +4,6 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels;assembly=StudioZDR.App"
 			 xmlns:framework="clr-namespace:StudioZDR.UI.Avalonia.Framework"
-			 xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 			 xmlns:views="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views"
 			 mc:Ignorable="d" d:DesignWidth="1600" d:DesignHeight="800"
 			 x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.GuiEditorView"
@@ -27,18 +26,11 @@
 			</MenuItem>
 		</Menu>
 
-		<Grid>
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition />
-				<ColumnDefinition Width="6" />
-				<ColumnDefinition Width="400" MinWidth="300" />
-			</Grid.ColumnDefinitions>
-
+		<Panel>
 			<views:GuiCompositionEditor DataContext="{Binding GuiCompositionViewModel}"
 										Margin="10" />
 
-			<TextBlock Grid.Column="0"
-					   HorizontalAlignment="Center"
+			<TextBlock HorizontalAlignment="Center"
 					   VerticalAlignment="Center"
 					   IsVisible="{Binding OpenFileException, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}"
 					   Foreground="{DynamicResource SystemFillColorCriticalBrush}">
@@ -47,8 +39,7 @@
 				<Run Text="{Binding OpenFileException.Message, FallbackValue=''}" />
 			</TextBlock>
 
-			<Panel Grid.Column="0"
-				   Background="#55000000">
+			<Panel Background="#55000000">
 				<Panel.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.Or}" FallbackValue="{x:False}">
 						<Binding Path="IsLoading" />
@@ -68,52 +59,6 @@
 					<ProgressBar IsIndeterminate="True" />
 				</StackPanel>
 			</Panel>
-
-			<GridSplitter Grid.Column="1"
-						  ResizeBehavior="PreviousAndNext"
-						  ResizeDirection="Columns" />
-
-			<Grid Grid.Column="2">
-				<Grid.RowDefinitions>
-					<RowDefinition MinHeight="200" />
-					<RowDefinition Height="6" />
-					<RowDefinition MinHeight="200" />
-				</Grid.RowDefinitions>
-
-				<TreeView Grid.Row="0"
-						  ItemsSource="{Binding GuiCompositionViewModel.Hierarchy.Children}"
-						  SelectedItems="{Binding GuiCompositionViewModel.SelectedNodes}"
-						  SelectionMode="Multiple"
-						  PointerMoved="TreeView_OnPointerMoved"
-						  PointerExited="TreeView_OnPointerExited">
-					<TreeView.ItemTemplate>
-						<TreeDataTemplate ItemsSource="{Binding Children}">
-							<!-- Transparent background on Grid allows it to detect pointer events, e.g. for double clicking -->
-							<Grid ColumnDefinitions="*,60"
-								  Background="Transparent">
-								<StackPanel Spacing="4">
-									<TextBlock Text="{Binding Name}" />
-									<TextBlock Text="{Binding TypeName}"
-											   FontSize="10"
-											   Foreground="{DynamicResource TextFillColorSecondary}" />
-								</StackPanel>
-
-								<Button Grid.Column="1"
-										HorizontalAlignment="Center"
-										VerticalAlignment="Center"
-										Command="{Binding ToggleVisibleCommand}"
-										CommandParameter="{Binding #View.IsShiftPressed}">
-									<avalonia:MaterialIcon Kind="{Binding IsVisible, Converter={x:Static views:GuiEditorView.IsVisibleIconConverter}}" />
-								</Button>
-							</Grid>
-						</TreeDataTemplate>
-					</TreeView.ItemTemplate>
-				</TreeView>
-
-				<GridSplitter Grid.Row="1"
-							  ResizeBehavior="PreviousAndNext"
-							  ResizeDirection="Rows" />
-			</Grid>
-		</Grid>
+		</Panel>
 	</DockPanel>
 </UserControl>

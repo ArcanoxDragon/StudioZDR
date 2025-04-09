@@ -49,7 +49,7 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 				}
 
 				this.hierarchyDisposables = new CompositeDisposable();
-				Hierarchy = BuildHierarchy(root, this.hierarchyDisposables);
+				Hierarchy = BuildHierarchy(root, this.hierarchyDisposables).DisposeWith(this.hierarchyDisposables);
 			});
 
 		this.WhenAnyValue(m => m.HoveredNode, n => n?.DisplayObject)
@@ -128,6 +128,7 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 
 			node.WhenAnyValue(n => n.IsVisible)
 				.Select(_ => Unit.Default)
+				.Merge(node.DisplayObjectChanges)
 				.Subscribe(this.renderInvalidated)
 				.DisposeWith(disposables);
 
