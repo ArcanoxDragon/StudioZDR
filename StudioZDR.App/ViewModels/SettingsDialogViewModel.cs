@@ -23,10 +23,14 @@ public partial class SettingsDialogViewModel : ViewModelBase
 		this.fileBrowser = fileBrowser;
 
 		RomFsLocation = settings.Value.RomFsLocation ?? string.Empty;
+		OutputLocation = settings.Value.OutputLocation ?? string.Empty;
 	}
 
 	[Reactive]
 	public partial string RomFsLocation { get; set; }
+
+	[Reactive]
+	public partial string OutputLocation { get; set; }
 
 	[ReactiveCommand]
 	private async Task BrowseForRomFsAsync()
@@ -63,10 +67,28 @@ public partial class SettingsDialogViewModel : ViewModelBase
 	}
 
 	[ReactiveCommand]
+	private async Task BrowseForOutputAsync()
+	{
+		var romFsFolder = await this.fileBrowser.OpenFolderAsync("Choose Output Folder");
+
+		if (romFsFolder is null)
+			return;
+
+		if (!Directory.Exists(romFsFolder))
+		{
+			await Dialogs.AlertAsync("Invalid Output Folder", "The folder you selected does not exist.");
+			return;
+		}
+
+		OutputLocation = romFsFolder;
+	}
+
+	[ReactiveCommand]
 	private async Task SaveAsync()
 	{
 		await this.settingsManager.ModifyAsync(settings => {
 			settings.RomFsLocation = RomFsLocation;
+			settings.OutputLocation = OutputLocation;
 		});
 		this.windowContext.Close();
 	}
