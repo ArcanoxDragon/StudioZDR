@@ -59,4 +59,30 @@ public class AvaloniaDialogs(Func<WindowContext?> windowContextAccessor) : IDial
 			return await dialog.ShowDialog<bool>(ParentWindow);
 		});
 	}
+
+	public IObservable<T?> Choose<T>(string title, string message, IEnumerable<T> items, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
+	where T : class
+		=> Observable.FromAsync(() => ChooseAsync(title, message, items, positiveText, negativeText, positiveButtonAccent));
+
+	public async Task<T?> ChooseAsync<T>(string title, string message, IEnumerable<T> items, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
+	where T : class
+	{
+		return await Dispatcher.UIThread.InvokeAsync(async () => {
+			var dialog = new ListBoxDialog {
+				Title = title,
+				Message = message,
+				ItemsSource = items,
+				PositiveButtonAccent = positiveButtonAccent,
+			};
+
+			if (positiveText != null)
+				dialog.PositiveText = positiveText;
+			if (negativeText != null)
+				dialog.NegativeText = negativeText;
+
+			object? result = await dialog.ShowDialog<object?>(ParentWindow);
+
+			return result as T;
+		});
+	}
 }

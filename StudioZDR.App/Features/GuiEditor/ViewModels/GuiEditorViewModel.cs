@@ -1,4 +1,5 @@
-﻿using System.Reactive.Disposables;
+﻿using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using MercuryEngine.Data.Formats;
 using Microsoft.Extensions.Options;
@@ -17,11 +18,19 @@ public partial class GuiEditorViewModel : ViewModelBase
 
 	public GuiEditorViewModel(IWindowContext windowContext, IOptionsSnapshot<ApplicationSettings> settings)
 	{
-		this._availableGuiFiles = [];
 		this.windowContext = windowContext;
 		this.settings = settings.Value;
 
-		this.WhenAnyValue(m => m.SelectedGuiFile)
+		OpenFileCommand
+			.HandleExceptionsWith(ex => Dialogs.Alert(
+									  "Error",
+									  "Could not obtain the list of available GUI composition files:\n\n" +
+									  $"{ex.GetType().Name}: {ex.Message}",
+									  "Dismiss"))
+			.WhereNotNull()
+			.Subscribe(file => OpenedFilePath = file);
+
+		this.WhenAnyValue(m => m.OpenedFilePath)
 			.ObserveOn(TaskPoolScheduler)
 			.InvokeCommand(LoadGuiFileCommand!);
 
@@ -37,14 +46,41 @@ public partial class GuiEditorViewModel : ViewModelBase
 			.ToProperty(this, m => m.IsLoading, out this._isLoadingHelper);
 
 		LoadGuiFileCommand
-			.HandleExceptions(exceptions => exceptions.ObserveOn(MainThreadScheduler).Subscribe(ex => OpenFileException = ex))
+			.HandleExceptions(exceptions => exceptions.ObserveOn(MainThreadScheduler).Subscribe(ex => {
+				OpenFileException = ex;
+				OpenedFilePath = null;
+			}))
 			.ObserveOn(MainThreadScheduler)
 			.Subscribe(file => OpenedGuiFile = file);
 
+		CanSaveFile = Observable.Return(this.settings.IsOutputLocationValid)
+			.CombineLatest(
+				this.WhenAnyValue(m => m.OpenedGuiFile),
+				(outputValid, openedFile) => outputValid && openedFile != null);
+
+		SaveFileCommand.IsExecuting
+			.ToProperty(this, m => m.IsSaving, out this._isSavingHelper);
+
+		SaveFileCommand
+			.HandleExceptionsWith(ex => Dialogs.Alert(
+									  "Error",
+									  "An error occurred while saving the GUI composition:\n\n" +
+									  $"{ex.GetType().Name}: {ex.Message}",
+									  "Dismiss"))
+			.ObserveOn(MainThreadScheduler)
+			.Subscribe();
+
 		this.WhenActivated(disposables => {
-			Observable.StartAsync(() => Task.Run(GetAvailableGuiFilesAsync), MainThreadScheduler)
-				.Subscribe(files => AvailableGuiFiles = files)
-				.DisposeWith(disposables);
+			if (!this.settings.IsOutputLocationValid)
+			{
+				Dialogs.Alert(
+						"Saving Disabled",
+						"Warning: You have not set an Output Path in the application settings. In order to protect " +
+						"your original RomFS files from accidental modification, you will not be able to save any " +
+						"changes made in the editor without first setting an Output Path.")
+					.Subscribe()
+					.DisposeWith(disposables);
+			}
 
 			Disposable.Create(() => {
 				GuiCompositionViewModel?.Dispose();
@@ -54,10 +90,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 	}
 
 	[Reactive]
-	public partial List<string> AvailableGuiFiles { get; set; }
-
-	[Reactive]
-	public partial string? SelectedGuiFile { get; set; }
+	public partial string? OpenedFilePath { get; set; }
 
 	[Reactive]
 	public partial Bmscp? OpenedGuiFile { get; set; }
@@ -68,12 +101,60 @@ public partial class GuiEditorViewModel : ViewModelBase
 	[ObservableAsProperty]
 	public partial bool IsLoading { get; }
 
+	[ObservableAsProperty]
+	public partial bool IsSaving { get; }
+
 	[Reactive]
 	public partial Exception? OpenFileException { get; set; }
+
+	private IObservable<bool> CanSaveFile { get; }
 
 	[ReactiveCommand]
 	private void Close()
 		=> this.windowContext.Close();
+
+	[ReactiveCommand]
+	private async Task<string?> OpenFileAsync()
+	{
+		// TODO: Dirty check
+
+		var guiFiles = await GetAvailableGuiFilesAsync();
+		var result = await Dialogs.ChooseAsync(
+			"Open GUI Composition",
+			"Choose a GUI composition file to open:",
+			guiFiles,
+			positiveText: "Open"
+		);
+
+		if (result is null)
+			return null;
+
+		var guiScriptsPath = Path.Join(this.settings.RomFsLocation, "gui", "scripts");
+
+		return Path.Join(guiScriptsPath, result);
+	}
+
+	[ReactiveCommand(CanExecute = nameof(CanSaveFile))]
+	private async Task SaveFileAsync()
+	{
+		if (!this.settings.IsRomFsLocationValid || !this.settings.IsOutputLocationValid)
+			// Just in case
+			return;
+		if (OpenedFilePath is not { } openedFilePath || OpenedGuiFile is not { } bmscp)
+			return;
+
+		await TaskPoolScheduler.Yield();
+
+		var relativeRomFsLocation = Path.GetRelativePath(this.settings.RomFsLocation, openedFilePath);
+		var outputFilePath = Path.Join(this.settings.OutputLocation, relativeRomFsLocation);
+		var outputFileDirectory = Path.GetDirectoryName(outputFilePath)!;
+
+		Directory.CreateDirectory(outputFileDirectory);
+
+		await using var fileStream = File.Open(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+
+		await bmscp.WriteAsync(fileStream);
+	}
 
 	private async Task<List<string>> GetAvailableGuiFilesAsync()
 	{
@@ -100,16 +181,24 @@ public partial class GuiEditorViewModel : ViewModelBase
 	}
 
 	[ReactiveCommand(OutputScheduler = nameof(TaskPoolScheduler))]
-	private async Task<Bmscp?> LoadGuiFileAsync(string? file, CancellationToken cancellationToken)
+	private async Task<Bmscp?> LoadGuiFileAsync(string? guiFilePath, CancellationToken cancellationToken)
 	{
 		OpenedGuiFile = null;
 		OpenFileException = null;
 
-		if (string.IsNullOrEmpty(file))
+		if (string.IsNullOrEmpty(guiFilePath) || !this.settings.IsRomFsLocationValid)
 			return null;
 
-		var guiScriptsPath = Path.Join(this.settings.RomFsLocation, "gui", "scripts");
-		var guiFilePath = Path.Join(guiScriptsPath, file);
+		if (this.settings.IsOutputLocationValid)
+		{
+			var relativeRomFsLocation = Path.GetRelativePath(this.settings.RomFsLocation, guiFilePath);
+			var matchingOutputPath = Path.Join(this.settings.OutputLocation, relativeRomFsLocation);
+
+			if (File.Exists(matchingOutputPath))
+				// Read from the modified version instead!
+				guiFilePath = matchingOutputPath;
+		}
+
 		await using var fileStream = File.Open(guiFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
 		return await Bmscp.FromAsync(fileStream, cancellationToken);

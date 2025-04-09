@@ -12,94 +12,108 @@
 			 x:CompileBindings="True"
 			 Name="View"
 			 framework:FeatureView.PreferredSize="1600, 900">
+	<UserControl.KeyBindings>
+		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
+		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFileCommand}" />
+	</UserControl.KeyBindings>
+
 	<DockPanel>
 		<Menu DockPanel.Dock="Top" HorizontalAlignment="Left">
 			<MenuItem Header="_File">
+				<MenuItem Header="_Open..." InputGesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
+				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFileCommand}" />
+				<Separator />
 				<MenuItem Header="_Close" Command="{Binding CloseCommand}" />
 			</MenuItem>
 		</Menu>
 
 		<Grid>
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="300" MinWidth="200" />
-				<ColumnDefinition Width="4" />
 				<ColumnDefinition />
-				<ColumnDefinition Width="4" />
-				<ColumnDefinition Width="300" MinWidth="300" />
+				<ColumnDefinition Width="6" />
+				<ColumnDefinition Width="400" MinWidth="300" />
 			</Grid.ColumnDefinitions>
 
-			<ListBox ItemsSource="{Binding AvailableGuiFiles}"
-					 SelectedItem="{Binding SelectedGuiFile}">
-				<ListBox.Styles>
-					<Style Selector="ListBoxItem">
-						<Setter Property="MinHeight" Value="30" />
-					</Style>
-				</ListBox.Styles>
-			</ListBox>
-
-			<GridSplitter Grid.Column="1"
-						  ResizeBehavior="PreviousAndNext"
-						  ResizeDirection="Columns" />
-
-			<views:GuiCompositionEditor Grid.Column="2"
-										DataContext="{Binding GuiCompositionViewModel}"
+			<views:GuiCompositionEditor DataContext="{Binding GuiCompositionViewModel}"
 										Margin="10" />
 
-			<TextBlock Grid.Column="2"
+			<TextBlock Grid.Column="0"
 					   HorizontalAlignment="Center"
 					   VerticalAlignment="Center"
-					   IsVisible="{Binding OpenFileException, Converter={x:Static ObjectConverters.IsNotNull}}"
+					   IsVisible="{Binding OpenFileException, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}"
 					   Foreground="{DynamicResource SystemFillColorCriticalBrush}">
-				<Run>Error loading</Run>
-				<Run Text="{Binding SelectedGuiFile, StringFormat='&quot;{0}&quot;:', Mode=OneWay}" />
+				<Run>Error loading file:</Run>
 				<LineBreak />
 				<Run Text="{Binding OpenFileException.Message, FallbackValue=''}" />
 			</TextBlock>
 
-			<Panel Grid.Column="2"
-				   IsVisible="{Binding IsLoading}"
+			<Panel Grid.Column="0"
 				   Background="#55000000">
+				<Panel.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.Or}" FallbackValue="{x:False}">
+						<Binding Path="IsLoading" />
+						<Binding Path="IsSaving" />
+					</MultiBinding>
+				</Panel.IsVisible>
+
 				<StackPanel Margin="50" Spacing="10" VerticalAlignment="Center">
-					<TextBlock TextAlignment="Center">
+					<TextBlock TextAlignment="Center" IsVisible="{Binding IsLoading}">
 						Loading...
+					</TextBlock>
+
+					<TextBlock TextAlignment="Center" IsVisible="{Binding IsSaving}">
+						Saving...
 					</TextBlock>
 
 					<ProgressBar IsIndeterminate="True" />
 				</StackPanel>
 			</Panel>
 
-			<GridSplitter Grid.Column="3"
+			<GridSplitter Grid.Column="1"
 						  ResizeBehavior="PreviousAndNext"
 						  ResizeDirection="Columns" />
 
-			<TreeView Grid.Column="4"
-					  ItemsSource="{Binding GuiCompositionViewModel.Hierarchy.Children}"
-					  SelectedItem="{Binding GuiCompositionViewModel.SelectedNode}"
-					  PointerMoved="TreeView_OnPointerMoved"
-					  PointerExited="TreeView_OnPointerExited">
-				<TreeView.ItemTemplate>
-					<TreeDataTemplate ItemsSource="{Binding Children}">
-						<!-- Transparent background on Grid allows it to detect pointer events, e.g. for double clicking -->
-						<Grid ColumnDefinitions="*,60"
-							  Background="Transparent">
-							<StackPanel Spacing="4">
-								<TextBlock Text="{Binding Name}" />
-								<TextBlock Text="{Binding TypeName}"
-										   FontSize="10"
-										   Foreground="{DynamicResource TextFillColorSecondary}" />
-							</StackPanel>
+			<Grid Grid.Column="2">
+				<Grid.RowDefinitions>
+					<RowDefinition MinHeight="200" />
+					<RowDefinition Height="6" />
+					<RowDefinition MinHeight="200" />
+				</Grid.RowDefinitions>
 
-							<Button Grid.Column="1"
-									HorizontalAlignment="Center"
-									VerticalAlignment="Center"
-									Command="{Binding ToggleVisibleCommand}"
-									CommandParameter="{Binding #View.IsShiftPressed}">
-								<avalonia:MaterialIcon Kind="{Binding IsVisible, Converter={x:Static views:GuiEditorView.IsVisibleIconConverter}}" />
-							</Button>
-						</Grid>
-					</TreeDataTemplate>
-				</TreeView.ItemTemplate>
-			</TreeView>
+				<TreeView Grid.Row="0"
+						  ItemsSource="{Binding GuiCompositionViewModel.Hierarchy.Children}"
+						  SelectedItems="{Binding GuiCompositionViewModel.SelectedNodes}"
+						  SelectionMode="Multiple"
+						  PointerMoved="TreeView_OnPointerMoved"
+						  PointerExited="TreeView_OnPointerExited">
+					<TreeView.ItemTemplate>
+						<TreeDataTemplate ItemsSource="{Binding Children}">
+							<!-- Transparent background on Grid allows it to detect pointer events, e.g. for double clicking -->
+							<Grid ColumnDefinitions="*,60"
+								  Background="Transparent">
+								<StackPanel Spacing="4">
+									<TextBlock Text="{Binding Name}" />
+									<TextBlock Text="{Binding TypeName}"
+											   FontSize="10"
+											   Foreground="{DynamicResource TextFillColorSecondary}" />
+								</StackPanel>
+
+								<Button Grid.Column="1"
+										HorizontalAlignment="Center"
+										VerticalAlignment="Center"
+										Command="{Binding ToggleVisibleCommand}"
+										CommandParameter="{Binding #View.IsShiftPressed}">
+									<avalonia:MaterialIcon Kind="{Binding IsVisible, Converter={x:Static views:GuiEditorView.IsVisibleIconConverter}}" />
+								</Button>
+							</Grid>
+						</TreeDataTemplate>
+					</TreeView.ItemTemplate>
+				</TreeView>
+
+				<GridSplitter Grid.Row="1"
+							  ResizeBehavior="PreviousAndNext"
+							  ResizeDirection="Rows" />
+			</Grid>
 		</Grid>
 	</DockPanel>
 </UserControl>

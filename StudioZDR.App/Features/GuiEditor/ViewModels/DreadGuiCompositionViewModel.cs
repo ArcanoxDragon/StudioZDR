@@ -1,7 +1,9 @@
-﻿using System.Reactive;
+﻿using System.Collections.ObjectModel;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using DynamicData.Binding;
 using MercuryEngine.Data.Types.DreadTypes;
 using ReactiveUI.SourceGenerators;
 using StudioZDR.App.ViewModels;
@@ -53,8 +55,19 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 		this.WhenAnyValue(m => m.HoveredNode, n => n?.DisplayObject)
 			.ToProperty(this, m => m.HoveredObject, out this._hoveredObjectHelper);
 
-		this.WhenAnyValue(m => m.SelectedNode, n => n?.DisplayObject)
-			.ToProperty(this, m => m.SelectedObject, out this._selectedObjectHelper);
+		this.WhenActivated(disposables => {
+			SelectedNodes
+				.ToObservableChangeSet()
+				.Select(_ => SelectedNodes.Select(n => n.DisplayObject).ToList())
+				.ToProperty(this, m => m.SelectedObjects, out this._selectedObjectsHelper)
+				.DisposeWith(disposables);
+
+			SelectedNodes
+				.ToObservableChangeSet()
+				.Select(_ => Unit.Default)
+				.Subscribe(this.renderInvalidated)
+				.DisposeWith(disposables);
+		});
 	}
 
 	public GUI__CDisplayObjectContainer? RootContainer { get; }
@@ -79,11 +92,10 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 	[ObservableAsProperty]
 	public partial GUI__CDisplayObject? HoveredObject { get; }
 
-	[Reactive]
-	public partial GuiCompositionNodeViewModel? SelectedNode { get; set; }
+	public ObservableCollection<GuiCompositionNodeViewModel> SelectedNodes { get; } = [];
 
-	[ObservableAsProperty]
-	public partial GUI__CDisplayObject? SelectedObject { get; }
+	[ObservableAsProperty(ReadOnly = false)]
+	public partial IReadOnlyList<GUI__CDisplayObject?>? SelectedObjects { get; }
 
 	[ReactiveCommand]
 	public void ResetZoomAndPan()

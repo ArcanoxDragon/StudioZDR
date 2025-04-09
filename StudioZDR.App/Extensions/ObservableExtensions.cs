@@ -1,4 +1,5 @@
-﻿using System.Reactive.Linq;
+﻿using System.Reactive;
+using System.Reactive.Linq;
 
 namespace StudioZDR.App.Extensions;
 
@@ -9,4 +10,7 @@ internal static class ObservableExtensions
 			() => subscribeToExceptions(command.ThrownExceptions),
 			_ => command.Catch(Observable.Empty<TResult>())
 		);
+
+	public static IObservable<TResult> HandleExceptionsWith<TParam, TResult>(this IReactiveCommand<TParam, TResult> command, Func<Exception, IObservable<Unit>> onException)
+		=> command.HandleExceptions(exceptions => exceptions.WhereNotNull().SelectMany(onException).Subscribe());
 }

@@ -167,7 +167,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 			.Subscribe(_ => InvalidateVisual())
 			.DisposeWith(this.disposables);
 
-		ViewModel?.WhenAnyValue(m => m.ZoomFactor, m => m.PanOffset, m => m.HoveredNode, m => m.SelectedNode)
+		ViewModel?.WhenAnyValue(m => m.ZoomFactor, m => m.PanOffset, m => m.HoveredNode, m => m.SelectedNodes)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => InvalidateVisual())
 			.DisposeWith(this.disposables);
