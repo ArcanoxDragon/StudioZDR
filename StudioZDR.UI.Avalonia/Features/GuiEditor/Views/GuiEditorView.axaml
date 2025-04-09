@@ -12,7 +12,7 @@
 			 x:DataType="vm:GuiEditorViewModel"
 			 x:CompileBindings="True"
 			 Name="View"
-			 framework:FeatureView.PreferredSize="1600, 1200">
+			 framework:FeatureView.PreferredSize="1600, 900">
 	<DockPanel>
 		<Menu DockPanel.Dock="Top" HorizontalAlignment="Left">
 			<MenuItem Header="_File">

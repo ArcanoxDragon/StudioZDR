@@ -1,6 +1,7 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Controls;
+using Avalonia.LogicalTree;
 using ReactiveUI;
 using StudioZDR.App.Features;
 using StudioZDR.App.ViewModels;
@@ -26,11 +27,10 @@ namespace StudioZDR.UI.Avalonia.Views
 
 			// Center the window in the screen any time the size is automatically changed
 			this.WhenAnyValue(w => w.Bounds)
+				.Delay(TimeSpan.FromMilliseconds(10))
 				.Subscribe(_ => {
-					if (this.centerAfterBoundsChange)
+					if (Interlocked.Exchange(ref this.centerAfterBoundsChange, false))
 						this.CenterInScreen();
-
-					this.centerAfterBoundsChange = false;
 				});
 
 			this.WhenActivated(disposables => {
@@ -52,9 +52,7 @@ namespace StudioZDR.UI.Avalonia.Views
 
 		private void OnFeatureChanged()
 		{
-			this.centerAfterBoundsChange = true;
-
-			foreach (var logicalChild in LogicalChildren)
+			foreach (var logicalChild in this.GetLogicalDescendants())
 			{
 				if (logicalChild is not UserControl userControl)
 					continue;
@@ -63,7 +61,10 @@ namespace StudioZDR.UI.Avalonia.Views
 				{
 					var preferredSize = userControl.GetValue(FeatureView.PreferredSizeProperty);
 
-					Bounds = new Rect(Bounds.Position, preferredSize);
+					this.centerAfterBoundsChange = true;
+					Width = preferredSize.Width;
+					Height = preferredSize.Height;
+					break;
 				}
 			}
 		}

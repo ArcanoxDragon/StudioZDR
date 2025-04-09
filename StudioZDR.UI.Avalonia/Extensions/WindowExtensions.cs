@@ -6,7 +6,7 @@ internal static class WindowExtensions
 {
 	public static void CenterInScreen(this Window window)
 	{
-		var primaryScreen = window.Screens.Primary;
+		var primaryScreen = window.Screens.ScreenFromWindow(window);
 
 		if (primaryScreen is null)
 			return;

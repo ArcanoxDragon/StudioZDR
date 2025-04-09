@@ -9,7 +9,7 @@
 			 x:DataType="vm:SaveEditorViewModel"
 			 x:CompileBindings="True"
 			 Name="View"
-			 framework:FeatureView.PreferredSize="1000, 960">
+			 framework:FeatureView.PreferredSize="1400, 960">
 	<UserControl.KeyBindings>
 		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
 		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFileCommand}">

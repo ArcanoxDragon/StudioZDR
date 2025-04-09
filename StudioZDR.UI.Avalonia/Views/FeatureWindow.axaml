@@ -10,7 +10,7 @@
 		x:CompileBindings="True"
 		Classes="Immersive"
 		Title="{Binding WindowTitle}"
-		WindowStartupLocation="CenterScreen"
+		WindowStartupLocation="CenterOwner"
 		Width="1280"
 		Height="800">
 
