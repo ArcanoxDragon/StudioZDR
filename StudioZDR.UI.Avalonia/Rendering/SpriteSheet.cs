@@ -96,14 +96,6 @@ internal class SpriteSheet : IDisposable
 			using (var canvas = new SKCanvas(spriteBitmap))
 				canvas.DrawBitmap(spriteSheetTexture, sourceRect, destRect);
 
-			var spriteDebugFilename = Path.Join(Directory.GetCurrentDirectory(), "Sprites", Name, $"{spriteHolder.Name}.png");
-			var spriteDebugPath = Path.GetDirectoryName(spriteDebugFilename)!;
-
-			Directory.CreateDirectory(spriteDebugPath);
-
-			await using (var fileStream = File.Open(spriteDebugFilename, FileMode.Create, FileAccess.Write))
-				spriteBitmap.Encode(fileStream, SKEncodedImageFormat.Png, 100);
-
 			spriteHolder.Bitmap = spriteBitmap;
 			SpriteLoaded?.Invoke(this, spriteHolder.Name);
 		}
