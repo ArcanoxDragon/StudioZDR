@@ -16,7 +16,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 	private const int RenderPassOverlay = 1;
 	private const int RenderPassCount   = 2;
 
-	private static readonly SKColor HoverBorderColor    = new(0, 255, 255, 64);
+	private static readonly SKColor HoverBorderColor    = new(255, 0, 255, 64);
 	private static readonly SKColor SelectedBorderColor = new(0, 255, 255);
 
 	private static readonly SKColor ContainerBorderColor = new(255, 0, 0);
@@ -105,9 +105,9 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 			{
 				context.Paint.Color = new SKColor(255, 255, 255);
 
-				if (ReferenceEquals(obj, ViewModel?.SelectedObject))
+				if (ViewModel?.SelectedObjects is { } selectedObjects && selectedObjects.Contains(obj))
 					RenderDisplayObjectBounds(context, objBounds, SelectedBorderColor);
-				else if (ReferenceEquals(obj, ViewModel?.HoveredObject))
+				if (ReferenceEquals(obj, ViewModel?.HoveredObject))
 					RenderDisplayObjectBounds(context, objBounds, HoverBorderColor);
 			}
 

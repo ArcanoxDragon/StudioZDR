@@ -12,7 +12,7 @@ using StudioZDR.UI.Avalonia.Rendering;
 using StudioZDR.UI.Avalonia.Rendering.DreadGui;
 using StudioZDR.UI.Avalonia.Utility;
 
-namespace StudioZDR.UI.Avalonia.Views.Controls;
+namespace StudioZDR.UI.Avalonia.Features.GuiEditor.Views;
 
 internal partial class GuiCompositionCanvas : ContentControl
 {

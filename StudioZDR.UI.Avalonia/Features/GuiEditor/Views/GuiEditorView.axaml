@@ -4,7 +4,6 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels;assembly=StudioZDR.App"
 			 xmlns:framework="clr-namespace:StudioZDR.UI.Avalonia.Framework"
-			 xmlns:controls="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
 			 xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 			 xmlns:views="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views"
 			 mc:Ignorable="d" d:DesignWidth="1600" d:DesignHeight="800"
@@ -42,9 +41,9 @@
 						  ResizeBehavior="PreviousAndNext"
 						  ResizeDirection="Columns" />
 
-			<controls:GuiCompositionEditor Grid.Column="2"
-										   DataContext="{Binding GuiCompositionViewModel}"
-										   Margin="10" />
+			<views:GuiCompositionEditor Grid.Column="2"
+										DataContext="{Binding GuiCompositionViewModel}"
+										Margin="10" />
 
 			<TextBlock Grid.Column="2"
 					   HorizontalAlignment="Center"

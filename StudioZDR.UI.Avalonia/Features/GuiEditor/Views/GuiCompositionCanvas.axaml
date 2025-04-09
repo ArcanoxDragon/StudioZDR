@@ -4,6 +4,6 @@
 				xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 				mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="200"
 				x:CompileBindings="True"
-				x:Class="StudioZDR.UI.Avalonia.Views.Controls.GuiCompositionCanvas">
+				x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.GuiCompositionCanvas">
 
 </ContentControl>
