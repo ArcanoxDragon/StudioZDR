@@ -20,6 +20,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<TrimmerRootAssembly Include="ReactiveUI" />
 		<TrimmerRootAssembly Include="StudioZDR" />
 		<TrimmerRootAssembly Include="StudioZDR.App" />
 	</ItemGroup>

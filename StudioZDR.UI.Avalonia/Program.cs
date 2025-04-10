@@ -21,6 +21,10 @@ internal class Program
 		=> BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
 
 	// Avalonia configuration, don't remove; also used by visual designer.
+	[System.Diagnostics.CodeAnalysis.SuppressMessage(
+		"Trimming",
+		"IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+		Justification = "ReactiveUI assembly is a TrimmerRootAssembly, and thus its types will be preserved")]
 	public static AppBuilder BuildAvaloniaApp()
 	{
 		// Set up .NET DI container

@@ -5,12 +5,16 @@ using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
-using Avalonia.Threading;
 using ReactiveUI;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 using StudioZDR.UI.Avalonia.Rendering;
 using StudioZDR.UI.Avalonia.Rendering.DreadGui;
+
+#if DEBUG
+// For hot reload
+using Avalonia.Threading;
 using StudioZDR.UI.Avalonia.Utility;
+#endif
 
 namespace StudioZDR.UI.Avalonia.Features.GuiEditor.Views;
 
@@ -157,6 +161,10 @@ internal partial class GuiCompositionCanvas : ContentControl
 		context.Custom(this.drawOperation);
 	}
 
+	[System.Diagnostics.CodeAnalysis.SuppressMessage(
+		"Trimming", 
+		"IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", 
+		Justification = "All assemblies that are reflected are included as TrimmerRootAssembly, so all necessary type metadata will be preserved")]
 	private void AttachSubscriptions()
 	{
 		this.disposables?.Dispose();
