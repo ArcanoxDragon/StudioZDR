@@ -91,7 +91,8 @@
 						  ResizeDirection="Rows" />
 
 			<ContentControl Grid.Row="2"
-							Content="{Binding SelectedNodes}">
+							Content="{Binding SelectedNodes}"
+							Margin="4">
 				<ContentControl.ContentTemplate>
 					<dataTemplates:DisplayObjectPropertiesTemplate />
 				</ContentControl.ContentTemplate>

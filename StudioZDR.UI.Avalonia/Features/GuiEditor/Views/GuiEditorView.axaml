@@ -26,39 +26,48 @@
 			</MenuItem>
 		</Menu>
 
-		<Panel>
-			<views:GuiCompositionEditor DataContext="{Binding GuiCompositionViewModel}"
-										Margin="10" />
+		<Border Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
+				BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+				BorderThickness="1"
+				Margin="6"
+				CornerRadius="8">
+			<!-- Borders and rounded ClipToBounds don't work nicely, hence the need for nested borders here -->
+			<Border CornerRadius="8" ClipToBounds="True">
 
-			<TextBlock HorizontalAlignment="Center"
-					   VerticalAlignment="Center"
-					   IsVisible="{Binding OpenFileException, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}"
-					   Foreground="{DynamicResource SystemFillColorCriticalBrush}">
-				<Run>Error loading file:</Run>
-				<LineBreak />
-				<Run Text="{Binding OpenFileException.Message, FallbackValue=''}" />
-			</TextBlock>
+				<Panel>
+					<views:GuiCompositionEditor DataContext="{Binding GuiCompositionViewModel}" />
 
-			<Panel Background="#55000000">
-				<Panel.IsVisible>
-					<MultiBinding Converter="{x:Static BoolConverters.Or}" FallbackValue="{x:False}">
-						<Binding Path="IsLoading" />
-						<Binding Path="IsSaving" />
-					</MultiBinding>
-				</Panel.IsVisible>
-
-				<StackPanel Margin="50" Spacing="10" VerticalAlignment="Center">
-					<TextBlock TextAlignment="Center" IsVisible="{Binding IsLoading}">
-						Loading...
+					<TextBlock HorizontalAlignment="Center"
+							   VerticalAlignment="Center"
+							   IsVisible="{Binding OpenFileException, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}"
+							   Foreground="{DynamicResource SystemFillColorCriticalBrush}">
+						<Run>Error loading file:</Run>
+						<LineBreak />
+						<Run Text="{Binding OpenFileException.Message, FallbackValue=''}" />
 					</TextBlock>
 
-					<TextBlock TextAlignment="Center" IsVisible="{Binding IsSaving}">
-						Saving...
-					</TextBlock>
+					<Panel Background="#55000000">
+						<Panel.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.Or}" FallbackValue="{x:False}">
+								<Binding Path="IsLoading" />
+								<Binding Path="IsSaving" />
+							</MultiBinding>
+						</Panel.IsVisible>
 
-					<ProgressBar IsIndeterminate="True" />
-				</StackPanel>
-			</Panel>
-		</Panel>
+						<StackPanel Margin="50" Spacing="10" VerticalAlignment="Center">
+							<TextBlock TextAlignment="Center" IsVisible="{Binding IsLoading}">
+								Loading...
+							</TextBlock>
+
+							<TextBlock TextAlignment="Center" IsVisible="{Binding IsSaving}">
+								Saving...
+							</TextBlock>
+
+							<ProgressBar IsIndeterminate="True" />
+						</StackPanel>
+					</Panel>
+				</Panel>
+			</Border>
+		</Border>
 	</DockPanel>
 </UserControl>
