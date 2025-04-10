@@ -40,24 +40,26 @@
 
 	<Style Selector="Window.Acrylic">
 		<Setter Property="Background">
-			<SolidColorBrush Color="{DynamicResource ApplicationPageBackgroundTheme}" Opacity="0.75" />
+			<SolidColorBrush Color="{DynamicResource SolidBackgroundFillColorBase}" Opacity="0.85" />
 		</Setter>
+		<Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
 		<Setter Property="TransparencyLevelHint" Value="Mica, AcrylicBlur" />
 		<Setter Property="Template">
 			<ControlTemplate>
 				<Panel>
-					<ExperimentalAcrylicBorder CornerRadius="{TemplateBinding CornerRadius}">
+					<Border Name="PART_TransparencyFallback"
+							CornerRadius="6"
+							IsHitTestVisible="False" />
+					<Border Background="{TemplateBinding Background}"
+							CornerRadius="6"
+							IsHitTestVisible="False" />
+					
+					<ExperimentalAcrylicBorder CornerRadius="6">
 						<ExperimentalAcrylicBorder.Material>
-							<ExperimentalAcrylicMaterial TintColor="{DynamicResource ApplicationPageBackgroundTheme}"
-														 FallbackColor="{DynamicResource ApplicationPageBackgroundTheme}"
-														 TintOpacity="0.75"
-														 BackgroundSource="Digger"
-														 MaterialOpacity="0.35" />
+							<ExperimentalAcrylicMaterial />
 						</ExperimentalAcrylicBorder.Material>
 					</ExperimentalAcrylicBorder>
 
-					<Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
-					<Border Background="{TemplateBinding Background}" IsHitTestVisible="False" />
 					<Panel Background="Transparent" Margin="{TemplateBinding WindowDecorationMargin}" />
 
 					<VisualLayerManager>
@@ -74,6 +76,10 @@
 				</Panel>
 			</ControlTemplate>
 		</Setter>
+
+		<Style Selector="^ CaptionButtons Button#PART_CloseButton ContentPresenter#PART_ContentPresenter">
+			<Setter Property="CornerRadius" Value="0,6,0,0" />
+		</Style>
 	</Style>
 
 	<Style Selector="Window[IsActive=True] /template/ Border:nth-child(2)">

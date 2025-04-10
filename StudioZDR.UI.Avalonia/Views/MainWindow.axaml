@@ -21,6 +21,10 @@
 			<Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBackgroundBrush}" />
 			<Setter Property="BorderThickness" Value="2" />
 		</Style>
+
+		<Style Selector="CaptionButtons Button#PART_RestoreButton">
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
 	</Window.Styles>
 
 	<Grid>

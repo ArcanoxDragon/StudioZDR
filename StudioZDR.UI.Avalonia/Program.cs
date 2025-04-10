@@ -60,6 +60,9 @@ internal class Program
 			.UsePlatformDetect()
 			.LogToTrace() // TODO: LogToDelegate into ILogger once Avalonia updates
 			.UseReactiveUI()
+			.With(new Win32PlatformOptions {
+				WinUICompositionBackdropCornerRadius = 8,
+			})
 			.AfterPlatformServicesSetup(_ => {
 				App.Container = builder.Build();
 
