@@ -1,12 +1,10 @@
 <Application xmlns="https://github.com/avaloniaui"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-			 xmlns:avicons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 			 xmlns:fa="clr-namespace:FluentAvalonia.Styling;assembly=FluentAvalonia"
 			 x:Class="StudioZDR.UI.Avalonia.App"
 			 RequestedThemeVariant="Dark">
 	<Application.Styles>
 		<fa:FluentAvaloniaTheme PreferSystemTheme="False" PreferUserAccentColor="True" />
-		<avicons:MaterialIconStyles />
 		<StyleInclude Source="/Styles/AppStyles.axaml" />
 	</Application.Styles>
 

@@ -3,7 +3,7 @@
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:vm="clr-namespace:StudioZDR.App.ViewModels;assembly=StudioZDR.App"
-		xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+		xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
 		mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
 		x:Class="StudioZDR.UI.Avalonia.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
@@ -55,7 +55,8 @@
 								<StackPanel Orientation="Horizontal"
 											Spacing="10"
 											HorizontalAlignment="Center">
-									<avalonia:MaterialIcon Kind="{Binding IconKind}" Width="24" Height="24" />
+
+									<i:Icon Value="{Binding IconKey}" Width="24" Height="24" />
 									<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
 								</StackPanel>
 
@@ -79,7 +80,7 @@
 			<Button HorizontalAlignment="Right"
 					Command="{Binding #Window.OpenSettingsCommand}"
 					ToolTip.Tip="Settings">
-				<avalonia:MaterialIcon Kind="Settings" Width="20" Height="20" />
+				<i:Icon Value="fa-solid fa-gear" Width="20" Height="20" />
 			</Button>
 		</StackPanel>
 	</Grid>

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Material.Icons;
 using Microsoft.Extensions.Options;
 using StudioZDR.App.Configuration;
 using StudioZDR.App.ViewModels;
@@ -17,7 +16,7 @@ public abstract class FeatureModule : Module, IFeature, INotifyPropertyChanged
 	public abstract Type   ViewModelType { get; }
 	public abstract int    DisplayOrder  { get; }
 
-	public virtual MaterialIconKind IconKind => MaterialIconKind.ToyBrick;
+	public virtual string IconKey => "fa-solid fa-block";
 
 	public virtual bool IsAvailable => !RequiresRomFs || HasValidRomFs;
 

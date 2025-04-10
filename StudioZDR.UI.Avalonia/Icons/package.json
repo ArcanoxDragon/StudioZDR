@@ -1,0 +1,7 @@
+{
+  "name": "studio-zdr-icons",
+  "packageManager": "yarn@4.9.0",
+  "dependencies": {
+    "@awesome.me/kit-716363f27b": "^1.0.8"
+  }
+}

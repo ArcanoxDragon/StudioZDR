@@ -1,5 +1,4 @@
 ﻿using JetBrains.Annotations;
-using Material.Icons;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 
 namespace StudioZDR.App.Features.GuiEditor;
@@ -11,7 +10,7 @@ internal class GuiEditorFeature : FeatureModule<GuiEditorViewModel>
 	public override string Description  => "Edit Metroid Dread GUI composition and skin files (BMSCP and BMSSK files)";
 	public override int    DisplayOrder => 2;
 
-	public override MaterialIconKind IconKind => MaterialIconKind.Design;
+	public override string IconKey => "fa-solid fa-rectangles-mixed";
 
 	protected override bool RequiresRomFs => true;
 }

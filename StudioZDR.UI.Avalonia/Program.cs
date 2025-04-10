@@ -2,12 +2,14 @@
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Projektanker.Icons.Avalonia;
 using ReactiveUI;
 using Serilog;
 using Splat.Autofac;
 using StudioZDR.App.Extensions;
 using StudioZDR.App.Utility;
 using StudioZDR.UI.Avalonia.Framework;
+using StudioZDR.UI.Avalonia.Icons;
 
 namespace StudioZDR.UI.Avalonia;
 
@@ -55,6 +57,9 @@ internal class Program
 		builder.Populate(serviceCollection);
 		builder.UseStudioZdrApp();
 		builder.RegisterModule<AvaloniaModule>();
+
+		IconProvider.Current
+			.Register(new FontAwesomeKitIconProvider());
 
 		return AppBuilder.Configure<App>()
 			.UsePlatformDetect()

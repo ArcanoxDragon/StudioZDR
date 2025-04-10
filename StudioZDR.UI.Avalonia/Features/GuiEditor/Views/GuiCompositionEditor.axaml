@@ -5,9 +5,9 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:reactiveUi="http://reactiveui.net"
 	xmlns:viewModels="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels;assembly=StudioZDR.App"
-	xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:views="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views"
 	xmlns:dataTemplates="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.DataTemplates"
+	xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
 	mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="700"
 	x:TypeArguments="viewModels:DreadGuiCompositionViewModel"
 	x:DataType="viewModels:DreadGuiCompositionViewModel"
@@ -42,7 +42,7 @@
 					HorizontalAlignment="Center"
 					Command="{Binding ResetZoomAndPanCommand}"
 					ToolTip.Tip="Reset Zoom">
-				<avalonia:MaterialIcon Kind="MagnifyExpand" />
+				<i:Icon Value="fa-solid-expand-magnifying-glass" />
 			</Button>
 		</Grid>
 
@@ -79,7 +79,7 @@
 									HorizontalAlignment="Center"
 									VerticalAlignment="Center"
 									Click="ToggleVisible_OnClick">
-								<avalonia:MaterialIcon Kind="{Binding IsVisible, Converter={x:Static views:GuiCompositionEditor.IsVisibleIconConverter}}" />
+								<i:Icon Value="{Binding IsVisible, Converter={x:Static views:GuiCompositionEditor.IsVisibleIconConverter}}" />
 							</Button>
 						</Grid>
 					</TreeDataTemplate>

@@ -1,5 +1,4 @@
 ﻿using JetBrains.Annotations;
-using Material.Icons;
 using StudioZDR.App.Features.SaveEditor.ViewModels;
 
 namespace StudioZDR.App.Features.SaveEditor;
@@ -11,5 +10,5 @@ public class SaveEditorFeature : FeatureModule<SaveEditorViewModel>
 	public override string Description  => "Edit Metroid Dread profile/save files (BMSSV files)";
 	public override int    DisplayOrder => 1;
 
-	public override MaterialIconKind IconKind => MaterialIconKind.ContentSaveEdit;
+	public override string IconKey => "fa-solid fa-floppy-disk-pen";
 }

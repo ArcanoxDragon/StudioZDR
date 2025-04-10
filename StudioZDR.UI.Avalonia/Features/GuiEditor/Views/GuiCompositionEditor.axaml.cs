@@ -3,15 +3,14 @@ using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-using Material.Icons;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 
 namespace StudioZDR.UI.Avalonia.Features.GuiEditor.Views;
 
 internal partial class GuiCompositionEditor : ReactiveUserControl<DreadGuiCompositionViewModel>
 {
-	public static readonly FuncValueConverter<bool, MaterialIconKind> IsVisibleIconConverter
-		= new(isVisible => isVisible ? MaterialIconKind.Eye : MaterialIconKind.EyeClosed);
+	public static readonly FuncValueConverter<bool, string> IsVisibleIconConverter
+		= new(isVisible => isVisible ? "fa-solid fa-eye" : "fa-solid fa-eye-slash");
 
 	public static readonly DirectProperty<GuiCompositionEditor, bool> IsShiftPressedProperty
 		= AvaloniaProperty.RegisterDirect<GuiCompositionEditor, bool>(nameof(IsShiftPressed), view => view.IsShiftPressed);
