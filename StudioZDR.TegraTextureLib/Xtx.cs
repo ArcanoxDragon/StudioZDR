@@ -1,10 +1,10 @@
 ﻿using System.Text;
 using Overby.Extensions.AsyncBinaryReaderWriter;
-using StudioZDR.UI.Avalonia.Extensions;
+using StudioZDR.TegraTextureLib.Extensions;
 
-namespace StudioZDR.UI.Avalonia.Graphics.TegraTextures;
+namespace StudioZDR.TegraTextureLib;
 
-internal class Xtx : BaseDataFormat
+public class Xtx : BaseDataFormat
 {
 	private const string Signature = "DFvN";
 
@@ -23,7 +23,7 @@ internal class Xtx : BaseDataFormat
 
 		var signature = await reader.ReadBytesAsync(4, cancellationToken).ConfigureAwait(false);
 
-		if (Encoding.ASCII.GetString(signature) != Signature)
+		if (Encoding.ASCII.GetString((byte[]) signature) != Signature)
 			throw new IOException("Signature mismatch: not a valid XTX file");
 
 		HeaderSize = await reader.ReadUInt32Async(cancellationToken).ConfigureAwait(false);
@@ -82,7 +82,7 @@ internal class Xtx : BaseDataFormat
 
 			var signature = await reader.ReadBytesAsync(4, cancellationToken).ConfigureAwait(false);
 
-			if (Encoding.ASCII.GetString(signature) != Signature)
+			if (Encoding.ASCII.GetString((byte[]) signature) != Signature)
 				throw new IOException("Signature mismatch: not a valid XTX data block");
 
 			BlockSize = await reader.ReadUInt32Async(cancellationToken).ConfigureAwait(false);

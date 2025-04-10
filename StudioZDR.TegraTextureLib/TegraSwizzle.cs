@@ -3,10 +3,10 @@ using JetBrains.Annotations;
 using TegraSwizzle;
 using NativeBlockDim = TegraSwizzle.BlockDim;
 
-namespace StudioZDR.TegraSwizzle;
+namespace StudioZDR.TegraTextureLib;
 
 [PublicAPI]
-public class TegraSwizzleLib
+public class TegraSwizzle
 {
 	public static uint GetBlockHeight(uint heightInBytes)
 		=> NativeMethods.block_height_mip0(heightInBytes);

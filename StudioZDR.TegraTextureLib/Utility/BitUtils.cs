@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace StudioZDR.UI.Avalonia.Utility;
+namespace StudioZDR.TegraTextureLib.Utility;
 
 internal static class BitUtils
 {

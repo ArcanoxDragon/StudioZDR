@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace StudioZDR.UI.Avalonia.Graphics.TegraTextures;
+namespace StudioZDR.TegraTextureLib;
 
 /// <summary>
 /// Contains format tables, for texture and vertex attribute formats.

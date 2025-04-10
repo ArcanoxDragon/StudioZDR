@@ -1,4 +1,4 @@
-﻿namespace StudioZDR.UI.Avalonia.Graphics.TegraTextures;
+﻿namespace StudioZDR.TegraTextureLib;
 
 /// <summary>
 /// Represents texture format information.

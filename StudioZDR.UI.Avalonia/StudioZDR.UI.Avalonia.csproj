@@ -67,6 +67,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\StudioZDR.App\StudioZDR.App.csproj" />
-		<ProjectReference Include="..\StudioZDR.TegraSwizzle\StudioZDR.TegraSwizzle.csproj" />
+		<ProjectReference Include="..\StudioZDR.TegraTextureLib\StudioZDR.TegraTextureLib.csproj" />
 	</ItemGroup>
 </Project>

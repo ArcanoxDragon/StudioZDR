@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace StudioZDR.UI.Avalonia.Utility
+namespace StudioZDR.TegraTextureLib.Utility
 {
 	/// <summary>
 	/// An <see cref="IMemoryOwner{T}"/> implementation with an embedded length and fast <see cref="Span{T}"/>

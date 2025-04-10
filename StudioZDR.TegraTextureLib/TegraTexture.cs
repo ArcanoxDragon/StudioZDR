@@ -1,9 +1,9 @@
 ﻿using SkiaSharp;
-using StudioZDR.UI.Avalonia.Utility;
+using StudioZDR.TegraTextureLib.Utility;
 
-namespace StudioZDR.UI.Avalonia.Graphics.TegraTextures;
+namespace StudioZDR.TegraTextureLib;
 
-internal sealed record TegraTexture(Xtx.TextureInfo Info, byte[] Data)
+public sealed record TegraTexture(Xtx.TextureInfo Info, byte[] Data)
 {
 	public SKBitmap ToBitmap()
 	{

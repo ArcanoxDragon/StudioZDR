@@ -1,4 +1,4 @@
-﻿namespace StudioZDR.UI.Avalonia.Extensions;
+﻿namespace StudioZDR.TegraTextureLib.Extensions;
 
 internal static class StreamExtensions
 {

@@ -32,9 +32,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{2C939D82-DCB1-409A-9712-DA2DED7B246E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioZDR.Tests", "tests\StudioZDR.Tests\StudioZDR.Tests.csproj", "{B67F29C2-0456-4753-A65D-B4E528F22462}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioZDR.TegraTextureLib.Tests", "tests\StudioZDR.TegraTextureLib.Tests\StudioZDR.TegraTextureLib.Tests.csproj", "{B67F29C2-0456-4753-A65D-B4E528F22462}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioZDR.TegraSwizzle", "StudioZDR.TegraSwizzle\StudioZDR.TegraSwizzle.csproj", "{54C35FC2-1EEE-4D2E-AE15-E4D0479E5E1A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioZDR.TegraTextureLib", "StudioZDR.TegraTextureLib\StudioZDR.TegraTextureLib.csproj", "{54C35FC2-1EEE-4D2E-AE15-E4D0479E5E1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -2,7 +2,7 @@
 using MercuryEngine.Data.Types.DreadTypes;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
-using StudioZDR.UI.Avalonia.Graphics.TegraTextures;
+using StudioZDR.TegraTextureLib;
 
 namespace StudioZDR.UI.Avalonia.Rendering;
 

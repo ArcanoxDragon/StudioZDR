@@ -3,11 +3,11 @@ using System.Text;
 using MercuryEngine.Data.Core.Extensions;
 using MercuryEngine.Data.Core.Utility;
 using Overby.Extensions.AsyncBinaryReaderWriter;
-using StudioZDR.UI.Avalonia.Extensions;
+using StudioZDR.TegraTextureLib.Extensions;
 
-namespace StudioZDR.UI.Avalonia.Graphics.TegraTextures;
+namespace StudioZDR.TegraTextureLib;
 
-internal class Bctex : BaseDataFormat
+public class Bctex : BaseDataFormat
 {
 	private const string Signature = "MTXT";
 
@@ -38,7 +38,7 @@ internal class Bctex : BaseDataFormat
 	{
 		var signature = await reader.ReadBytesAsync(4, cancellationToken).ConfigureAwait(false);
 
-		if (Encoding.ASCII.GetString(signature) != Signature)
+		if (Encoding.ASCII.GetString((byte[]) signature) != Signature)
 			throw new IOException("Signature mismatch: not a valid BCTEX/MTXT file");
 
 		HeaderFlags = await reader.ReadUInt32Async(cancellationToken).ConfigureAwait(false);

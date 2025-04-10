@@ -2,9 +2,9 @@ using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
-using StudioZDR.UI.Avalonia.Utility;
+using StudioZDR.TegraTextureLib.Utility;
 
-namespace StudioZDR.UI.Avalonia.Graphics.TegraTextures;
+namespace StudioZDR.TegraTextureLib;
 
 public static class BCnDecoder
 {

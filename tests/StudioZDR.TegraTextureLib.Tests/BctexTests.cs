@@ -1,9 +1,8 @@
 ﻿using SkiaSharp;
-using StudioZDR.UI.Avalonia.Extensions;
-using StudioZDR.UI.Avalonia.Graphics.TegraTextures;
+using StudioZDR.TegraTextureLib.Extensions;
 using BaseMedTestFixture = MercuryEngine.Data.Tests.Infrastructure.BaseTestFixture;
 
-namespace StudioZDR.Tests;
+namespace StudioZDR.TegraTextureLib.Tests;
 
 public class BctexTests : BaseMedTestFixture
 {
@@ -13,7 +12,7 @@ public class BctexTests : BaseMedTestFixture
 			yield return new TestCaseData(testCase.Arguments[0], RomFsPath) { TestName = testCase.TestName };
 	}
 
-	[TestCaseSource(nameof(GetTestFiles)), Parallelizable]
+	[TestCaseSource(nameof(BctexTests.GetTestFiles)), Parallelizable]
 	public async Task TestLoadBctexAsync(string inFile, string relativeTo)
 	{
 		TestContext.Progress.WriteLine("Loading BCTEX file: {0}", inFile);
@@ -25,7 +24,7 @@ public class BctexTests : BaseMedTestFixture
 		{
 			await bctex.ReadAsync(fileStream);
 
-			await ConvertAndSaveTexturesAsync(bctex, inFile, relativeTo);
+			await BctexTests.ConvertAndSaveTexturesAsync(bctex, inFile, relativeTo);
 		}
 		catch (Exception ex)
 		{

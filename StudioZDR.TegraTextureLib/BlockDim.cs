@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using JetBrains.Annotations;
 
-namespace StudioZDR.TegraSwizzle;
+namespace StudioZDR.TegraTextureLib;
 
 [PublicAPI]
 [StructLayout(LayoutKind.Sequential)]

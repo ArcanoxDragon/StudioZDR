@@ -18,7 +18,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\MercuryEngine.Data\test\MercuryEngine.Data.Tests\MercuryEngine.Data.Tests.csproj" />
-		<ProjectReference Include="..\..\StudioZDR.UI.Avalonia\StudioZDR.UI.Avalonia.csproj" />
+		<ProjectReference Include="..\..\StudioZDR.TegraTextureLib\StudioZDR.TegraTextureLib.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
