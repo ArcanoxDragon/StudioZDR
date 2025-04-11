@@ -28,6 +28,9 @@ public sealed partial class GuiCompositionNodeViewModel : ViewModelBase, IDispos
 	[Reactive]
 	public partial GUI__CDisplayObject? DisplayObject { get; set; }
 
+	[Reactive]
+	public partial GuiCompositionNodeViewModel? Parent { get; set; }
+
 	public IObservable<Unit> DisplayObjectChanges => this.displayObjectChanges;
 
 	[Reactive]

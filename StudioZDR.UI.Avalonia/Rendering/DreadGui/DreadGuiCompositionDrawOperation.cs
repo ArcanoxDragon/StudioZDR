@@ -116,24 +116,11 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 				foreach (var childNode in node.Children)
 					RenderDisplayObjectNode(context, childNode, objBounds, renderPass);
 			}
-
-			// if (!string.IsNullOrEmpty(obj.ID) && obj is GUI__CDisplayObjectContainer)
-			// {
-			// 	var textWidth = context.Paint.MeasureText(obj.ID);
-			// 	var textX = objBounds.X + objBounds.Width * 0.5 - textWidth * 0.5;
-			// 	var textY = obj switch {
-			// 		// GUI__CDisplayObjectContainer => objBounds.Y + context.Paint.TextSize + 2,
-			// 		_ => objBounds.Y + objBounds.Height + context.Paint.TextSize + 2,
-			// 	};
-			//
-			// 	RenderText(context, obj.ID, textX, textY);
-			// }
 		}
 	}
 
 	private void RenderSprite(DreadGuiDrawContext context, GUI__CSprite sprite, Rect parentBounds)
 	{
-		// TODO: Visible toggle
 		var spriteRect = GetDisplayObjectRect(sprite, parentBounds);
 		var spriteTintColor = new SKColor(
 			(byte) ( 255 * ( sprite.ColorR ?? 1.0f ) ),
@@ -141,8 +128,6 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 			(byte) ( 255 * ( sprite.ColorB ?? 1.0f ) ),
 			(byte) ( 255 * ( sprite.ColorA ?? 1.0f ) )
 		);
-
-		// RenderDisplayObjectBounds(context, sprite, spriteRect, SpriteBorderColor);
 
 		using (context.Canvas.WithSavedState())
 		{

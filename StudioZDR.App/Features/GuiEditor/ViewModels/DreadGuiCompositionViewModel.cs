@@ -116,14 +116,17 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 
 		return CreateNode(rootContainer);
 
-		GuiCompositionNodeViewModel CreateNode(GUI__CDisplayObject displayObject)
+		GuiCompositionNodeViewModel CreateNode(GUI__CDisplayObject displayObject, GuiCompositionNodeViewModel? parent = null)
 		{
-			GuiCompositionNodeViewModel node = new() { DisplayObject = displayObject };
+			GuiCompositionNodeViewModel node = new() {
+				DisplayObject = displayObject,
+				Parent = parent,
+			};
 
 			if (displayObject is GUI__CDisplayObjectContainer container)
 			{
 				foreach (var child in container.Children.Where(c => c != null))
-					node.Children.Add(CreateNode(child!));
+					node.Children.Add(CreateNode(child!, node));
 			}
 
 			node.WhenAnyValue(n => n.IsVisible)

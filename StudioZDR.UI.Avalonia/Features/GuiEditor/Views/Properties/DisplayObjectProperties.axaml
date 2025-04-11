@@ -2,20 +2,25 @@
 				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 				xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 				xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+				xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+				xmlns:converters="clr-namespace:StudioZDR.UI.Avalonia.Converters"
+				xmlns:properties="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels.Properties;assembly=StudioZDR.App"
+				xmlns:c="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
 				mc:Ignorable="d"
 				d:DesignWidth="600" d:DesignHeight="400"
 				x:CompileBindings="True"
 				x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties.DisplayObjectProperties"
 				Name="Control">
-	<Grid ColumnDefinitions="Auto,*"
-		  RowDefinitions="Auto,Auto"
+
+	<Grid ColumnDefinitions="Auto,Auto,*"
+		  RowDefinitions="Auto,Auto,Auto,Auto"
 		  Classes="ControlGrid"
 		  IsEnabled="{Binding #Control.ViewModel.CanEdit}">
 		<Label Target="IdTextBox">
 			ID:
 		</Label>
 
-		<TextBox Grid.Row="0" Grid.Column="1"
+		<TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
 				 x:Name="IdTextBox"
 				 Text="{Binding #Control.ViewModel.Id}"
 				 Watermark="{Binding #Control.ViewModel.IdWatermark}" />
@@ -28,5 +33,76 @@
 		<CheckBox Grid.Row="1" Grid.Column="1"
 				  x:Name="VisibleCheckBox"
 				  IsChecked="{Binding #Control.ViewModel.IsVisible}" />
+
+		<TextBlock Grid.Row="1" Grid.Column="2"
+				   Foreground="{DynamicResource TextFillColorTertiary}"
+				   FontSize="11"
+				   TextWrapping="Wrap">
+			This sets whether or not the element is visible in-game by default,
+			and is not related to the editor-only visibility toggle available
+			in the element tree.
+		</TextBlock>
+
+		<Label Grid.Row="2" Grid.Column="0" Target="HorizontalAnchor">
+			X Anchor:
+		</Label>
+
+		<StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+					x:Name="HorizontalAnchor"
+					Orientation="Horizontal"
+					Spacing="4">
+			<c:RadioToggleButton ToolTip.Tip="Left"
+								 IsChecked="{
+									Binding #Control.ViewModel.HorizontalAnchor, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static properties:HorizontalAnchor.Left}}">
+				<i:Icon Value="fa-solid fa-objects-align-left" />
+			</c:RadioToggleButton>
+			<c:RadioToggleButton ToolTip.Tip="Center"
+								 IsChecked="{
+									Binding #Control.ViewModel.HorizontalAnchor, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static properties:HorizontalAnchor.Center}}">
+				<i:Icon Value="fa-solid fa-objects-align-center-horizontal" />
+			</c:RadioToggleButton>
+			<c:RadioToggleButton ToolTip.Tip="Right"
+								 IsChecked="{
+									Binding #Control.ViewModel.HorizontalAnchor, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static properties:HorizontalAnchor.Right}}">
+				<i:Icon Value="fa-solid fa-objects-align-left" />
+			</c:RadioToggleButton>
+		</StackPanel>
+
+		<Label Grid.Row="3" Grid.Column="0" Target="VerticalAnchor">
+			Y Anchor:
+		</Label>
+
+		<StackPanel Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
+					x:Name="VerticalAnchor"
+					Orientation="Horizontal"
+					Spacing="4">
+			<c:RadioToggleButton ToolTip.Tip="Top"
+								 IsChecked="{
+									Binding #Control.ViewModel.VerticalAnchor, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static properties:VerticalAnchor.Top}}">
+				<i:Icon Value="fa-solid fa-objects-align-top" />
+			</c:RadioToggleButton>
+			<c:RadioToggleButton ToolTip.Tip="Center"
+								 IsChecked="{
+									Binding #Control.ViewModel.VerticalAnchor, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static properties:VerticalAnchor.Center}}">
+				<i:Icon Value="fa-solid fa-objects-align-center-vertical" />
+			</c:RadioToggleButton>
+			<c:RadioToggleButton ToolTip.Tip="Bottom"
+								 IsChecked="{
+									Binding #Control.ViewModel.VerticalAnchor, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static properties:VerticalAnchor.Bottom}}">
+				<i:Icon Value="fa-solid fa-objects-align-bottom" />
+			</c:RadioToggleButton>
+		</StackPanel>
 	</Grid>
 </ContentControl>
