@@ -151,7 +151,10 @@ internal partial class GuiCompositionCanvas : ContentControl
 	public override void Render(DrawingContext context)
 	{
 		base.Render(context);
-		context.FillRectangle(Brushes.Black, Bounds);
+
+		var backgroundRect = new Rect(default, Bounds.Size);
+
+		context.FillRectangle(Brushes.Black, backgroundRect);
 
 		if (this.drawOperation is null)
 			return;

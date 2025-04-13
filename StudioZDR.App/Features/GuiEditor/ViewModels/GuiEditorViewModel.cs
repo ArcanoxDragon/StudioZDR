@@ -36,7 +36,12 @@ public partial class GuiEditorViewModel : ViewModelBase
 					"Dismiss");
 			})
 			.WhereNotNull()
-			.Subscribe(file => OpenedFilePath = file);
+			.Subscribe(file => {
+				// When explicitly opening a file, we want to definitively *re-open* it even if it's the same file,
+				// so we will set the property to null first before storing the chosen file.
+				OpenedFilePath = null;
+				OpenedFilePath = file;
+			});
 
 		this.WhenAnyValue(m => m.OpenedFilePath)
 			.ObserveOn(TaskPoolScheduler)

@@ -3,7 +3,7 @@
 		xmlns:controls="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls">
 	<Design.PreviewWith>
 		<Border Padding="20">
-			<StackPanel Orientation="Horizontal" Spacing="10">
+			<StackPanel Classes="ButtonGroup">
 				<controls:RadioToggleButton x:Name="ButtonOne" IsChecked="{Binding !#ButtonTwo.IsChecked}">
 					One
 				</controls:RadioToggleButton>

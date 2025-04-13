@@ -1,5 +1,6 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<StyleInclude Source="/Styles/ButtonGroup.axaml" />
 	<StyleInclude Source="/Styles/Dialog.axaml" />
 	<StyleInclude Source="/Styles/Grid.axaml" />
 	<StyleInclude Source="/Styles/RadioToggleButton.axaml" />

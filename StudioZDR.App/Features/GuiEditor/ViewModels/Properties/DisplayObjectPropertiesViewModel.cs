@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Subjects;
+using System.Reflection;
 using DynamicData.Binding;
 using MercuryEngine.Data.Types.DreadTypes;
 using ReactiveUI.SourceGenerators;
@@ -53,6 +54,18 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 
 		this.WhenAnyValue(m => m.VerticalAnchor)
 			.Subscribe(SetVerticalAnchors);
+
+		this.WhenAnyValue(m => m.PositionX, m => m.PositionY)
+			.Subscribe(SetPosition);
+
+		this.WhenAnyValue(m => m.SizeX)
+			.Subscribe(x => SetAllValues(n => n.SizeX, x));
+
+		this.WhenAnyValue(m => m.SizeY)
+			.Subscribe(y => SetAllValues(n => n.SizeY, y));
+
+		this.WhenAnyValue(m => m.Angle)
+			.Subscribe(angle => SetAllValues(n => n.Angle, angle));
 	}
 
 	public IObservable<Unit> Changes => this.changes;
@@ -87,6 +100,48 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 
 	[Reactive]
 	public partial VerticalAnchor? VerticalAnchor { get; set; }
+
+	#endregion
+
+	#region Position
+
+	[Reactive]
+	public partial float? PositionX { get; set; }
+
+	[Reactive]
+	public partial string? PositionXWatermark { get; set; }
+
+	[Reactive]
+	public partial float? PositionY { get; set; }
+
+	[Reactive]
+	public partial string? PositionYWatermark { get; set; }
+
+	#endregion
+
+	#region Size
+
+	[Reactive]
+	public partial float? SizeX { get; set; }
+
+	[Reactive]
+	public partial string? SizeXWatermark { get; set; }
+
+	[Reactive]
+	public partial float? SizeY { get; set; }
+
+	[Reactive]
+	public partial string? SizeYWatermark { get; set; }
+
+	#endregion
+
+	#region Angle
+
+	[Reactive]
+	public partial float? Angle { get; set; }
+
+	[Reactive]
+	public partial string? AngleWatermark { get; set; }
 
 	#endregion
 
@@ -128,6 +183,7 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 		}
 
 		this.changes.OnNext(Unit.Default);
+		AggregateAndRefreshValues(); // Because position may have changed
 	}
 
 	private void SetVerticalAnchors(VerticalAnchor? anchor)
@@ -162,6 +218,47 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 		}
 
 		this.changes.OnNext(Unit.Default);
+		AggregateAndRefreshValues(); // Because position may have changed
+	}
+
+	private void SetPosition((float? X, float? Y) position)
+	{
+		if (this.refreshing > 0) // Do NOT set properties on models while we're freshing FROM the models!
+			return;
+		if (Nodes is null or [])
+			return;
+
+		var (x, y) = position;
+		var didChange = false;
+		using var delayedNotifications = new CompositeDisposable();
+
+		foreach (var node in Nodes)
+		{
+			if (node.DisplayObject is not { } obj)
+				continue;
+
+			node.DelayChangeNotifications().DisposeWith(delayedNotifications);
+
+			obj.X = obj.LeftX = obj.CenterX = obj.RightX = null;
+			obj.Y = obj.TopY = obj.CenterY = obj.BottomY = null;
+
+			Expression<Func<GUI__CDisplayObject, float?>> xPropertyExpression = obj.GetHorizontalAnchor() switch {
+				Properties.HorizontalAnchor.Right  => o => o.RightX,
+				Properties.HorizontalAnchor.Center => o => o.CenterX,
+				_                                  => o => o.X,
+			};
+			Expression<Func<GUI__CDisplayObject, float?>> yPropertyExpression = obj.GetVerticalAnchor() switch {
+				Properties.VerticalAnchor.Bottom => o => o.BottomY,
+				Properties.VerticalAnchor.Center => o => o.CenterY,
+				_                                => o => o.Y,
+			};
+
+			didChange |= SetValue(node, xPropertyExpression, x);
+			didChange |= SetValue(node, yPropertyExpression, y);
+		}
+
+		if (didChange)
+			this.changes.OnNext(Unit.Default);
 	}
 
 	// TODO: Consolidate this with the similar method in DreadGuiCompositionDrawOperation somehow
@@ -236,23 +333,35 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 		var didChange = false;
 
 		foreach (var node in Nodes)
-		{
-			if (node.DisplayObject is not { } obj)
-				continue;
-
-			var currentValue = property.GetValue(obj);
-			var newValue = getValue(obj);
-
-			if (!Equals(currentValue, newValue))
-			{
-				property.SetValue(obj, newValue);
-				node.NotifyOfDisplayObjectChange(property.Name);
-				didChange = true;
-			}
-		}
+			didChange |= SetValue(node, property, getValue);
 
 		if (didChange)
 			this.changes.OnNext(Unit.Default);
+	}
+
+	private bool SetValue<T>(GuiCompositionNodeViewModel node, Expression<Func<GUI__CDisplayObject, T>> propertyExpression, T value)
+	{
+		var property = ReflectionUtility.GetProperty(propertyExpression);
+
+		return SetValue(node, property, _ => value);
+	}
+
+	private bool SetValue<T>(GuiCompositionNodeViewModel node, PropertyInfo property, Func<GUI__CDisplayObject, T> getValue)
+	{
+		if (this.refreshing > 0) // Do NOT set properties on models while we're freshing FROM the models!
+			return false;
+		if (node.DisplayObject is not { } obj)
+			return false;
+
+		var currentValue = property.GetValue(obj);
+		var newValue = getValue(obj);
+
+		if (Equals(currentValue, newValue))
+			return false;
+
+		property.SetValue(obj, newValue);
+		node.NotifyOfDisplayObjectChange(property.Name);
+		return true;
 	}
 
 	private void AggregateAndRefreshValues()
@@ -270,6 +379,11 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 			IsVisible = true;
 			HorizontalAnchor = null;
 			VerticalAnchor = null;
+			PositionX = null;
+			PositionY = null;
+			SizeX = null;
+			SizeY = null;
+			Angle = null;
 
 			if (Nodes == null)
 				return;
@@ -277,6 +391,18 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 			for (var i = 0; i < Nodes.Count; i++)
 			{
 				var obj = Nodes[i].DisplayObject;
+				var objHorizontalAnchor = obj?.GetHorizontalAnchor();
+				var objVerticalAnchor = obj?.GetVerticalAnchor();
+				var objPositionX = objHorizontalAnchor switch {
+					Properties.HorizontalAnchor.Right  => obj?.RightX,
+					Properties.HorizontalAnchor.Center => obj?.CenterX,
+					_                                  => obj?.LeftX ?? obj?.X,
+				};
+				var objPositionY = objVerticalAnchor switch {
+					Properties.VerticalAnchor.Bottom => obj?.BottomY,
+					Properties.VerticalAnchor.Center => obj?.CenterY,
+					_                                => obj?.TopY ?? obj?.Y,
+				};
 
 				if (i == 0)
 				{
@@ -284,8 +410,13 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 
 					Id = obj?.ID;
 					IsVisible = obj?.Visible;
-					HorizontalAnchor = obj?.GetHorizontalAnchor();
-					VerticalAnchor = obj?.GetVerticalAnchor();
+					HorizontalAnchor = objHorizontalAnchor;
+					VerticalAnchor = objVerticalAnchor;
+					PositionX = objPositionX;
+					PositionY = objPositionY;
+					SizeX = obj?.SizeX;
+					SizeY = obj?.SizeY;
+					Angle = obj?.Angle;
 				}
 				else
 				{
@@ -299,10 +430,42 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 
 					if (obj?.Visible != IsVisible)
 						IsVisible = null;
-					if (obj?.GetHorizontalAnchor() != HorizontalAnchor)
+					if (objHorizontalAnchor != HorizontalAnchor)
 						HorizontalAnchor = null;
-					if (obj?.GetVerticalAnchor() != VerticalAnchor)
+					if (objVerticalAnchor != VerticalAnchor)
 						VerticalAnchor = null;
+
+					// ReSharper disable CompareOfFloatsByEqualityOperator
+					if (objPositionX != PositionX)
+					{
+						PositionX = null;
+						PositionXWatermark = MultipleValuesPlaceholder;
+					}
+
+					if (objPositionY != PositionY)
+					{
+						PositionY = null;
+						PositionYWatermark = MultipleValuesPlaceholder;
+					}
+
+					if (obj?.SizeX != SizeX)
+					{
+						SizeX = null;
+						SizeXWatermark = MultipleValuesPlaceholder;
+					}
+
+					if (obj?.SizeY != SizeY)
+					{
+						SizeY = null;
+						SizeYWatermark = MultipleValuesPlaceholder;
+					}
+
+					if (obj?.Angle != Angle)
+					{
+						Angle = null;
+						AngleWatermark = MultipleValuesPlaceholder;
+					}
+					// ReSharper restore CompareOfFloatsByEqualityOperator
 				}
 			}
 		}
