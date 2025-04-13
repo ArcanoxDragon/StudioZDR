@@ -5,12 +5,21 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"@awesome.me/kit-716363f27b@npm:^1.0.8":
+"@awesome.me/kit-716363f27b@npm:1.0.8":
   version: 1.0.8
   resolution: "@awesome.me/kit-716363f27b@npm:1.0.8::__archiveUrl=https%3A%2F%2Fnpm.fontawesome.com%2F%40awesome.me%2Fkit-716363f27b%2F-%2F1.0.8%2Fkit-716363f27b-1.0.8.tgz"
   dependencies:
     "@fortawesome/fontawesome-common-types": "npm:^6.7.2"
   checksum: 10c0/7af8e2a73913d476fe2637838a4d87d1b0ddadbe14bd0d8fb39b0736109d6eac102cc123aa0b8c6976e06f4d9e11cd076bd6ed30aac58fe2abe3b0310cd8f3ff
+  languageName: node
+  linkType: hard
+
+"@awesome.me/kit-716363f27b@patch:@awesome.me/kit-716363f27b@npm%3A1.0.8#~/.yarn/patches/@awesome.me-kit-716363f27b-npm-1.0.8-52481c3bda.patch":
+  version: 1.0.8
+  resolution: "@awesome.me/kit-716363f27b@patch:@awesome.me/kit-716363f27b@npm%3A1.0.8%3A%3A__archiveUrl=https%253A%252F%252Fnpm.fontawesome.com%252F%2540awesome.me%252Fkit-716363f27b%252F-%252F1.0.8%252Fkit-716363f27b-1.0.8.tgz#~/.yarn/patches/@awesome.me-kit-716363f27b-npm-1.0.8-52481c3bda.patch::version=1.0.8&hash=0c462c"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": "npm:^6.7.2"
+  checksum: 10c0/0882651a8df4ea45dc02d65cac4506a02a8e64f4338c335e29e2c1ee6e9aae05493bb3a0794e138f960fbe8f6c4fa3c1d3109b2246ec3b8a895f9e384d17af00
   languageName: node
   linkType: hard
 
@@ -25,6 +34,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "studio-zdr-icons@workspace:."
   dependencies:
-    "@awesome.me/kit-716363f27b": "npm:^1.0.8"
+    "@awesome.me/kit-716363f27b": "patch:@awesome.me/kit-716363f27b@npm%3A1.0.8#~/.yarn/patches/@awesome.me-kit-716363f27b-npm-1.0.8-52481c3bda.patch"
   languageName: unknown
   linkType: soft
