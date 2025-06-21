@@ -22,12 +22,12 @@ internal class SpriteSheetManager : IDisposable
 	private bool disposed;
 
 	public SpriteSheetManager(
-		IOptionsSnapshot<ApplicationSettings> settings,
+		IOptionsMonitor<ApplicationSettings> settings,
 		ILogger<SpriteSheetManager> logger
 	)
 	{
 		this.spriteSheetFactory = CreateSpriteSheet;
-		this.settings = settings.Value;
+		this.settings = settings.CurrentValue;
 		this.logger = logger;
 	}
 

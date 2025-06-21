@@ -14,17 +14,17 @@ namespace StudioZDR.App.Features.GuiEditor.ViewModels;
 
 public partial class GuiEditorViewModel : ViewModelBase
 {
-	private readonly IWindowContext      windowContext;
-	private readonly ApplicationSettings settings;
+	private readonly IWindowContext                       windowContext;
+	private readonly IOptionsMonitor<ApplicationSettings> settingsMonitor;
 
 	public GuiEditorViewModel(
 		IWindowContext windowContext,
-		IOptionsSnapshot<ApplicationSettings> settings,
+		IOptionsMonitor<ApplicationSettings> settingsMonitor,
 		ILogger<GuiEditorViewModel> logger
 	)
 	{
 		this.windowContext = windowContext;
-		this.settings = settings.Value;
+		this.settingsMonitor = settingsMonitor;
 
 		OpenFileCommand
 			.HandleExceptionsWith(ex => {
@@ -67,7 +67,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 			.ObserveOn(MainThreadScheduler)
 			.Subscribe(file => OpenedGuiFile = file);
 
-		CanSaveFile = Observable.Return(this.settings.IsOutputLocationValid)
+		CanSaveFile = Observable.Return(Settings.IsOutputLocationValid)
 			.CombineLatest(
 				this.WhenAnyValue(m => m.OpenedGuiFile),
 				(outputValid, openedFile) => outputValid && openedFile != null)
@@ -89,13 +89,13 @@ public partial class GuiEditorViewModel : ViewModelBase
 			.Subscribe();
 
 		this.WhenActivated(disposables => {
-			if (!this.settings.IsOutputLocationValid)
+			if (!Settings.IsOutputLocationValid)
 			{
 				Dialogs.Alert(
 						"Saving Disabled",
-						"Warning: You have not set an Output Path in the application settings. In order to protect " +
-						"your original RomFS files from accidental modification, you will not be able to save any " +
-						"changes made in the editor without first setting an Output Path.")
+						"Warning: You have not set an Output Path in the application settings (or the chosen output path" +
+						"does not exist). In order to protect your original RomFS files from accidental modification, you " +
+						"will not be able to save any changes made in the editor without first setting an Output Path.")
 					.Subscribe()
 					.DisposeWith(disposables);
 			}
@@ -127,6 +127,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 
 	private IObservable<bool> CanSaveFile { get; }
 
+	private ApplicationSettings Settings => this.settingsMonitor.CurrentValue;
+
 	[ReactiveCommand]
 	private void Close()
 		=> this.windowContext.Close();
@@ -147,7 +149,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 		if (result is null)
 			return null;
 
-		var guiScriptsPath = Path.Join(this.settings.RomFsLocation, "gui", "scripts");
+		var guiScriptsPath = Path.Join(Settings.RomFsLocation, "gui", "scripts");
 
 		return Path.Join(guiScriptsPath, result);
 	}
@@ -155,7 +157,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 	[ReactiveCommand(CanExecute = nameof(CanSaveFile))]
 	private async Task SaveFileAsync()
 	{
-		if (!this.settings.IsRomFsLocationValid || !this.settings.IsOutputLocationValid)
+		if (!Settings.IsRomFsLocationValid || !Settings.IsOutputLocationValid)
 			// Just in case
 			return;
 		if (OpenedFilePath is not { } openedFilePath || OpenedGuiFile is not { } bmscp)
@@ -163,8 +165,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 
 		await TaskPoolScheduler.Yield();
 
-		var relativeRomFsLocation = Path.GetRelativePath(this.settings.RomFsLocation, openedFilePath);
-		var outputFilePath = Path.Join(this.settings.OutputLocation, relativeRomFsLocation);
+		var relativeRomFsLocation = Path.GetRelativePath(Settings.RomFsLocation, openedFilePath);
+		var outputFilePath = Path.Join(Settings.OutputLocation, relativeRomFsLocation);
 		var outputFileDirectory = Path.GetDirectoryName(outputFilePath)!;
 
 		Directory.CreateDirectory(outputFileDirectory);
@@ -178,7 +180,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 	{
 		try
 		{
-			var guiScriptsPath = Path.Join(this.settings.RomFsLocation, "gui", "scripts");
+			var guiScriptsPath = Path.Join(Settings.RomFsLocation, "gui", "scripts");
 			var availableFiles = new List<string>();
 
 			foreach (var file in Directory.EnumerateFiles(guiScriptsPath, "*.bmscp", SearchOption.AllDirectories))
@@ -204,15 +206,15 @@ public partial class GuiEditorViewModel : ViewModelBase
 		OpenedGuiFile = null;
 		OpenFileException = null;
 
-		if (string.IsNullOrEmpty(guiFilePath) || !this.settings.IsRomFsLocationValid)
+		if (string.IsNullOrEmpty(guiFilePath) || !Settings.IsRomFsLocationValid)
 			return null;
 
 		await TaskPoolScheduler.Yield(cancellationToken);
 
-		if (this.settings.IsOutputLocationValid)
+		if (Settings.IsOutputLocationValid)
 		{
-			var relativeRomFsLocation = Path.GetRelativePath(this.settings.RomFsLocation, guiFilePath);
-			var matchingOutputPath = Path.Join(this.settings.OutputLocation, relativeRomFsLocation);
+			var relativeRomFsLocation = Path.GetRelativePath(Settings.RomFsLocation, guiFilePath);
+			var matchingOutputPath = Path.Join(Settings.OutputLocation, relativeRomFsLocation);
 
 			if (File.Exists(matchingOutputPath))
 				// Read from the modified version instead!
