@@ -92,4 +92,16 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<DreadGuiCompos
 			node.ToggleVisible(IsShiftPressed);
 		}
 	}
+
+	private void ExpandAll_OnClick(object? sender, RoutedEventArgs e)
+	{
+		if (this.TreeView.FindDescendantOfType<TreeViewItem>() is { } rootItem)
+			this.TreeView.ExpandSubTree(rootItem);
+	}
+
+	private void CollapseAll_OnClick(object? sender, RoutedEventArgs e)
+	{
+		if (this.TreeView.FindDescendantOfType<TreeViewItem>() is { } rootItem)
+			this.TreeView.CollapseSubTree(rootItem);
+	}
 }

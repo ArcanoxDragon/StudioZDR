@@ -22,23 +22,43 @@
 			<ColumnDefinition Width="400" MinWidth="300" />
 		</Grid.ColumnDefinitions>
 
-		<Grid RowDefinitions="*,Auto"
+		<Grid RowDefinitions="Auto,*,Auto"
 			  ColumnDefinitions="80,*,80">
-			<views:GuiCompositionCanvas Grid.ColumnSpan="3" ViewModel="{Binding}" />
+			<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+				  ColumnDefinitions="*,Auto"
+				  Margin="6">
+				<StackPanel Orientation="Horizontal"
+							Spacing="6">
+					<!-- TODO: Left Buttons -->
+				</StackPanel>
 
-			<Label Grid.Row="1" Grid.Column="0"
+				<StackPanel Grid.Column="1"
+							Margin="12,0,0,0"
+							Orientation="Horizontal"
+							Spacing="6">
+					<ToggleButton IsChecked="{Binding IsMouseSelectionEnabled}"
+								  ToolTip.Tip="Toggle Mouse Selection">
+						<i:Icon Value="fa-arrow-pointer" />
+					</ToggleButton>
+				</StackPanel>
+			</Grid>
+
+			<views:GuiCompositionCanvas Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+										ViewModel="{Binding}" />
+
+			<Label Grid.Row="2" Grid.Column="0"
 				   HorizontalAlignment="Center"
 				   VerticalAlignment="Center"
 				   Target="ZoomSlider"
 				   Content="{Binding ZoomFactor, StringFormat='{}{0:P0}', FallbackValue='100%'}" />
 
-			<Slider Grid.Row="1" Grid.Column="1"
+			<Slider Grid.Row="2" Grid.Column="1"
 					x:Name="ZoomSlider"
 					Value="{Binding ZoomLevel}"
 					Minimum="{x:Static views:GuiCompositionCanvas.MinimumZoomLevel}"
 					Maximum="{x:Static views:GuiCompositionCanvas.MaximumZoomLevel}" />
 
-			<Button Grid.Row="1" Grid.Column="2"
+			<Button Grid.Row="2" Grid.Column="2"
 					HorizontalAlignment="Center"
 					Command="{Binding ResetZoomAndPanCommand}"
 					ToolTip.Tip="Reset Zoom">
@@ -52,12 +72,27 @@
 
 		<Grid Grid.Column="2">
 			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
 				<RowDefinition MinHeight="200" />
 				<RowDefinition Height="6" />
 				<RowDefinition MinHeight="200" />
 			</Grid.RowDefinitions>
 
-			<TreeView Grid.Row="0"
+			<StackPanel Margin="6"
+						Orientation="Horizontal"
+						Spacing="6">
+				<Button Click="ExpandAll_OnClick"
+						ToolTip.Tip="Expand All">
+					<i:Icon Value="fa-chevrons-down" />
+				</Button>
+
+				<Button Click="CollapseAll_OnClick"
+						ToolTip.Tip="Collapse All">
+					<i:Icon Value="fa-chevrons-up" />
+				</Button>
+			</StackPanel>
+
+			<TreeView x:Name="TreeView" Grid.Row="1"
 					  ItemsSource="{Binding Hierarchy.Children}"
 					  SelectedItems="{Binding SelectedNodes}"
 					  SelectionMode="Multiple"
@@ -86,11 +121,11 @@
 				</TreeView.ItemTemplate>
 			</TreeView>
 
-			<GridSplitter Grid.Row="1"
+			<GridSplitter Grid.Row="2"
 						  ResizeBehavior="PreviousAndNext"
 						  ResizeDirection="Rows" />
 
-			<ContentControl Grid.Row="2"
+			<ContentControl Grid.Row="3"
 							Content="{Binding SelectedNodes}"
 							Margin="4">
 				<ContentControl.ContentTemplate>

@@ -5,6 +5,7 @@ using MercuryEngine.Data.Types.DreadTypes;
 using SkiaSharp;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 using StudioZDR.UI.Avalonia.Extensions;
+using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
 
 namespace StudioZDR.UI.Avalonia.Rendering.DreadGui;
 
@@ -74,7 +75,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 		if (node is not { DisplayObject: { } obj })
 			return;
 
-		var objBounds = GetDisplayObjectRect(obj, parentBounds, out var origin);
+		var objBounds = obj.GetDisplayObjectRect(RenderBounds, parentBounds, out var origin);
 		var originX = (float) origin.X;
 		var originY = (float) origin.Y;
 
@@ -121,7 +122,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 	private void RenderSprite(DreadGuiDrawContext context, GUI__CSprite sprite, Rect parentBounds)
 	{
-		var spriteRect = GetDisplayObjectRect(sprite, parentBounds);
+		var spriteRect = sprite.GetDisplayObjectRect(RenderBounds, parentBounds);
 		var spriteTintColor = new SKColor(
 			(byte) ( 255 * ( sprite.ColorR ?? 1.0f ) ),
 			(byte) ( 255 * ( sprite.ColorG ?? 1.0f ) ),
@@ -157,7 +158,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 	{
 		const int TextSize = 20;
 		const int TextOffset = 8;
-		var labelRect = GetDisplayObjectRect(label, parentBounds);
+		var labelRect = label.GetDisplayObjectRect(RenderBounds, parentBounds);
 		var halfHeight = labelRect.Height / 2;
 		var textToDraw = ( label.Text ?? label.ID ?? "GUI::CLabel" ).Replace('|', '\n');
 
@@ -192,62 +193,6 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 		context.Paint.Color = borderColor;
 		context.Canvas.DrawRoundRect(rect.ToSKRect(), CornerRadius, CornerRadius, context.Paint);
 		context.Paint.Color = new SKColor(255, 255, 255);
-	}
-
-	private Rect GetDisplayObjectRect(GUI__CDisplayObject obj, Rect parentBounds)
-		=> GetDisplayObjectRect(obj, parentBounds, out _);
-
-	private Rect GetDisplayObjectRect(GUI__CDisplayObject obj, Rect parentBounds, out Point origin)
-	{
-		var objWidth = ( obj.SizeX ?? 1.0 ) * RenderBounds.Width;
-		var objHeight = ( obj.SizeY ?? 1.0 ) * RenderBounds.Height;
-		var refX = parentBounds.X;
-		var refY = parentBounds.Y;
-		double boundsX, boundsY;
-		double originX, originY;
-
-		if (obj.RightX.HasValue)
-		{
-			var rightRefX = refX + parentBounds.Width;
-
-			originX = rightRefX - obj.RightX.Value * RenderBounds.Width;
-			boundsX = originX - objWidth;
-		}
-		else if (obj.CenterX.HasValue)
-		{
-			var centerRefX = refX + 0.5 * parentBounds.Width;
-
-			originX = centerRefX + obj.CenterX.Value * RenderBounds.Width;
-			boundsX = originX - 0.5 * objWidth;
-		}
-		else
-		{
-			originX = refX + ( obj.LeftX ?? obj.X ?? 0.0 ) * RenderBounds.Width;
-			boundsX = originX;
-		}
-
-		if (obj.BottomY.HasValue)
-		{
-			var bottomRefY = refY + parentBounds.Height;
-
-			originY = bottomRefY - obj.BottomY.Value * RenderBounds.Height;
-			boundsY = originY - objHeight;
-		}
-		else if (obj.CenterY.HasValue)
-		{
-			var centerRefY = refY + 0.5 * parentBounds.Height;
-
-			originY = centerRefY + obj.CenterY.Value * RenderBounds.Height;
-			boundsY = originY - 0.5 * objHeight;
-		}
-		else
-		{
-			originY = refY + ( obj.TopY ?? obj.Y ?? 0.0 ) * RenderBounds.Height;
-			boundsY = originY;
-		}
-
-		origin = new Point(originX, originY);
-		return new Rect(boundsX, boundsY, objWidth, objHeight);
 	}
 
 	private static Rect GetRenderBounds(Rect controlBounds)

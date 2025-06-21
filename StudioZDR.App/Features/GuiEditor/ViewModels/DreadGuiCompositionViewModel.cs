@@ -5,7 +5,10 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData.Binding;
 using MercuryEngine.Data.Types.DreadTypes;
+using Microsoft.Extensions.Options;
 using ReactiveUI.SourceGenerators;
+using StudioZDR.App.Configuration;
+using StudioZDR.App.Features.GuiEditor.Configuration;
 using StudioZDR.App.ViewModels;
 using Vector2 = System.Numerics.Vector2;
 
@@ -17,9 +20,14 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 
 	private CompositeDisposable? hierarchyDisposables;
 
-	public DreadGuiCompositionViewModel(GUI__CDisplayObjectContainer? rootContainer)
+	public DreadGuiCompositionViewModel(
+		ISettingsManager settingsManager,
+		IOptionsMonitor<ApplicationSettings> settingsMonitor,
+		GUI__CDisplayObjectContainer? rootContainer
+	)
 	{
 		RootContainer = rootContainer;
+		this._isMouseSelectionEnabled = settingsMonitor.CurrentValue.GetFeatureSettings<GuiEditorSettings>().MouseSelectionEnabled;
 		this._hierarchy = new GuiCompositionNodeViewModel();
 		this._zoomLevel = 0;
 
@@ -55,12 +63,30 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 		this.WhenAnyValue(m => m.HoveredNode, n => n?.DisplayObject)
 			.ToProperty(this, m => m.HoveredObject, out this._hoveredObjectHelper);
 
+		this.WhenAnyValue(m => m.IsMouseSelectionEnabled)
+			.Subscribe(enabled => {
+				if (!enabled)
+					// Make sure a node doesn't get stuck as hovered in case this is disabled while one *is* hovered
+					HoveredNode = null;
+
+				settingsManager.Modify(settings => {
+					var guiEditorSettings = settings.GetFeatureSettings<GuiEditorSettings>();
+
+					guiEditorSettings.MouseSelectionEnabled = enabled;
+				});
+			});
+
 		this.WhenActivated(disposables => {
 			SelectedNodes
 				.ToObservableChangeSet()
 				.Select(_ => SelectedNodes.Select(n => n.DisplayObject).ToList())
 				.ToProperty(this, m => m.SelectedObjects, out this._selectedObjectsHelper)
 				.DisposeWith(disposables);
+
+			SelectedNodes
+				.ToObservableChangeSet()
+				.Select(_ => SelectedNodes.Count > 0)
+				.ToProperty(this, m => m.HasSelection, out this._hasSelectionHelper);
 
 			SelectedNodes
 				.ToObservableChangeSet()
@@ -97,6 +123,12 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 	[ObservableAsProperty(ReadOnly = false)]
 	public partial IReadOnlyList<GUI__CDisplayObject?>? SelectedObjects { get; }
 
+	[ObservableAsProperty(ReadOnly = false)]
+	public partial bool HasSelection { get; }
+
+	[Reactive]
+	public partial bool IsMouseSelectionEnabled { get; set; }
+
 	[ReactiveCommand]
 	public void ResetZoomAndPan()
 	{
@@ -107,6 +139,14 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 	public void Dispose()
 	{
 		this.renderInvalidated.Dispose();
+	}
+
+	public void ToggleSelected(GuiCompositionNodeViewModel node)
+	{
+		// If we remove it successfully, it was in the collection before, so don't add it.
+		// If we did not remove it, it was absent before, so we should add it.
+		if (!SelectedNodes.Remove(node))
+			SelectedNodes.Add(node);
 	}
 
 	private GuiCompositionNodeViewModel BuildHierarchy(GUI__CDisplayObjectContainer? rootContainer, CompositeDisposable disposables)

@@ -7,8 +7,10 @@ using Avalonia.Input;
 using Avalonia.Media;
 using ReactiveUI;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
+using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
 using StudioZDR.UI.Avalonia.Rendering;
 using StudioZDR.UI.Avalonia.Rendering.DreadGui;
+using Vector = Avalonia.Vector;
 
 #if DEBUG
 // For hot reload
@@ -47,6 +49,10 @@ internal partial class GuiCompositionCanvas : ContentControl
 		get => GetValue(ViewModelProperty);
 		set => SetValue(ViewModelProperty, value);
 	}
+
+	private Matrix TransformMatrix        { get; set; } = Matrix.Identity;
+	private Matrix InverseTransformMatrix { get; set; } = Matrix.Identity;
+	private Point  LastCursorPosition     { get; set; }
 
 	protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
 	{
@@ -87,11 +93,43 @@ internal partial class GuiCompositionCanvas : ContentControl
 
 		if (point.Properties.IsBarrelButtonPressed || point.Properties.IsRightButtonPressed)
 		{
+			// Begin panning
 			e.PreventGestureRecognition();
 			point.Pointer.Capture(this);
 			this.panStart = point.Position;
 			this.initialPanOffset = viewModel.PanOffset;
 			this.panning = true;
+		}
+		else if (point.Properties.IsLeftButtonPressed) // TODO: Verify this is true for primary pen/touch input
+		{
+			// Select or transform objects
+
+			e.PreventGestureRecognition();
+			point.Pointer.Capture(this);
+
+			if (viewModel.IsMouseSelectionEnabled)
+			{
+				var hoveredNode = GetHoveredNode();
+
+				if (hoveredNode is null)
+				{
+					// De-select everything
+					viewModel.SelectedNodes.Clear();
+					return;
+				}
+
+				if (( e.KeyModifiers & KeyModifiers.Control ) == KeyModifiers.Control)
+				{
+					// Toggle the node as being selected
+					viewModel.ToggleSelected(hoveredNode);
+				}
+				else if (!viewModel.SelectedNodes.Contains(hoveredNode))
+				{
+					// Make this node the only selected node
+					viewModel.SelectedNodes.Clear();
+					viewModel.SelectedNodes.Add(hoveredNode);
+				}
+			}
 		}
 	}
 
@@ -113,15 +151,53 @@ internal partial class GuiCompositionCanvas : ContentControl
 	{
 		base.OnPointerMoved(e);
 
+		var newPosition = e.GetPosition(this);
+
+		LastCursorPosition = newPosition;
+		InvalidateVisual();
+
 		if (ViewModel is not { } viewModel)
 			return;
 
 		if (this.panning)
 		{
-			var newPosition = e.GetPosition(this);
 			var delta = newPosition - this.panStart;
 
 			viewModel.PanOffset = this.initialPanOffset + new Vector2((float) delta.X, (float) delta.Y);
+		}
+		else if (viewModel.IsMouseSelectionEnabled)
+		{
+			viewModel.HoveredNode = GetHoveredNode();
+		}
+	}
+
+	private GuiCompositionNodeViewModel? GetHoveredNode()
+	{
+		if (ViewModel is not { Hierarchy: { } hierarchy })
+			return null;
+		if (this.drawOperation is not { } drawOperation)
+			return null;
+
+		Rect screenBounds = drawOperation.RenderBounds;
+		Point transformedCursorPosition = LastCursorPosition.Transform(InverseTransformMatrix);
+		GuiCompositionNodeViewModel? hovered = null;
+
+		Visit(hierarchy, screenBounds);
+
+		return hovered;
+
+		void Visit(GuiCompositionNodeViewModel node, Rect parentBounds)
+		{
+			if (node.DisplayObject is not { } displayObject)
+				return;
+
+			var objBounds = displayObject.GetDisplayObjectRect(screenBounds, parentBounds);
+
+			if (node.IsVisible && objBounds.Contains(transformedCursorPosition))
+				hovered = node;
+
+			foreach (var child in node.Children)
+				Visit(child, objBounds);
 		}
 	}
 
@@ -145,6 +221,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 		{
 			AttachSubscriptions();
 			InvalidateVisual();
+			CalculateMatrix();
 		}
 	}
 
@@ -164,9 +241,29 @@ internal partial class GuiCompositionCanvas : ContentControl
 		context.Custom(this.drawOperation);
 	}
 
+	private void CalculateMatrix()
+	{
+		if (ViewModel is not { } viewModel || this.drawOperation is not { } drawOperation)
+		{
+			TransformMatrix = InverseTransformMatrix = Matrix.Identity;
+			return;
+		}
+
+		var zoomFactor = viewModel.ZoomFactor;
+		var centerX = drawOperation.RenderBounds.Width / 2;
+		var centerY = drawOperation.RenderBounds.Height / 2;
+		var centerPoint = new Vector(centerX, centerY);
+
+		TransformMatrix = Matrix.CreateTranslation(-centerPoint) *
+						  Matrix.CreateScale(zoomFactor, zoomFactor) *
+						  Matrix.CreateTranslation(centerPoint) *
+						  Matrix.CreateTranslation(viewModel.PanOffset);
+		InverseTransformMatrix = TransformMatrix.TryInvert(out var inverted) ? inverted : Matrix.Identity;
+	}
+
 	[System.Diagnostics.CodeAnalysis.SuppressMessage(
-		"Trimming", 
-		"IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", 
+		"Trimming",
+		"IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
 		Justification = "All assemblies that are reflected are included as TrimmerRootAssembly, so all necessary type metadata will be preserved")]
 	private void AttachSubscriptions()
 	{
@@ -181,6 +278,11 @@ internal partial class GuiCompositionCanvas : ContentControl
 		ViewModel?.WhenAnyValue(m => m.ZoomFactor, m => m.PanOffset, m => m.HoveredNode, m => m.SelectedNodes)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => InvalidateVisual())
+			.DisposeWith(this.disposables);
+
+		ViewModel?.WhenAnyValue(m => m.ZoomFactor, m => m.PanOffset)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(_ => CalculateMatrix())
 			.DisposeWith(this.disposables);
 
 		ViewModel?.RenderInvalidated

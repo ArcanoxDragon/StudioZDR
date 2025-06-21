@@ -2,6 +2,8 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using MercuryEngine.Data.Formats;
+using MercuryEngine.Data.Types.DreadTypes;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReactiveUI.SourceGenerators;
@@ -14,17 +16,20 @@ namespace StudioZDR.App.Features.GuiEditor.ViewModels;
 
 public partial class GuiEditorViewModel : ViewModelBase
 {
-	private readonly IWindowContext                       windowContext;
-	private readonly IOptionsMonitor<ApplicationSettings> settingsMonitor;
+	private readonly IWindowContext                              windowContext;
+	private readonly IOptionsMonitor<ApplicationSettings>        settingsMonitor;
+	private readonly ObjectFactory<DreadGuiCompositionViewModel> compositionViewModelFactory;
 
 	public GuiEditorViewModel(
 		IWindowContext windowContext,
 		IOptionsMonitor<ApplicationSettings> settingsMonitor,
+		IServiceProvider serviceProvider,
 		ILogger<GuiEditorViewModel> logger
 	)
 	{
 		this.windowContext = windowContext;
 		this.settingsMonitor = settingsMonitor;
+		this.compositionViewModelFactory = ActivatorUtilities.CreateFactory<DreadGuiCompositionViewModel>([typeof(GUI__CDisplayObjectContainer)]);
 
 		OpenFileCommand
 			.HandleExceptionsWith(ex => {
@@ -48,7 +53,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 			.InvokeCommand(LoadGuiFileCommand!);
 
 		this.WhenAnyValue(m => m.OpenedGuiFile)
-			.Select(bmscp => new DreadGuiCompositionViewModel(bmscp?.Root.Value))
+			.Select(bmscp => this.compositionViewModelFactory(serviceProvider, [bmscp?.Root.Value]))
 			.ObserveOn(MainThreadScheduler)
 			.Subscribe(model => {
 				GuiCompositionViewModel?.Dispose();

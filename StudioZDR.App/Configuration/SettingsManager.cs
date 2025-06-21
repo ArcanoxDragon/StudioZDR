@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using StudioZDR.App.Features.GuiEditor.Configuration;
 using StudioZDR.App.Utility;
 
 namespace StudioZDR.App.Configuration;
@@ -146,4 +147,5 @@ internal class SettingsManager(ILogger<SettingsManager> logger) : IConfigureOpti
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(ApplicationSettings))]
+[JsonSerializable(typeof(GuiEditorSettings))]
 internal partial class SettingsJsonContext : JsonSerializerContext;
