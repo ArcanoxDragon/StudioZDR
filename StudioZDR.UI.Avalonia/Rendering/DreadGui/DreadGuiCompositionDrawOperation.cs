@@ -18,9 +18,12 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 	private const int RenderPassOverlay = 1;
 	private const int RenderPassCount   = 2;
 
+	private const float HiddenObjectAlphaMultiplier = 0.125f;
+
 	private static readonly SKColor HoverBorderColor    = new(255, 0, 255, 64);
 	private static readonly SKColor SelectedBorderColor = new(0, 255, 255);
 	private static readonly SKColor TextDrawColor       = new(255, 255, 255);
+	private static readonly SKColor HiddenTextDrawColor = new(255, 255, 255, (byte) ( 255 * HiddenObjectAlphaMultiplier ));
 	private static readonly SKColor TextBlurColor       = new(0, 0, 0);
 
 	public DreadGuiCompositionViewModel? Composition { get; set; }
@@ -127,11 +130,17 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 	private void RenderSprite(DreadGuiDrawContext context, GUI__CSprite sprite, Rect parentBounds)
 	{
 		var spriteRect = sprite.GetDisplayObjectRect(RenderBounds, parentBounds);
+		var spriteColorAlpha = sprite.ColorA ?? 1.0f;
+
+		// This is "in-game" visibility, not editor visibility
+		if (sprite.Visible is false)
+			spriteColorAlpha *= HiddenObjectAlphaMultiplier;
+
 		var spriteTintColor = new SKColor(
 			(byte) ( 255 * ( sprite.ColorR ?? 1.0f ) ),
 			(byte) ( 255 * ( sprite.ColorG ?? 1.0f ) ),
 			(byte) ( 255 * ( sprite.ColorB ?? 1.0f ) ),
-			(byte) ( 255 * ( sprite.ColorA ?? 1.0f ) )
+			(byte) ( 255 * spriteColorAlpha )
 		);
 
 		using (context.Canvas.WithSavedState())
@@ -178,7 +187,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 			_                  => labelRect.X,
 		};
 
-		RenderText(context, textToDraw, textX, labelRect.Y + halfHeight + TextOffset, TextSize);
+		RenderText(context, textToDraw, textX, labelRect.Y + halfHeight + TextOffset, TextSize, visible: label.Visible is not false);
 		context.Paint.TextAlign = SKTextAlign.Left;
 	}
 
@@ -225,7 +234,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 		return new Rect(renderX, renderY, renderWidth, renderHeight).Deflate(2); // Deflated to give room for root corner radius
 	}
 
-	private static void RenderText(DreadGuiDrawContext context, string text, double x, double y, double textSize = 14.0)
+	private static void RenderText(DreadGuiDrawContext context, string text, double x, double y, double textSize = 14.0, bool visible = true)
 	{
 		const double LineSeparation = 2;
 
@@ -240,7 +249,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 		DrawLines(2);
 
 		// Draw normal text on top of shadow
-		context.Paint.Color = TextDrawColor;
+		context.Paint.Color = visible ? TextDrawColor : HiddenTextDrawColor;
 		context.Paint.MaskFilter = null;
 		context.Paint.FakeBoldText = false;
 		DrawLines(1);
