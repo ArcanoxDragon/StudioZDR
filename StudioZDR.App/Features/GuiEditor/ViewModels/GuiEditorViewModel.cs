@@ -2,9 +2,11 @@
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using DynamicData.Binding;
 using MercuryEngine.Data.Formats;
 using MercuryEngine.Data.Types.DreadTypes;
+using MercuryEngine.Data.Types.Fields;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReactiveUI.SourceGenerators;
@@ -21,6 +23,10 @@ public partial class GuiEditorViewModel : ViewModelBase
 {
 	private readonly IWindowContext                       windowContext;
 	private readonly IOptionsMonitor<ApplicationSettings> settingsMonitor;
+	private readonly Stack<Bmscp>                         undoStack      = [];
+	private readonly Stack<Bmscp>                         redoStack      = [];
+	private readonly Subject<bool>                        canUndoSubject = new();
+	private readonly Subject<bool>                        canRedoSubject = new();
 
 	public GuiEditorViewModel(
 		IWindowContext windowContext,
@@ -57,14 +63,24 @@ public partial class GuiEditorViewModel : ViewModelBase
 
 		this.WhenAnyValue(m => m.OpenedGuiFile)
 			.ObserveOn(MainThreadScheduler)
-			.Select(bmscp => new DreadGuiCompositionViewModel(bmscp?.Root.Value))
-			.Subscribe(model => {
+			.Subscribe(bmscp => {
 				// Reset editor state
 				SelectedNodes.Clear();
 				HoveredNode = null;
 				ZoomLevel = 0.0;
 				PanOffset = Vector2.Zero;
-				
+				LatestPristineState = bmscp;
+				this.undoStack.Clear();
+				this.redoStack.Clear();
+				RefreshCanUndoRedo();
+			});
+
+		this.WhenAnyValue(m => m.LatestPristineState)
+			.ObserveOn(TaskPoolScheduler)
+			.Select(bmscp => bmscp?.DeepClone())
+			.ObserveOn(MainThreadScheduler)
+			.Select(bmscp => new DreadGuiCompositionViewModel(bmscp?.Root.Value))
+			.Subscribe(model => {
 				// Swap in new composition
 				Composition?.Dispose();
 				Composition = model;
@@ -176,6 +192,9 @@ public partial class GuiEditorViewModel : ViewModelBase
 	public partial Bmscp? OpenedGuiFile { get; set; }
 
 	[Reactive]
+	public partial Bmscp? LatestPristineState { get; set; }
+
+	[Reactive]
 	public partial DreadGuiCompositionViewModel? Composition { get; private set; }
 
 	[ObservableAsProperty]
@@ -216,6 +235,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 	private IObservable<bool> CanSaveFile { get; }
 
 	private ApplicationSettings Settings => this.settingsMonitor.CurrentValue;
+	private IObservable<bool>   CanUndo  => this.canUndoSubject;
+	private IObservable<bool>   CanRedo  => this.canRedoSubject;
 
 	public void ToggleSelected(GuiCompositionNodeViewModel node)
 	{
@@ -223,6 +244,69 @@ public partial class GuiEditorViewModel : ViewModelBase
 		// If we did not remove it, it was absent before, so we should add it.
 		if (!SelectedNodes.Remove(node))
 			SelectedNodes.Add(node);
+	}
+
+	public void StageUndoOperation()
+	{
+		if (LatestPristineState is null || Composition is not { RootContainer: not null })
+			return;
+
+		// Clear the redo stack
+		this.redoStack.Clear();
+
+		// Store the latest "pristine" state as the most recent undo-able operation
+		this.undoStack.Push(LatestPristineState);
+
+		// Store the current composition in a new "pristine" state
+		// (do NOT fire change notifications though!)
+		this._latestPristineState = CreatePristineState();
+
+		RefreshCanUndoRedo();
+	}
+
+	[ReactiveCommand(CanExecute = nameof(CanUndo))]
+	public void Undo()
+	{
+		if (this.undoStack.Count == 0)
+			return;
+
+		// Push the current state onto the "redo" stack
+		this.redoStack.Push(CreatePristineState());
+
+		// Pop the top undo operation into the current "pristine state"
+		LatestPristineState = this.undoStack.Pop();
+
+		RefreshCanUndoRedo();
+	}
+
+	[ReactiveCommand(CanExecute = nameof(CanRedo))]
+	public void Redo()
+	{
+		if (this.redoStack.Count == 0)
+			return;
+
+		// Push the current state onto the "undo" stack
+		this.undoStack.Push(CreatePristineState());
+
+		// Pop the top redo operation into the current "pristine state"
+		LatestPristineState = this.redoStack.Pop();
+
+		RefreshCanUndoRedo();
+	}
+
+	private Bmscp CreatePristineState()
+	{
+		Bmscp wrappedCurrentState = new() {
+			Root = new DreadPointer<GUI__CDisplayObjectContainer>(Composition?.RootContainer),
+		};
+
+		return wrappedCurrentState.DeepClone();
+	}
+
+	private void RefreshCanUndoRedo()
+	{
+		this.canUndoSubject.OnNext(this.undoStack.Count > 0);
+		this.canRedoSubject.OnNext(this.redoStack.Count > 0);
 	}
 
 	[ReactiveCommand]
@@ -263,7 +347,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 		if (!Settings.IsRomFsLocationValid || !Settings.IsOutputLocationValid)
 			// Just in case
 			return;
-		if (OpenedFilePath is not { } openedFilePath || OpenedGuiFile is not { } bmscp)
+		if (OpenedFilePath is not { } openedFilePath || LatestPristineState is not { } bmscp)
 			return;
 
 		await TaskPoolScheduler.Yield();
@@ -306,7 +390,6 @@ public partial class GuiEditorViewModel : ViewModelBase
 	[ReactiveCommand(OutputScheduler = nameof(TaskPoolScheduler))]
 	private async Task<Bmscp?> LoadGuiFileAsync(string? guiFilePath, CancellationToken cancellationToken)
 	{
-		OpenedGuiFile = null;
 		OpenFileException = null;
 
 		if (string.IsNullOrEmpty(guiFilePath) || !Settings.IsRomFsLocationValid)

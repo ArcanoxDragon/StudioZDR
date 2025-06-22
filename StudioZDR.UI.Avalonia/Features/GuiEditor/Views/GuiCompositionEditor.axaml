@@ -29,7 +29,15 @@
 				  Margin="6">
 				<StackPanel Orientation="Horizontal"
 							Spacing="6">
-					<!-- TODO: Left Buttons -->
+					<Button Command="{Binding UndoCommand}"
+							ToolTip.Tip="Undo Last Action">
+						<i:Icon Value="fa-arrow-rotate-left" />
+					</Button>
+
+					<Button Command="{Binding RedoCommand}"
+							ToolTip.Tip="Redo Last Undone Action">
+						<i:Icon Value="fa-arrow-rotate-right" />
+					</Button>
 				</StackPanel>
 
 				<StackPanel Grid.Column="1"
@@ -130,7 +138,8 @@
 							Content="{Binding SelectedNodes}"
 							Margin="4">
 				<ContentControl.ContentTemplate>
-					<dataTemplates:DisplayObjectPropertiesTemplate />
+					<dataTemplates:DisplayObjectPropertiesTemplate
+						Editor="{Binding #EditorView.ViewModel}" />
 				</ContentControl.ContentTemplate>
 			</ContentControl>
 		</Grid>
