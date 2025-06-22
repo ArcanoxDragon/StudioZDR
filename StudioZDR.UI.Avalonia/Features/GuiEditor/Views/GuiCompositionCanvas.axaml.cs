@@ -197,12 +197,12 @@ internal partial class GuiCompositionCanvas : ContentControl
 
 		void Visit(GuiCompositionNodeViewModel node, Rect parentBounds)
 		{
-			if (node.DisplayObject is not { } displayObject)
+			if (node is not { IsVisible: true, DisplayObject: { } displayObject })
 				return;
 
 			var objBounds = displayObject.GetDisplayObjectRect(screenBounds, parentBounds);
 
-			if (node.IsVisible && objBounds.Contains(transformedCursorPosition))
+			if (objBounds.Contains(transformedCursorPosition))
 				hovered = node;
 
 			foreach (var child in node.Children)

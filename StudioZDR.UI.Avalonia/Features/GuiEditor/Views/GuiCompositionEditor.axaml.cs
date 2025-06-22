@@ -95,13 +95,13 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 
 	private void ExpandAll_OnClick(object? sender, RoutedEventArgs e)
 	{
-		if (this.TreeView.FindDescendantOfType<TreeViewItem>() is { } rootItem)
-			this.TreeView.ExpandSubTree(rootItem);
+		foreach (var item in this.TreeView.GetVisualDescendants().OfType<TreeViewItem>())
+			this.TreeView.ExpandSubTree(item);
 	}
 
 	private void CollapseAll_OnClick(object? sender, RoutedEventArgs e)
 	{
-		if (this.TreeView.FindDescendantOfType<TreeViewItem>() is { } rootItem)
-			this.TreeView.CollapseSubTree(rootItem);
+		foreach (var item in this.TreeView.GetVisualDescendants().OfType<TreeViewItem>())
+			this.TreeView.CollapseSubTree(item);
 	}
 }
