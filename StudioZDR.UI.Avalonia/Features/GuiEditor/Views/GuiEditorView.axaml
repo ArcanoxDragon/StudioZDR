@@ -35,7 +35,7 @@
 			<Border CornerRadius="8" ClipToBounds="True">
 
 				<Panel>
-					<views:GuiCompositionEditor DataContext="{Binding GuiCompositionViewModel}" />
+					<views:GuiCompositionEditor DataContext="{Binding}" />
 
 					<TextBlock HorizontalAlignment="Center"
 							   VerticalAlignment="Center"

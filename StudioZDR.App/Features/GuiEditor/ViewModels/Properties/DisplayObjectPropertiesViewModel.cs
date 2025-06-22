@@ -153,6 +153,8 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 
 	private void SetHorizontalAnchors(HorizontalAnchor? anchor)
 	{
+		if (this.refreshing > 0) // Do NOT set properties on models while we're freshing FROM the models!
+			return;
 		if (Nodes is null or [])
 			return;
 
@@ -188,6 +190,8 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 
 	private void SetVerticalAnchors(VerticalAnchor? anchor)
 	{
+		if (this.refreshing > 0) // Do NOT set properties on models while we're freshing FROM the models!
+			return;
 		if (Nodes is null or [])
 			return;
 

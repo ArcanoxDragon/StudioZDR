@@ -1,35 +1,38 @@
-﻿using System.Reactive.Concurrency;
+﻿using System.Collections.ObjectModel;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using DynamicData.Binding;
 using MercuryEngine.Data.Formats;
 using MercuryEngine.Data.Types.DreadTypes;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReactiveUI.SourceGenerators;
 using StudioZDR.App.Configuration;
 using StudioZDR.App.Extensions;
+using StudioZDR.App.Features.GuiEditor.Configuration;
 using StudioZDR.App.Framework;
 using StudioZDR.App.ViewModels;
+using Vector2 = System.Numerics.Vector2;
 
 namespace StudioZDR.App.Features.GuiEditor.ViewModels;
 
 public partial class GuiEditorViewModel : ViewModelBase
 {
-	private readonly IWindowContext                              windowContext;
-	private readonly IOptionsMonitor<ApplicationSettings>        settingsMonitor;
-	private readonly ObjectFactory<DreadGuiCompositionViewModel> compositionViewModelFactory;
+	private readonly IWindowContext                       windowContext;
+	private readonly IOptionsMonitor<ApplicationSettings> settingsMonitor;
 
 	public GuiEditorViewModel(
 		IWindowContext windowContext,
+		ISettingsManager settingsManager,
 		IOptionsMonitor<ApplicationSettings> settingsMonitor,
-		IServiceProvider serviceProvider,
 		ILogger<GuiEditorViewModel> logger
 	)
 	{
 		this.windowContext = windowContext;
 		this.settingsMonitor = settingsMonitor;
-		this.compositionViewModelFactory = ActivatorUtilities.CreateFactory<DreadGuiCompositionViewModel>([typeof(GUI__CDisplayObjectContainer)]);
+		this._isMouseSelectionEnabled = settingsMonitor.CurrentValue.GetFeatureSettings<GuiEditorSettings>().MouseSelectionEnabled;
+		this._zoomLevel = 0;
 
 		OpenFileCommand
 			.HandleExceptionsWith(ex => {
@@ -53,11 +56,18 @@ public partial class GuiEditorViewModel : ViewModelBase
 			.InvokeCommand(LoadGuiFileCommand!);
 
 		this.WhenAnyValue(m => m.OpenedGuiFile)
-			.Select(bmscp => this.compositionViewModelFactory(serviceProvider, [bmscp?.Root.Value]))
 			.ObserveOn(MainThreadScheduler)
+			.Select(bmscp => new DreadGuiCompositionViewModel(bmscp?.Root.Value))
 			.Subscribe(model => {
-				GuiCompositionViewModel?.Dispose();
-				GuiCompositionViewModel = model;
+				// Reset editor state
+				SelectedNodes.Clear();
+				HoveredNode = null;
+				ZoomLevel = 0.0;
+				PanOffset = Vector2.Zero;
+				
+				// Swap in new composition
+				Composition?.Dispose();
+				Composition = model;
 			});
 
 		LoadGuiFileCommand.IsExecuting
@@ -93,6 +103,37 @@ public partial class GuiEditorViewModel : ViewModelBase
 			.ObserveOn(MainThreadScheduler)
 			.Subscribe();
 
+		this.WhenAnyValue(m => m.ZoomLevel, level => Math.Pow(10, level))
+			.ToProperty(this, m => m.ZoomFactor, out this._zoomFactorHelper);
+
+		this.WhenAnyValue(m => m.ZoomFactor)
+			.StartWith(1.0)
+			.Buffer(2, 1)
+			.Subscribe(buffer => {
+				if (buffer is not [var previous, var current] || previous == 0.0)
+					return;
+
+				var scaleFactor = current / previous;
+
+				PanOffset *= (float) scaleFactor;
+			});
+
+		this.WhenAnyValue(m => m.HoveredNode, n => n?.DisplayObject)
+			.ToProperty(this, m => m.HoveredObject, out this._hoveredObjectHelper);
+
+		this.WhenAnyValue(m => m.IsMouseSelectionEnabled)
+			.Subscribe(enabled => {
+				if (!enabled)
+					// Make sure a node doesn't get stuck as hovered in case this is disabled while one *is* hovered
+					HoveredNode = null;
+
+				settingsManager.Modify(settings => {
+					var guiEditorSettings = settings.GetFeatureSettings<GuiEditorSettings>();
+
+					guiEditorSettings.MouseSelectionEnabled = enabled;
+				});
+			});
+
 		this.WhenActivated(disposables => {
 			if (!Settings.IsOutputLocationValid)
 			{
@@ -105,9 +146,25 @@ public partial class GuiEditorViewModel : ViewModelBase
 					.DisposeWith(disposables);
 			}
 
+			SelectedNodes
+				.ToObservableChangeSet()
+				.Select(_ => SelectedNodes.Select(n => n.DisplayObject).ToList())
+				.ToProperty(this, m => m.SelectedObjects, out this._selectedObjectsHelper)
+				.DisposeWith(disposables);
+
+			SelectedNodes
+				.ToObservableChangeSet()
+				.Select(_ => SelectedNodes.Count > 0)
+				.ToProperty(this, m => m.HasSelection, out this._hasSelectionHelper);
+
+			SelectedNodes
+				.ToObservableChangeSet()
+				.Subscribe(_ => Composition?.InvalidateRender())
+				.DisposeWith(disposables);
+
 			Disposable.Create(() => {
-				GuiCompositionViewModel?.Dispose();
-				GuiCompositionViewModel = null;
+				Composition?.Dispose();
+				Composition = null;
 			}).DisposeWith(disposables);
 		});
 	}
@@ -119,7 +176,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 	public partial Bmscp? OpenedGuiFile { get; set; }
 
 	[Reactive]
-	public partial DreadGuiCompositionViewModel? GuiCompositionViewModel { get; private set; }
+	public partial DreadGuiCompositionViewModel? Composition { get; private set; }
 
 	[ObservableAsProperty]
 	public partial bool IsLoading { get; }
@@ -130,9 +187,50 @@ public partial class GuiEditorViewModel : ViewModelBase
 	[Reactive]
 	public partial Exception? OpenFileException { get; set; }
 
+	[Reactive]
+	public partial double ZoomLevel { get; set; }
+
+	[Reactive]
+	public partial Vector2 PanOffset { get; set; }
+
+	[ObservableAsProperty]
+	public partial double ZoomFactor { get; }
+
+	[Reactive]
+	public partial GuiCompositionNodeViewModel? HoveredNode { get; set; }
+
+	[ObservableAsProperty]
+	public partial GUI__CDisplayObject? HoveredObject { get; }
+
+	public ObservableCollection<GuiCompositionNodeViewModel> SelectedNodes { get; } = [];
+
+	[ObservableAsProperty(ReadOnly = false)]
+	public partial IReadOnlyList<GUI__CDisplayObject?>? SelectedObjects { get; }
+
+	[ObservableAsProperty(ReadOnly = false)]
+	public partial bool HasSelection { get; }
+
+	[Reactive]
+	public partial bool IsMouseSelectionEnabled { get; set; }
+
 	private IObservable<bool> CanSaveFile { get; }
 
 	private ApplicationSettings Settings => this.settingsMonitor.CurrentValue;
+
+	public void ToggleSelected(GuiCompositionNodeViewModel node)
+	{
+		// If we remove it successfully, it was in the collection before, so don't add it.
+		// If we did not remove it, it was absent before, so we should add it.
+		if (!SelectedNodes.Remove(node))
+			SelectedNodes.Add(node);
+	}
+
+	[ReactiveCommand]
+	public void ResetZoomAndPan()
+	{
+		ZoomLevel = 0;
+		PanOffset = Vector2.Zero;
+	}
 
 	[ReactiveCommand]
 	private void Close()

@@ -25,8 +25,11 @@ internal partial class GuiCompositionCanvas : ContentControl
 	public const double MinimumZoomLevel = -1;
 	public const double MaximumZoomLevel = 1;
 
-	public static readonly StyledProperty<DreadGuiCompositionViewModel?> ViewModelProperty
-		= AvaloniaProperty.Register<GuiCompositionCanvas, DreadGuiCompositionViewModel?>(nameof(ViewModel));
+	public static readonly StyledProperty<DreadGuiCompositionViewModel?> CompositionProperty
+		= AvaloniaProperty.Register<GuiCompositionCanvas, DreadGuiCompositionViewModel?>(nameof(Composition));
+
+	public static readonly StyledProperty<GuiEditorViewModel?> EditorProperty
+		= AvaloniaProperty.Register<GuiCompositionCanvas, GuiEditorViewModel?>(nameof(Editor));
 
 	private readonly SpriteSheetManager spriteSheetManager;
 
@@ -44,10 +47,16 @@ internal partial class GuiCompositionCanvas : ContentControl
 		InitializeComponent();
 	}
 
-	public DreadGuiCompositionViewModel? ViewModel
+	public DreadGuiCompositionViewModel? Composition
 	{
-		get => GetValue(ViewModelProperty);
-		set => SetValue(ViewModelProperty, value);
+		get => GetValue(CompositionProperty);
+		set => SetValue(CompositionProperty, value);
+	}
+
+	public GuiEditorViewModel? Editor
+	{
+		get => GetValue(EditorProperty);
+		set => SetValue(EditorProperty, value);
 	}
 
 	private Matrix TransformMatrix        { get; set; } = Matrix.Identity;
@@ -86,7 +95,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 	{
 		base.OnPointerPressed(e);
 
-		if (ViewModel is not { } viewModel)
+		if (Editor is not { } editor)
 			return;
 
 		var point = e.GetCurrentPoint(this);
@@ -97,7 +106,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 			e.PreventGestureRecognition();
 			point.Pointer.Capture(this);
 			this.panStart = point.Position;
-			this.initialPanOffset = viewModel.PanOffset;
+			this.initialPanOffset = editor.PanOffset;
 			this.panning = true;
 		}
 		else if (point.Properties.IsLeftButtonPressed) // TODO: Verify this is true for primary pen/touch input
@@ -107,27 +116,27 @@ internal partial class GuiCompositionCanvas : ContentControl
 			e.PreventGestureRecognition();
 			point.Pointer.Capture(this);
 
-			if (viewModel.IsMouseSelectionEnabled)
+			if (editor.IsMouseSelectionEnabled)
 			{
 				var hoveredNode = GetHoveredNode();
 
 				if (hoveredNode is null)
 				{
 					// De-select everything
-					viewModel.SelectedNodes.Clear();
+					editor.SelectedNodes.Clear();
 					return;
 				}
 
 				if (( e.KeyModifiers & KeyModifiers.Control ) == KeyModifiers.Control)
 				{
 					// Toggle the node as being selected
-					viewModel.ToggleSelected(hoveredNode);
+					editor.ToggleSelected(hoveredNode);
 				}
-				else if (!viewModel.SelectedNodes.Contains(hoveredNode))
+				else if (!editor.SelectedNodes.Contains(hoveredNode))
 				{
 					// Make this node the only selected node
-					viewModel.SelectedNodes.Clear();
-					viewModel.SelectedNodes.Add(hoveredNode);
+					editor.SelectedNodes.Clear();
+					editor.SelectedNodes.Add(hoveredNode);
 				}
 			}
 		}
@@ -156,24 +165,24 @@ internal partial class GuiCompositionCanvas : ContentControl
 		LastCursorPosition = newPosition;
 		InvalidateVisual();
 
-		if (ViewModel is not { } viewModel)
+		if (Editor is not { } editor)
 			return;
 
 		if (this.panning)
 		{
 			var delta = newPosition - this.panStart;
 
-			viewModel.PanOffset = this.initialPanOffset + new Vector2((float) delta.X, (float) delta.Y);
+			editor.PanOffset = this.initialPanOffset + new Vector2((float) delta.X, (float) delta.Y);
 		}
-		else if (viewModel.IsMouseSelectionEnabled)
+		else if (editor.IsMouseSelectionEnabled)
 		{
-			viewModel.HoveredNode = GetHoveredNode();
+			editor.HoveredNode = GetHoveredNode();
 		}
 	}
 
 	private GuiCompositionNodeViewModel? GetHoveredNode()
 	{
-		if (ViewModel is not { Hierarchy: { } hierarchy })
+		if (Composition is not { Hierarchy: { } hierarchy })
 			return null;
 		if (this.drawOperation is not { } drawOperation)
 			return null;
@@ -207,17 +216,17 @@ internal partial class GuiCompositionCanvas : ContentControl
 
 		const double Multiplier = 0.05;
 
-		if (ViewModel is not { } viewModel)
+		if (Editor is not { } editor)
 			return;
 
-		viewModel.ZoomLevel = Math.Clamp(viewModel.ZoomLevel + e.Delta.Y * Multiplier, MinimumZoomLevel, MaximumZoomLevel);
+		editor.ZoomLevel = Math.Clamp(editor.ZoomLevel + ( e.Delta.Y * Multiplier ), MinimumZoomLevel, MaximumZoomLevel);
 	}
 
 	protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
 	{
 		base.OnPropertyChanged(change);
 
-		if (change.Property == ViewModelProperty)
+		if (change.Property == CompositionProperty || change.Property == EditorProperty)
 		{
 			AttachSubscriptions();
 			InvalidateVisual();
@@ -237,19 +246,20 @@ internal partial class GuiCompositionCanvas : ContentControl
 			return;
 
 		this.drawOperation.Bounds = new Rect(0, 0, Bounds.Width, Bounds.Height);
-		this.drawOperation.ViewModel = ViewModel;
+		this.drawOperation.Composition = Composition;
+		this.drawOperation.Editor = Editor;
 		context.Custom(this.drawOperation);
 	}
 
 	private void CalculateMatrix()
 	{
-		if (ViewModel is not { } viewModel || this.drawOperation is not { } drawOperation)
+		if (Editor is not { } editor || this.drawOperation is not { } drawOperation)
 		{
 			TransformMatrix = InverseTransformMatrix = Matrix.Identity;
 			return;
 		}
 
-		var zoomFactor = viewModel.ZoomFactor;
+		var zoomFactor = editor.ZoomFactor;
 		var centerX = drawOperation.RenderBounds.Width / 2;
 		var centerY = drawOperation.RenderBounds.Height / 2;
 		var centerPoint = new Vector(centerX, centerY);
@@ -257,7 +267,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 		TransformMatrix = Matrix.CreateTranslation(-centerPoint) *
 						  Matrix.CreateScale(zoomFactor, zoomFactor) *
 						  Matrix.CreateTranslation(centerPoint) *
-						  Matrix.CreateTranslation(viewModel.PanOffset);
+						  Matrix.CreateTranslation(editor.PanOffset);
 		InverseTransformMatrix = TransformMatrix.TryInvert(out var inverted) ? inverted : Matrix.Identity;
 	}
 
@@ -275,17 +285,17 @@ internal partial class GuiCompositionCanvas : ContentControl
 			.Subscribe(_ => InvalidateVisual())
 			.DisposeWith(this.disposables);
 
-		ViewModel?.WhenAnyValue(m => m.ZoomFactor, m => m.PanOffset, m => m.HoveredNode, m => m.SelectedNodes)
+		Editor?.WhenAnyValue(m => m.ZoomFactor, m => m.PanOffset, m => m.HoveredNode, m => m.SelectedNodes)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => InvalidateVisual())
 			.DisposeWith(this.disposables);
 
-		ViewModel?.WhenAnyValue(m => m.ZoomFactor, m => m.PanOffset)
+		Editor?.WhenAnyValue(m => m.ZoomFactor, m => m.PanOffset)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => CalculateMatrix())
 			.DisposeWith(this.disposables);
 
-		ViewModel?.RenderInvalidated
+		Composition?.RenderInvalidated
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => {
 				Debug.WriteLine("Render invalidated");

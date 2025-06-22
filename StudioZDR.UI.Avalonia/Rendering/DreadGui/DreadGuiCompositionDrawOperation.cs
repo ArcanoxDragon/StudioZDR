@@ -6,6 +6,7 @@ using SkiaSharp;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 using StudioZDR.UI.Avalonia.Extensions;
 using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
+using Vector2 = System.Numerics.Vector2;
 
 namespace StudioZDR.UI.Avalonia.Rendering.DreadGui;
 
@@ -19,13 +20,11 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 	private static readonly SKColor HoverBorderColor    = new(255, 0, 255, 64);
 	private static readonly SKColor SelectedBorderColor = new(0, 255, 255);
+	private static readonly SKColor TextDrawColor       = new(255, 255, 255);
+	private static readonly SKColor TextBlurColor       = new(0, 0, 0);
 
-	private static readonly SKColor ContainerBorderColor = new(255, 0, 0);
-	private static readonly SKColor SpriteBorderColor    = new(0, 255, 0);
-	private static readonly SKColor TextDrawColor        = new(255, 255, 255);
-	private static readonly SKColor TextBlurColor        = new(0, 0, 0);
-
-	public DreadGuiCompositionViewModel? ViewModel { get; set; }
+	public DreadGuiCompositionViewModel? Composition { get; set; }
+	public GuiEditorViewModel?           Editor      { get; set; }
 
 	public Rect Bounds
 	{
@@ -44,19 +43,24 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 	public void Render(ImmediateDrawingContext context)
 	{
-		if (ViewModel is not { Hierarchy: { } hierarchy } viewModel)
+		if (Composition is not { Hierarchy: { } hierarchy })
 			return;
+
+		if (Editor is not { ZoomFactor: var zoomFactor, PanOffset: var panOffset })
+		{
+			zoomFactor = 1.0;
+			panOffset = Vector2.Zero;
+		}
 
 		using var guiDrawContext = new DreadGuiDrawContext(context);
 
 		using (guiDrawContext.Canvas.WithSavedState())
 		{
-			var zoomFactor = (float) viewModel.ZoomFactor;
 			var centerX = (float) ( RenderBounds.Width / 2 );
 			var centerY = (float) ( RenderBounds.Height / 2 );
 
-			guiDrawContext.Canvas.Translate(viewModel.PanOffset.X, viewModel.PanOffset.Y);
-			guiDrawContext.Canvas.Scale(zoomFactor, zoomFactor, centerX, centerY);
+			guiDrawContext.Canvas.Translate(panOffset.X, panOffset.Y);
+			guiDrawContext.Canvas.Scale((float) zoomFactor, (float) zoomFactor, centerX, centerY);
 
 			for (var renderPass = 0; renderPass < RenderPassCount; renderPass++)
 			{
@@ -106,9 +110,9 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 			{
 				context.Paint.Color = new SKColor(255, 255, 255);
 
-				if (ViewModel?.SelectedObjects is { } selectedObjects && selectedObjects.Contains(obj))
+				if (Editor?.SelectedObjects is { } selectedObjects && selectedObjects.Contains(obj))
 					RenderDisplayObjectBounds(context, objBounds, SelectedBorderColor);
-				if (ReferenceEquals(obj, ViewModel?.HoveredObject))
+				if (ReferenceEquals(obj, Editor?.HoveredObject))
 					RenderDisplayObjectBounds(context, objBounds, HoverBorderColor);
 			}
 

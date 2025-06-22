@@ -9,8 +9,8 @@
 	xmlns:dataTemplates="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.DataTemplates"
 	xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
 	mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="700"
-	x:TypeArguments="viewModels:DreadGuiCompositionViewModel"
-	x:DataType="viewModels:DreadGuiCompositionViewModel"
+	x:TypeArguments="viewModels:GuiEditorViewModel"
+	x:DataType="viewModels:GuiEditorViewModel"
 	x:CompileBindings="True"
 	x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.GuiCompositionEditor"
 	Name="EditorView">
@@ -44,7 +44,8 @@
 			</Grid>
 
 			<views:GuiCompositionCanvas Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
-										ViewModel="{Binding}" />
+										Composition="{Binding Composition}"
+										Editor="{Binding}" />
 
 			<Label Grid.Row="2" Grid.Column="0"
 				   HorizontalAlignment="Center"
@@ -93,7 +94,7 @@
 			</StackPanel>
 
 			<TreeView x:Name="TreeView" Grid.Row="1"
-					  ItemsSource="{Binding Hierarchy.Children}"
+					  ItemsSource="{Binding Composition.Hierarchy.Children}"
 					  SelectedItems="{Binding SelectedNodes}"
 					  SelectionMode="Multiple"
 					  PointerMoved="TreeView_OnPointerMoved"

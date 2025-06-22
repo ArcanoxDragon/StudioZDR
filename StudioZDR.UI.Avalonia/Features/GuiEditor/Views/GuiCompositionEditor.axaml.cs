@@ -7,7 +7,7 @@ using StudioZDR.App.Features.GuiEditor.ViewModels;
 
 namespace StudioZDR.UI.Avalonia.Features.GuiEditor.Views;
 
-internal partial class GuiCompositionEditor : ReactiveUserControl<DreadGuiCompositionViewModel>
+internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewModel>
 {
 	public static readonly FuncValueConverter<bool, string> IsVisibleIconConverter
 		= new(isVisible => isVisible ? "fa-solid fa-eye" : "fa-solid fa-eye-slash");
@@ -21,8 +21,8 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<DreadGuiCompos
 	{
 		InitializeComponent();
 
-		InputElement.KeyDownEvent.AddClassHandler<TopLevel>(Global_OnKeyDown, handledEventsToo: true);
-		InputElement.KeyUpEvent.AddClassHandler<TopLevel>(Global_OnKeyUp, handledEventsToo: true);
+		KeyDownEvent.AddClassHandler<TopLevel>(Global_OnKeyDown, handledEventsToo: true);
+		KeyUpEvent.AddClassHandler<TopLevel>(Global_OnKeyUp, handledEventsToo: true);
 	}
 
 	public bool IsShiftPressed
