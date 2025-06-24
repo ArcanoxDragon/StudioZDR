@@ -46,6 +46,12 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 		private set => SetAndRaise(IsShiftPressedProperty, ref field, value);
 	}
 
+	protected override void OnLoaded(RoutedEventArgs e)
+	{
+		base.OnLoaded(e);
+		this.Canvas.Focus();
+	}
+
 	private void TreeView_OnPointerMoved(object? sender, PointerEventArgs e)
 	{
 		if (sender is not TreeView treeView)

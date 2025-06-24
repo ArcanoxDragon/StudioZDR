@@ -42,6 +42,8 @@ internal partial class GuiCompositionCanvas : ContentControl
 
 	public GuiCompositionCanvas()
 	{
+		Focusable = true;
+
 		this.spriteSheetManager = App.Container.Resolve<SpriteSheetManager>();
 
 		InitializeComponent();

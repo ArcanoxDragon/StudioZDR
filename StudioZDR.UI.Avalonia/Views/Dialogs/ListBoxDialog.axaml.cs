@@ -1,6 +1,7 @@
 using System.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Interactivity;
 using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.UI.Avalonia.Views.Dialogs;
@@ -102,4 +103,10 @@ public partial class ListBoxDialog : ReactiveWindow<ListBoxDialogViewModel>
 
 	public void OnPositiveButtonClicked() => Close(ViewModel?.SelectedItem);
 	public void OnNegativeButtonClicked() => Close(null);
+
+	protected override void OnLoaded(RoutedEventArgs e)
+	{
+		base.OnLoaded(e);
+		this.ListBox.Focus();
+	}
 }

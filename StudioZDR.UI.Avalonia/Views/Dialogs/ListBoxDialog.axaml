@@ -36,9 +36,19 @@
 					Margin="0,10"
 					Padding="2"
 					CornerRadius="6">
-				<ListBox ItemsSource="{Binding #Dialog.ItemsSource}"
+				<ListBox x:Name="ListBox"
+						 Focusable="True"
+						 ItemsSource="{Binding #Dialog.ItemsSource}"
 						 SelectedItem="{Binding SelectedItem}"
-						 MinHeight="200" />
+						 IsTextSearchEnabled="true"
+						 MinHeight="200">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<!-- Default is a VirtualizingStackPanel, which breaks IsTextSearchEnabled -->
+							<StackPanel />
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+				</ListBox>
 			</Border>
 
 			<Grid Grid.Row="2"
