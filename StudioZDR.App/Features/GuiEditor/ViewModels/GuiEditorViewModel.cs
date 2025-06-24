@@ -6,7 +6,6 @@ using System.Reactive.Subjects;
 using DynamicData.Binding;
 using MercuryEngine.Data.Formats;
 using MercuryEngine.Data.Types.DreadTypes;
-using MercuryEngine.Data.Types.Fields;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReactiveUI.SourceGenerators;
@@ -23,10 +22,13 @@ public partial class GuiEditorViewModel : ViewModelBase
 {
 	private readonly IWindowContext                       windowContext;
 	private readonly IOptionsMonitor<ApplicationSettings> settingsMonitor;
-	private readonly Stack<Bmscp>                         undoStack      = [];
-	private readonly Stack<Bmscp>                         redoStack      = [];
-	private readonly Subject<bool>                        canUndoSubject = new();
-	private readonly Subject<bool>                        canRedoSubject = new();
+
+	private readonly Stack<Bmscp> undoStack = [];
+	private readonly Stack<Bmscp> redoStack = [];
+
+	private readonly Subject<bool> hasSelectionSubject = new();
+	private readonly Subject<bool> canUndoSubject      = new();
+	private readonly Subject<bool> canRedoSubject      = new();
 
 	private bool ignoreNextStateChange;
 
@@ -178,7 +180,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 			SelectedNodes
 				.ToObservableChangeSet()
 				.Select(_ => SelectedNodes.Count > 0)
-				.ToProperty(this, m => m.HasSelection, out this._hasSelectionHelper);
+				.Subscribe(this.hasSelectionSubject)
+				.DisposeWith(disposables);
 
 			SelectedNodes
 				.ToObservableChangeSet()
@@ -189,6 +192,10 @@ public partial class GuiEditorViewModel : ViewModelBase
 				Composition?.Dispose();
 				Composition = null;
 			}).DisposeWith(disposables);
+
+			disposables.Add(this.hasSelectionSubject);
+			disposables.Add(this.canUndoSubject);
+			disposables.Add(this.canRedoSubject);
 		});
 	}
 
@@ -233,17 +240,15 @@ public partial class GuiEditorViewModel : ViewModelBase
 	[ObservableAsProperty(ReadOnly = false)]
 	public partial IReadOnlyList<GUI__CDisplayObject?>? SelectedObjects { get; }
 
-	[ObservableAsProperty(ReadOnly = false)]
-	public partial bool HasSelection { get; }
-
 	[Reactive]
 	public partial bool IsMouseSelectionEnabled { get; set; }
 
 	private IObservable<bool> CanSaveFile { get; }
 
-	private ApplicationSettings Settings => this.settingsMonitor.CurrentValue;
-	private IObservable<bool>   CanUndo  => this.canUndoSubject;
-	private IObservable<bool>   CanRedo  => this.canRedoSubject;
+	private ApplicationSettings Settings     => this.settingsMonitor.CurrentValue;
+	private IObservable<bool>   HasSelection => this.hasSelectionSubject;
+	private IObservable<bool>   CanUndo      => this.canUndoSubject;
+	private IObservable<bool>   CanRedo      => this.canRedoSubject;
 
 	public void ToggleSelected(GuiCompositionNodeViewModel node)
 	{
@@ -251,6 +256,51 @@ public partial class GuiEditorViewModel : ViewModelBase
 		// If we did not remove it, it was absent before, so we should add it.
 		if (!SelectedNodes.Remove(node))
 			SelectedNodes.Add(node);
+	}
+
+	[ReactiveCommand(CanExecute = nameof(HasSelection))]
+	public void DeleteSelectedObjects()
+	{
+		if (Composition is not { } composition)
+			return;
+
+		using var _ = composition.LockForWriting();
+		HashSet<GuiCompositionNodeViewModel> nodesToDelete = [..SelectedNodes];
+
+		foreach (GuiCompositionNodeViewModel node in SelectedNodes)
+		{
+			if (WillDeleteParent(node))
+				// If the node's parent is already queued for deletion, don't bother deleting this node individually
+				nodesToDelete.Remove(node);
+		}
+
+		foreach (GuiCompositionNodeViewModel node in nodesToDelete)
+		{
+			if (node.Parent is not { } parent)
+				// This would mean we're deleting the root - can't do that!
+				continue;
+
+			// Remove the node from its parent, and remove the node's display object from the parent's display object container
+			parent.Children.Remove(node);
+
+			if (parent.DisplayObject is GUI__CDisplayObjectContainer parentContainer && node.DisplayObject is { } displayObject)
+				parentContainer.Children.Remove(displayObject);
+		}
+
+		// Stage the delete as an undo operation
+		StageUndoOperation();
+
+		return;
+
+		bool WillDeleteParent(GuiCompositionNodeViewModel node)
+		{
+			if (node.Parent is not { } parent)
+				return false;
+			if (nodesToDelete.Contains(parent))
+				return true;
+
+			return WillDeleteParent(parent);
+		}
 	}
 
 	#region Undo/Redo
