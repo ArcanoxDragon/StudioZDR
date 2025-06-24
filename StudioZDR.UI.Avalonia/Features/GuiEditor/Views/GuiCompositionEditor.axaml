@@ -148,9 +148,8 @@
 						  ResizeBehavior="PreviousAndNext"
 						  ResizeDirection="Rows" />
 
-			<ScrollViewer Grid.Row="3"
-						  Margin="4">
-				<ContentControl Content="{Binding SelectedNodes}">
+			<ScrollViewer Grid.Row="3" Margin="4" Grid.IsSharedSizeScope="True">
+				<ContentControl Content="{Binding #EditorView.SelectedNodesForProperties}">
 					<ContentControl.ContentTemplate>
 						<dataTemplates:DisplayObjectPropertiesTemplate
 							Editor="{Binding #EditorView.ViewModel}" />

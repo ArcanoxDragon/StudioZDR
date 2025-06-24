@@ -3,9 +3,9 @@ using Humanizer;
 using MercuryEngine.Data.Types.DreadTypes;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
+using StudioZDR.App.Extensions;
 using StudioZDR.App.Rendering;
 using StudioZDR.TegraTextureLib;
-using StudioZDR.UI.Avalonia.Extensions;
 
 namespace StudioZDR.UI.Avalonia.Rendering;
 

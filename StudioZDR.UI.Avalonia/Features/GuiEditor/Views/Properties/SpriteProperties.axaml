@@ -1,0 +1,44 @@
+<ContentControl xmlns="https://github.com/avaloniaui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+				xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+				xmlns:properties="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties"
+				xmlns:i="https://github.com/projektanker/icons.avalonia"
+				mc:Ignorable="d"
+				d:DesignWidth="600" d:DesignHeight="400"
+				x:CompileBindings="True"
+				x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties.SpriteProperties"
+				Name="Control">
+
+	<StackPanel>
+		<properties:DisplayObjectProperties
+			ViewModel="{Binding #Control.ViewModel, Mode=OneWay}" />
+
+		<Grid
+			RowDefinitions="Auto,35"
+			Classes="ControlGrid"
+			IsEnabled="{Binding #Control.ViewModel.CanEdit}">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<Label Grid.Row="1" Grid.Column="0" Target="SpriteTextBox">
+				Sprite:
+			</Label>
+
+			<TextBox Grid.Row="1" Grid.Column="1"
+					 x:Name="SpriteTextBox"
+					 Text="{Binding #Control.ViewModel.SpriteName}"
+					 Watermark="{Binding #Control.ViewModel.SpriteNameWatermark}"
+					 IsReadOnly="True">
+				<TextBox.InnerRightContent>
+					<Button Classes="TextBoxRightAccessory"
+							Command="{Binding #Control.ViewModel.ChooseSpriteCommand}">
+						<i:Icon Value="fa-solid fa-ellipsis" />
+					</Button>
+				</TextBox.InnerRightContent>
+			</TextBox>
+		</Grid>
+	</StackPanel>
+</ContentControl>

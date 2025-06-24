@@ -10,7 +10,7 @@ namespace StudioZDR.UI.Avalonia.Views;
 public class BaseWindow<
 	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 	TViewModel
-> : ReactiveWindow<TViewModel>
+> : ReactiveWindow<TViewModel>, ILifetimeScopeRoot
 where TViewModel : ViewModelBase
 {
 	private ILifetimeScope? lifetimeScope;
@@ -35,6 +35,10 @@ where TViewModel : ViewModelBase
 			}).DisposeWith(disposables);
 		});
 	}
+
+	public ILifetimeScope LifetimeScope
+		=> this.lifetimeScope ??
+		   throw new InvalidOperationException($"{nameof(LifetimeScope)} can only be accessed while the window is active");
 
 	protected virtual TViewModel InitializeViewModel()
 	{

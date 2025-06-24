@@ -15,9 +15,9 @@ using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.App.Features.GuiEditor.ViewModels.Properties;
 
-public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposable
+public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposable
 {
-	private const string MultipleValuesPlaceholder = "<multiple>";
+	protected const string MultipleValuesPlaceholder = "<multiple>";
 
 	private static readonly RectangleF FullScreenBounds = new(0, 0, 1, 1);
 
@@ -159,15 +159,43 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 
 	#endregion
 
+	protected bool IsRefreshing => this.refreshing > 0;
+
+	#region IDisposable
+
+	private bool disposed;
+
+	~DisplayObjectPropertiesViewModel()
+		=> Dispose(false);
+
 	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	private void Dispose(bool disposing)
+	{
+		if (this.disposed)
+			return;
+
+		this.disposed = true;
+
+		if (disposing)
+			DisposeSelf();
+	}
+
+	protected virtual void DisposeSelf()
 	{
 		this.changes.Dispose();
 		this.collectionDisposable.Dispose();
 	}
 
+	#endregion
+
 	private void SetHorizontalAnchors(HorizontalAnchor? anchor)
 	{
-		if (this.refreshing > 0) // Do NOT set properties on models while we're freshing FROM the models!
+		if (IsRefreshing) // Do NOT set properties on models while we're freshing FROM the models!
 			return;
 		if (Nodes is null or [])
 			return;
@@ -199,12 +227,12 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 		}
 
 		this.changes.OnNext(Unit.Default);
-		AggregateAndRefreshValues(); // Because position may have changed
+		AggregateAndRefreshValues();
 	}
 
 	private void SetVerticalAnchors(VerticalAnchor? anchor)
 	{
-		if (this.refreshing > 0) // Do NOT set properties on models while we're freshing FROM the models!
+		if (IsRefreshing) // Do NOT set properties on models while we're freshing FROM the models!
 			return;
 		if (Nodes is null or [])
 			return;
@@ -236,12 +264,12 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 		}
 
 		this.changes.OnNext(Unit.Default);
-		AggregateAndRefreshValues(); // Because position may have changed
+		AggregateAndRefreshValues();
 	}
 
 	private void SetPosition((float? X, float? Y) position)
 	{
-		if (this.refreshing > 0) // Do NOT set properties on models while we're freshing FROM the models!
+		if (IsRefreshing) // Do NOT set properties on models while we're freshing FROM the models!
 			return;
 		if (Nodes is null or [])
 			return;
@@ -337,12 +365,20 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 		return new RectangleF(boundsX, boundsY, objWidth, objHeight);
 	}
 
-	private void SetAllValues<T>(Expression<Func<GUI__CDisplayObject, T>> propertyExpression, T value)
+	protected void SetAllValues<T>(Expression<Func<GUI__CDisplayObject, T>> propertyExpression, T value)
 		=> SetAllValues(propertyExpression, _ => value);
 
-	private void SetAllValues<T>(Expression<Func<GUI__CDisplayObject, T>> propertyExpression, Func<GUI__CDisplayObject, T> getValue)
+	protected void SetAllValues<T>(Expression<Func<GUI__CDisplayObject, T>> propertyExpression, Func<GUI__CDisplayObject, T> getValue)
+		=> SetAllValues<GUI__CDisplayObject, T>(propertyExpression, getValue);
+
+	protected void SetAllValues<TDisplayObject, T>(Expression<Func<TDisplayObject, T>> propertyExpression, T value)
+	where TDisplayObject : GUI__CDisplayObject
+		=> SetAllValues(propertyExpression, _ => value);
+
+	protected void SetAllValues<TDisplayObject, T>(Expression<Func<TDisplayObject, T>> propertyExpression, Func<TDisplayObject, T> getValue)
+	where TDisplayObject : GUI__CDisplayObject
 	{
-		if (this.refreshing > 0) // Do NOT set properties on models while we're freshing FROM the models!
+		if (IsRefreshing) // Do NOT set properties on models while we're freshing FROM the models!
 			return;
 		if (Nodes is null)
 			return;
@@ -354,21 +390,32 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 			didChange |= SetValue(node, property, getValue);
 
 		if (didChange)
+		{
 			this.changes.OnNext(Unit.Default);
+			AggregateAndRefreshValues();
+		}
 	}
 
-	private bool SetValue<T>(GuiCompositionNodeViewModel node, Expression<Func<GUI__CDisplayObject, T>> propertyExpression, T value)
+	protected bool SetValue<T>(GuiCompositionNodeViewModel node, Expression<Func<GUI__CDisplayObject, T>> propertyExpression, T value)
+		=> SetValue<GUI__CDisplayObject, T>(node, propertyExpression, value);
+
+	protected bool SetValue<T>(GuiCompositionNodeViewModel node, PropertyInfo property, Func<GUI__CDisplayObject, T> getValue)
+		=> SetValue<GUI__CDisplayObject, T>(node, property, getValue);
+
+	protected bool SetValue<TDisplayObject, T>(GuiCompositionNodeViewModel node, Expression<Func<TDisplayObject, T>> propertyExpression, T value)
+	where TDisplayObject : GUI__CDisplayObject
 	{
 		var property = ReflectionUtility.GetProperty(propertyExpression);
 
-		return SetValue(node, property, _ => value);
+		return SetValue<TDisplayObject, T>(node, property, _ => value);
 	}
 
-	private bool SetValue<T>(GuiCompositionNodeViewModel node, PropertyInfo property, Func<GUI__CDisplayObject, T> getValue)
+	protected bool SetValue<TDisplayObject, T>(GuiCompositionNodeViewModel node, PropertyInfo property, Func<TDisplayObject, T> getValue)
+	where TDisplayObject : GUI__CDisplayObject
 	{
-		if (this.refreshing > 0) // Do NOT set properties on models while we're freshing FROM the models!
+		if (IsRefreshing) // Do NOT set properties on models while we're freshing FROM the models!
 			return false;
-		if (node.DisplayObject is not { } obj)
+		if (node.DisplayObject is not TDisplayObject obj)
 			return false;
 
 		var currentValue = property.GetValue(obj);
@@ -382,7 +429,7 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 		return true;
 	}
 
-	private void AggregateAndRefreshValues()
+	protected void AggregateAndRefreshValues()
 	{
 		try
 		{
@@ -392,16 +439,7 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 			using var _ = DelayChangeNotifications();
 
 			CanEdit = Nodes?.Count > 0;
-			Id = null;
-			IdWatermark = null;
-			IsVisible = true;
-			HorizontalAnchor = null;
-			VerticalAnchor = null;
-			PositionX = null;
-			PositionY = null;
-			SizeX = null;
-			SizeY = null;
-			Angle = null;
+			ResetValues();
 
 			if (Nodes == null)
 				return;
@@ -409,87 +447,112 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 			for (var i = 0; i < Nodes.Count; i++)
 			{
 				var obj = Nodes[i].DisplayObject;
-				var objHorizontalAnchor = obj?.GetHorizontalAnchor();
-				var objVerticalAnchor = obj?.GetVerticalAnchor();
-				var objPositionX = objHorizontalAnchor switch {
-					Properties.HorizontalAnchor.Right  => obj?.RightX,
-					Properties.HorizontalAnchor.Center => obj?.CenterX,
-					_                                  => obj?.LeftX ?? obj?.X,
-				};
-				var objPositionY = objVerticalAnchor switch {
-					Properties.VerticalAnchor.Bottom => obj?.BottomY,
-					Properties.VerticalAnchor.Center => obj?.CenterY,
-					_                                => obj?.TopY ?? obj?.Y,
-				};
 
-				if (i == 0)
-				{
-					// Derive current values from first object
-
-					Id = obj?.ID;
-					IsVisible = obj?.Visible;
-					HorizontalAnchor = objHorizontalAnchor;
-					VerticalAnchor = objVerticalAnchor;
-					PositionX = objPositionX;
-					PositionY = objPositionY;
-					SizeX = obj?.SizeX;
-					SizeY = obj?.SizeY;
-					Angle = obj?.Angle;
-				}
-				else
-				{
-					// If any object has a value that differs, null that property out
-
-					if (obj?.ID != Id)
-					{
-						Id = null;
-						IdWatermark = MultipleValuesPlaceholder;
-					}
-
-					if (obj?.Visible != IsVisible)
-						IsVisible = null;
-					if (objHorizontalAnchor != HorizontalAnchor)
-						HorizontalAnchor = null;
-					if (objVerticalAnchor != VerticalAnchor)
-						VerticalAnchor = null;
-
-					// ReSharper disable CompareOfFloatsByEqualityOperator
-					if (objPositionX != PositionX)
-					{
-						PositionX = null;
-						PositionXWatermark = MultipleValuesPlaceholder;
-					}
-
-					if (objPositionY != PositionY)
-					{
-						PositionY = null;
-						PositionYWatermark = MultipleValuesPlaceholder;
-					}
-
-					if (obj?.SizeX != SizeX)
-					{
-						SizeX = null;
-						SizeXWatermark = MultipleValuesPlaceholder;
-					}
-
-					if (obj?.SizeY != SizeY)
-					{
-						SizeY = null;
-						SizeYWatermark = MultipleValuesPlaceholder;
-					}
-
-					if (obj?.Angle != Angle)
-					{
-						Angle = null;
-						AngleWatermark = MultipleValuesPlaceholder;
-					}
-					// ReSharper restore CompareOfFloatsByEqualityOperator
-				}
+				RefreshValuesFromObject(obj, forceRefresh: i == 0);
 			}
 		}
 		finally
 		{
 			Interlocked.Decrement(ref this.refreshing);
+		}
+	}
+
+	protected virtual void ResetValues()
+	{
+		Id = null;
+		IdWatermark = null;
+		IsVisible = true;
+		HorizontalAnchor = null;
+		VerticalAnchor = null;
+		PositionX = null;
+		PositionXWatermark = null;
+		PositionY = null;
+		PositionYWatermark = null;
+		SizeX = null;
+		SizeXWatermark = null;
+		SizeY = null;
+		SizeYWatermark = null;
+		Angle = null;
+		AngleWatermark = null;
+	}
+
+	protected virtual void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool forceRefresh)
+	{
+		var objHorizontalAnchor = obj?.GetHorizontalAnchor();
+		var objVerticalAnchor = obj?.GetVerticalAnchor();
+		var objPositionX = objHorizontalAnchor switch {
+			Properties.HorizontalAnchor.Right  => obj?.RightX,
+			Properties.HorizontalAnchor.Center => obj?.CenterX,
+			_                                  => obj?.LeftX ?? obj?.X,
+		};
+		var objPositionY = objVerticalAnchor switch {
+			Properties.VerticalAnchor.Bottom => obj?.BottomY,
+			Properties.VerticalAnchor.Center => obj?.CenterY,
+			_                                => obj?.TopY ?? obj?.Y,
+		};
+
+		if (forceRefresh)
+		{
+			// Derive current values from first object
+
+			Id = obj?.ID;
+			IsVisible = obj?.Visible;
+			HorizontalAnchor = objHorizontalAnchor;
+			VerticalAnchor = objVerticalAnchor;
+			PositionX = objPositionX;
+			PositionY = objPositionY;
+			SizeX = obj?.SizeX;
+			SizeY = obj?.SizeY;
+			Angle = obj?.Angle;
+		}
+		else
+		{
+			// If any object has a value that differs, null that property out
+
+			if (obj?.ID != Id)
+			{
+				Id = null;
+				IdWatermark = MultipleValuesPlaceholder;
+			}
+
+			if (obj?.Visible != IsVisible)
+				IsVisible = null;
+			if (objHorizontalAnchor != HorizontalAnchor)
+				HorizontalAnchor = null;
+			if (objVerticalAnchor != VerticalAnchor)
+				VerticalAnchor = null;
+
+			// ReSharper disable CompareOfFloatsByEqualityOperator
+			if (objPositionX != PositionX)
+			{
+				PositionX = null;
+				PositionXWatermark = MultipleValuesPlaceholder;
+			}
+
+			if (objPositionY != PositionY)
+			{
+				PositionY = null;
+				PositionYWatermark = MultipleValuesPlaceholder;
+			}
+
+			if (obj?.SizeX != SizeX)
+			{
+				SizeX = null;
+				SizeXWatermark = MultipleValuesPlaceholder;
+			}
+
+			if (obj?.SizeY != SizeY)
+			{
+				SizeY = null;
+				SizeYWatermark = MultipleValuesPlaceholder;
+			}
+
+			if (obj?.Angle != Angle)
+			{
+				Angle = null;
+				AngleWatermark = MultipleValuesPlaceholder;
+			}
+			// ReSharper restore CompareOfFloatsByEqualityOperator
 		}
 	}
 }

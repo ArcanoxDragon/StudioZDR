@@ -1,9 +1,11 @@
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using DynamicData.Binding;
 using ReactiveUI;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 
@@ -16,6 +18,9 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 
 	public static readonly DirectProperty<GuiCompositionEditor, bool> IsShiftPressedProperty
 		= AvaloniaProperty.RegisterDirect<GuiCompositionEditor, bool>(nameof(IsShiftPressed), view => view.IsShiftPressed);
+
+	internal static readonly StyledProperty<IList<GuiCompositionNodeViewModel>> SelectedNodesForPropertiesProperty
+		= AvaloniaProperty.Register<GuiCompositionEditor, IList<GuiCompositionNodeViewModel>>(nameof(SelectedNodesForProperties));
 
 	private readonly HashSet<string> expandedHierarchyNodes = [];
 
@@ -37,6 +42,13 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 			ViewModel?.WhenAnyValue(vm => vm.Composition!.Hierarchy)
 				.Subscribe(_ => OnHierarchyReplaced())
 				.DisposeWith(disposables);
+
+			// In order for the data template to be invoked for any change in selection,
+			// we need to *replace* the collection used for the template's binding,
+			// instead of just relying on the collection itself being observable.
+			ViewModel?.WhenAnyValue(vm => vm.SelectedNodes)
+				.SelectMany(nodes => nodes.ToObservableChangeSet())
+				.Subscribe(_ => SelectedNodesForProperties = ViewModel?.SelectedNodes.ToList() ?? []);
 		});
 	}
 
@@ -44,6 +56,12 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 	{
 		get;
 		private set => SetAndRaise(IsShiftPressedProperty, ref field, value);
+	}
+
+	public IList<GuiCompositionNodeViewModel> SelectedNodesForProperties
+	{
+		get => GetValue(SelectedNodesForPropertiesProperty);
+		private set => SetValue(SelectedNodesForPropertiesProperty, value);
 	}
 
 	protected override void OnLoaded(RoutedEventArgs e)

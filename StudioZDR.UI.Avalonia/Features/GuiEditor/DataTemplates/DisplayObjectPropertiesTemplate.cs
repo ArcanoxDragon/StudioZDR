@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using MercuryEngine.Data.Types.DreadTypes;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 using StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties;
 
@@ -21,12 +22,22 @@ internal class DisplayObjectPropertiesTemplate : AvaloniaObject, IDataTemplate
 		if (param is not IList<GuiCompositionNodeViewModel> nodes)
 			return new DisplayObjectProperties { Editor = Editor };
 
+		if (AllHaveType<GUI__CSprite>())
+			return BuildControl<SpriteProperties>();
 		// TODO: Other subtypes
 
-		return new DisplayObjectProperties {
-			DataContext = nodes,
-			Editor = Editor,
-		};
+		return BuildControl<DisplayObjectProperties>();
+
+		bool AllHaveType<TDisplayObject>()
+		where TDisplayObject : GUI__CDisplayObject
+			=> nodes.Count > 0 && nodes.All(n => n.DisplayObject is TDisplayObject);
+
+		TControl BuildControl<TControl>()
+		where TControl : UserControl, IDisplayObjectPropertiesControl, new()
+			=> new() {
+				DataContext = nodes,
+				Editor = Editor,
+			};
 	}
 
 	public bool Match(object? data)

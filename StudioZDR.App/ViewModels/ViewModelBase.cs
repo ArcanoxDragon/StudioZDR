@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Concurrency;
+using Microsoft.Extensions.Logging;
 using StudioZDR.App.Framework.Dialogs;
 
 namespace StudioZDR.App.ViewModels;
@@ -15,12 +16,25 @@ public class ViewModelBase : ReactiveObject, IActivatableViewModel
 	[field: MaybeNull]
 	public IDialogs Dialogs
 	{
-		get => field ?? throw new InvalidOperationException("ViewModel has not been initialized");
+		get => field ?? throw NotInitializedException();
+		private set;
+	}
+
+	[field: MaybeNull]
+	public ILogger Logger
+	{
+		get => field ?? throw NotInitializedException();
 		private set;
 	}
 
 	public void InstallDefaultServices(ILifetimeScope scope)
 	{
+		var loggerFactory = scope.Resolve<ILoggerFactory>();
+
 		Dialogs = scope.Resolve<IDialogs>();
+		Logger = loggerFactory.CreateLogger(GetType());
 	}
+
+	private static InvalidOperationException NotInitializedException()
+		=> new("ViewModel has not been initialized");
 }

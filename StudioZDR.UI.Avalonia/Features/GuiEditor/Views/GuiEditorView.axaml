@@ -20,7 +20,6 @@
 		<Menu DockPanel.Dock="Top" HorizontalAlignment="Left">
 			<MenuItem Header="_File">
 				<MenuItem Header="_Open..." InputGesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
-				<MenuItem Header="_Pick Sprite..." Command="{Binding PickSpriteCommand}" />
 				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFileCommand}" />
 				<Separator />
 				<MenuItem Header="_Close" Command="{Binding CloseCommand}" />

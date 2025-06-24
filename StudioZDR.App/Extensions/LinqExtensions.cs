@@ -1,6 +1,6 @@
-﻿namespace StudioZDR.UI.Avalonia.Extensions;
+﻿namespace StudioZDR.App.Extensions;
 
-internal static class LinqExtensions
+public static class LinqExtensions
 {
 	/// <summary>
 	/// Returns a sequence of tuples for each item in <paramref name="source"/>, with each tuple
