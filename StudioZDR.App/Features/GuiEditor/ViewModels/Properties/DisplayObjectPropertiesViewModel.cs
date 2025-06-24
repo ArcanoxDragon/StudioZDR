@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using DynamicData.Binding;
@@ -22,6 +23,7 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 
 	private readonly Subject<Unit>    changes              = new();
 	private readonly SerialDisposable collectionDisposable = new();
+	private readonly SerialDisposable nodesDisposable      = new();
 
 	private volatile int refreshing;
 
@@ -35,12 +37,24 @@ public sealed partial class DisplayObjectPropertiesViewModel : ViewModelBase, ID
 				{
 					this.collectionDisposable.Disposable = observableCollection
 						.ToObservableChangeSet()
-						.Subscribe(_ => AggregateAndRefreshValues());
+						.Subscribe(_ => {
+							AggregateAndRefreshValues();
+							this.nodesDisposable.Disposable = SubscribeAllNodes();
+						});
+
+					this.nodesDisposable.Disposable = SubscribeAllNodes();
 				}
 				else
 				{
 					this.collectionDisposable.Disposable = null;
+					this.nodesDisposable.Disposable = null;
 				}
+
+				IDisposable? SubscribeAllNodes()
+					=> nodes
+						.Select(n => n.DisplayObjectChanges)
+						.Merge()
+						.Subscribe(_ => AggregateAndRefreshValues());
 			});
 
 		this.WhenAnyValue(m => m.Id)

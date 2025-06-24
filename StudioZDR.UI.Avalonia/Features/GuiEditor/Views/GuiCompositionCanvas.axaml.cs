@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Numerics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -22,8 +21,9 @@ namespace StudioZDR.UI.Avalonia.Features.GuiEditor.Views;
 
 internal partial class GuiCompositionCanvas : ContentControl
 {
-	public const double MinimumZoomLevel = -1;
-	public const double MaximumZoomLevel = 1;
+	public const  double MinimumZoomLevel    = -1;
+	public const  double MaximumZoomLevel    = 1;
+	private const double MinimumDragDistance = 5;
 
 	public static readonly StyledProperty<DreadGuiCompositionViewModel?> CompositionProperty
 		= AvaloniaProperty.Register<GuiCompositionCanvas, DreadGuiCompositionViewModel?>(nameof(Composition));
@@ -36,9 +36,16 @@ internal partial class GuiCompositionCanvas : ContentControl
 	private CompositeDisposable?              disposables;
 	private DreadGuiCompositionDrawOperation? drawOperation;
 
+	// Panning
 	private bool    panning;
 	private Point   panStart;
 	private Vector2 initialPanOffset;
+
+	// Dragging
+	private readonly List<DraggingObject> draggingObjects = [];
+	private          bool                 dragging;
+	private          bool                 dragLatched;
+	private          Point                dragStart;
 
 	public GuiCompositionCanvas()
 	{
@@ -99,6 +106,9 @@ internal partial class GuiCompositionCanvas : ContentControl
 
 		if (Editor is not { } editor)
 			return;
+		if (this.panning || this.dragging)
+			// Don't allow starting one if already doing another
+			return;
 
 		var point = e.GetCurrentPoint(this);
 
@@ -118,11 +128,20 @@ internal partial class GuiCompositionCanvas : ContentControl
 			e.PreventGestureRecognition();
 			point.Pointer.Capture(this);
 
-			if (editor.IsMouseSelectionEnabled)
-			{
-				var hoveredNode = GetHoveredNode();
+			var hoveredNodes = GetHoveredNodes().ToList();
+			var anySelectedUnderPointer = editor.SelectedNodes.Intersect(hoveredNodes).Any();
 
-				if (hoveredNode is null)
+			if (anySelectedUnderPointer)
+			{
+				// Immediately start dragging
+				StartDragging();
+			}
+			else if (editor.IsMouseSelectionEnabled)
+			{
+				// We only care about the "inner-most" (i.e. "front-most", to the user) child that is under the pointer
+				var innermostHoveredNode = hoveredNodes.LastOrDefault();
+
+				if (innermostHoveredNode is null)
 				{
 					// De-select everything
 					editor.SelectedNodes.Clear();
@@ -132,30 +151,31 @@ internal partial class GuiCompositionCanvas : ContentControl
 				if (( e.KeyModifiers & KeyModifiers.Control ) == KeyModifiers.Control)
 				{
 					// Toggle the node as being selected
-					editor.ToggleSelected(hoveredNode);
+					editor.ToggleSelected(innermostHoveredNode);
 				}
-				else if (!editor.SelectedNodes.Contains(hoveredNode))
+				else if (!editor.SelectedNodes.Contains(innermostHoveredNode))
 				{
-					// Make this node the only selected node
+					// Make this node the only selected node (and start dragging)
 					editor.SelectedNodes.Clear();
-					editor.SelectedNodes.Add(hoveredNode);
+					editor.SelectedNodes.Add(innermostHoveredNode);
+					StartDragging();
 				}
 			}
 		}
-	}
 
-	protected override void OnPointerReleased(PointerReleasedEventArgs e)
-	{
-		base.OnPointerReleased(e);
+		void StartDragging()
+		{
+			this.dragStart = point.Position;
+			this.draggingObjects.AddRange(editor.GetTopmostSelectedNodes().Select(node => new DraggingObject(node, GetInitialObjectPosition(node))));
+			this.dragLatched = false;
+			this.dragging = true;
+		}
 
-		this.panning = false;
-	}
-
-	protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
-	{
-		base.OnPointerCaptureLost(e);
-
-		this.panning = false;
+		Point GetInitialObjectPosition(GuiCompositionNodeViewModel node)
+		{
+			GetNodeBounds(node, out var origin);
+			return origin;
+		}
 	}
 
 	protected override void OnPointerMoved(PointerEventArgs e)
@@ -175,41 +195,122 @@ internal partial class GuiCompositionCanvas : ContentControl
 			var delta = newPosition - this.panStart;
 
 			editor.PanOffset = this.initialPanOffset + new Vector2((float) delta.X, (float) delta.Y);
+			Cursor = new Cursor(StandardCursorType.SizeAll);
+		}
+		else if (this.dragging)
+		{
+			var delta = ( newPosition - this.dragStart ) / editor.ZoomFactor;
+
+			if (!this.dragLatched && ( (Vector) delta ).Length > MinimumDragDistance)
+				this.dragLatched = true;
+
+			if (this.dragLatched)
+			{
+				Rect screenBounds = GetScreenBounds();
+
+				foreach (var (node, initialPosition) in this.draggingObjects)
+				{
+					if (node.DisplayObject is not { } displayObject)
+						continue;
+
+					Rect parentBounds = node.Parent is null ? screenBounds : GetNodeBounds(node.Parent, out _);
+					Point newObjectPosition = initialPosition + delta;
+
+					displayObject.MoveOriginTo(screenBounds, parentBounds, newObjectPosition);
+					node.NotifyOfDisplayObjectChange();
+				}
+			}
 		}
 		else if (editor.IsMouseSelectionEnabled)
 		{
-			editor.HoveredNode = GetHoveredNode();
+			var hoveredNodes = GetHoveredNodes().ToList();
+			var anySelectedUnderPointer = editor.SelectedNodes.Intersect(hoveredNodes).Any();
+
+			if (anySelectedUnderPointer)
+			{
+				// If the pointer is over any selected nodes, don't show the selection "ghost"
+				editor.HoveredNode = null;
+				Cursor = new Cursor(StandardCursorType.SizeAll);
+			}
+			else
+			{
+				// We want the "innermost" node to appear hovered, but not any of its parents
+				editor.HoveredNode = hoveredNodes.LastOrDefault();
+				Cursor = Cursor.Default;
+			}
+		}
+		else
+		{
+			// Reset the cursor
+			Cursor = Cursor.Default;
 		}
 	}
 
-	private GuiCompositionNodeViewModel? GetHoveredNode()
+	protected override void OnPointerReleased(PointerReleasedEventArgs e)
+	{
+		EndPointerActions();
+		base.OnPointerReleased(e);
+	}
+
+	protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+	{
+		EndPointerActions();
+		base.OnPointerCaptureLost(e);
+	}
+
+	private void EndPointerActions()
+	{
+		if (this.dragLatched && Editor is { } editor)
+			editor.StageUndoOperation();
+
+		this.panning = false;
+		this.dragging = false;
+		this.dragLatched = false;
+		this.draggingObjects.Clear();
+	}
+
+	private IEnumerable<GuiCompositionNodeViewModel> GetHoveredNodes()
 	{
 		if (Composition is not { Hierarchy: { } hierarchy })
-			return null;
-		if (this.drawOperation is not { } drawOperation)
-			return null;
+			yield break;
 
-		Rect screenBounds = drawOperation.RenderBounds;
+		Rect screenBounds = GetScreenBounds();
 		Point transformedCursorPosition = LastCursorPosition.Transform(InverseTransformMatrix);
-		GuiCompositionNodeViewModel? hovered = null;
 
-		Visit(hierarchy, screenBounds);
+		foreach (var found in Visit(hierarchy, screenBounds))
+			yield return found;
 
-		return hovered;
-
-		void Visit(GuiCompositionNodeViewModel node, Rect parentBounds)
+		IEnumerable<GuiCompositionNodeViewModel> Visit(GuiCompositionNodeViewModel node, Rect parentBounds)
 		{
 			if (node is not { IsVisible: true, DisplayObject: { } displayObject })
-				return;
+				yield break;
 
 			var objBounds = displayObject.GetDisplayObjectRect(screenBounds, parentBounds);
 
 			if (objBounds.Contains(transformedCursorPosition))
-				hovered = node;
+				yield return node;
 
 			foreach (var child in node.Children)
-				Visit(child, objBounds);
+			foreach (var found in Visit(child, objBounds))
+				yield return found;
 		}
+	}
+
+	private Rect GetScreenBounds()
+		=> this.drawOperation?.RenderBounds ?? new Rect(0, 0, Bounds.Width, Bounds.Height);
+
+	private Rect GetNodeBounds(GuiCompositionNodeViewModel node, out Point origin)
+	{
+		if (node.DisplayObject is not { } displayObject)
+		{
+			origin = default;
+			return new Rect();
+		}
+
+		Rect screenBounds = GetScreenBounds();
+		Rect parentBounds = node.Parent is null ? screenBounds : GetNodeBounds(node.Parent, out _);
+
+		return displayObject.GetDisplayObjectRect(screenBounds, parentBounds, out origin);
 	}
 
 	protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -328,10 +429,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 
 		Composition?.RenderInvalidated
 			.ObserveOn(RxApp.MainThreadScheduler)
-			.Subscribe(_ => {
-				Debug.WriteLine("Render invalidated");
-				InvalidateVisual();
-			})
+			.Subscribe(_ => InvalidateVisual())
 			.DisposeWith(this.disposables);
 	}
 
@@ -348,4 +446,6 @@ internal partial class GuiCompositionCanvas : ContentControl
 			Dispatcher.UIThread.Invoke(InvalidateVisual);
 	}
 #endif
+
+	private sealed record DraggingObject(GuiCompositionNodeViewModel Node, Point InitialPosition);
 }

@@ -265,16 +265,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 			return;
 
 		using var _ = composition.LockForWriting();
-		HashSet<GuiCompositionNodeViewModel> nodesToDelete = [..SelectedNodes];
 
-		foreach (GuiCompositionNodeViewModel node in SelectedNodes)
-		{
-			if (WillDeleteParent(node))
-				// If the node's parent is already queued for deletion, don't bother deleting this node individually
-				nodesToDelete.Remove(node);
-		}
-
-		foreach (GuiCompositionNodeViewModel node in nodesToDelete)
+		foreach (GuiCompositionNodeViewModel node in GetTopmostSelectedNodes())
 		{
 			if (node.Parent is not { } parent)
 				// This would mean we're deleting the root - can't do that!
@@ -289,17 +281,34 @@ public partial class GuiEditorViewModel : ViewModelBase
 
 		// Stage the delete as an undo operation
 		StageUndoOperation();
+	}
 
-		return;
+	/// <summary>
+	/// Gets a set of all selected nodes who do not have any selected ancestors.
+	/// In other words, if a node is selected <i>and</i> some of its descendants are selected, only the top
+	/// node will be returned.
+	/// </summary>
+	public IEnumerable<GuiCompositionNodeViewModel> GetTopmostSelectedNodes()
+	{
+		HashSet<GuiCompositionNodeViewModel> selectedNodes = [..SelectedNodes];
 
-		bool WillDeleteParent(GuiCompositionNodeViewModel node)
+		foreach (GuiCompositionNodeViewModel node in SelectedNodes)
+		{
+			if (IsAncestorSelected(node))
+				// If one of the node's ancestors is already selected, don't include the node itself
+				selectedNodes.Remove(node);
+		}
+
+		return selectedNodes;
+
+		bool IsAncestorSelected(GuiCompositionNodeViewModel node)
 		{
 			if (node.Parent is not { } parent)
 				return false;
-			if (nodesToDelete.Contains(parent))
+			if (selectedNodes.Contains(parent))
 				return true;
 
-			return WillDeleteParent(parent);
+			return IsAncestorSelected(parent);
 		}
 	}
 

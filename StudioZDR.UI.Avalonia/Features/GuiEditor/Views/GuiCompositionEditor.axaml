@@ -31,12 +31,14 @@
 				<StackPanel Orientation="Horizontal"
 							Spacing="6">
 					<Button Command="{Binding UndoCommand}"
-							ToolTip.Tip="Undo Last Action">
+							HotKey="Ctrl+Z"
+							ToolTip.Tip="Undo Last Action (Ctrl+Z)">
 						<i:Icon Value="fa-arrow-rotate-left" />
 					</Button>
 
 					<Button Command="{Binding RedoCommand}"
-							ToolTip.Tip="Redo Last Undone Action">
+							HotKey="Ctrl+Y"
+							ToolTip.Tip="Redo Last Undone Action (Ctrl+Y)">
 						<i:Icon Value="fa-arrow-rotate-right" />
 					</Button>
 				</StackPanel>
@@ -93,6 +95,7 @@
 						Orientation="Horizontal"
 						Spacing="6">
 				<Button Command="{Binding DeleteSelectedObjectsCommand}"
+						HotKey="Delete"
 						ToolTip.Tip="Delete Selected">
 					<i:Icon Value="fa-trash" />
 				</Button>

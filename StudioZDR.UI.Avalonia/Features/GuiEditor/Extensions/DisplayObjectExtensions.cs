@@ -20,19 +20,19 @@ internal static class DisplayObjectExtensions
 		{
 			var rightRefX = refX + parentBounds.Width;
 
-			originX = rightRefX - obj.RightX.Value * screenBounds.Width;
+			originX = rightRefX - ( obj.RightX.Value * screenBounds.Width );
 			boundsX = originX - objWidth;
 		}
 		else if (obj.CenterX.HasValue)
 		{
-			var centerRefX = refX + 0.5 * parentBounds.Width;
+			var centerRefX = refX + ( 0.5 * parentBounds.Width );
 
-			originX = centerRefX + obj.CenterX.Value * screenBounds.Width;
-			boundsX = originX - 0.5 * objWidth;
+			originX = centerRefX + ( obj.CenterX.Value * screenBounds.Width );
+			boundsX = originX - ( 0.5 * objWidth );
 		}
 		else
 		{
-			originX = refX + ( obj.LeftX ?? obj.X ?? 0.0 ) * screenBounds.Width;
+			originX = refX + ( ( obj.LeftX ?? obj.X ?? 0.0 ) * screenBounds.Width );
 			boundsX = originX;
 		}
 
@@ -40,23 +40,75 @@ internal static class DisplayObjectExtensions
 		{
 			var bottomRefY = refY + parentBounds.Height;
 
-			originY = bottomRefY - obj.BottomY.Value * screenBounds.Height;
+			originY = bottomRefY - ( obj.BottomY.Value * screenBounds.Height );
 			boundsY = originY - objHeight;
 		}
 		else if (obj.CenterY.HasValue)
 		{
-			var centerRefY = refY + 0.5 * parentBounds.Height;
+			var centerRefY = refY + ( 0.5 * parentBounds.Height );
 
-			originY = centerRefY + obj.CenterY.Value * screenBounds.Height;
-			boundsY = originY - 0.5 * objHeight;
+			originY = centerRefY + ( obj.CenterY.Value * screenBounds.Height );
+			boundsY = originY - ( 0.5 * objHeight );
 		}
 		else
 		{
-			originY = refY + ( obj.TopY ?? obj.Y ?? 0.0 ) * screenBounds.Height;
+			originY = refY + ( ( obj.TopY ?? obj.Y ?? 0.0 ) * screenBounds.Height );
 			boundsY = originY;
 		}
 
 		origin = new Point(originX, originY);
 		return new Rect(boundsX, boundsY, objWidth, objHeight);
+	}
+
+	public static void MoveOriginTo(this GUI__CDisplayObject obj, Rect screenBounds, Rect parentBounds, Point origin)
+	{
+		var refX = parentBounds.X;
+		var refY = parentBounds.Y;
+
+		// Move X coordinate
+		if (obj.RightX.HasValue)
+		{
+			var rightRefX = refX + parentBounds.Width;
+
+			obj.RightX = (float) ( ( rightRefX - origin.X ) / screenBounds.Width );
+		}
+		else if (obj.CenterX.HasValue)
+		{
+			var centerRefX = refX + ( 0.5 * parentBounds.Width );
+
+			obj.CenterX = (float) ( ( origin.X - centerRefX ) / screenBounds.Width );
+		}
+		else
+		{
+			float newLeft = (float) ( ( origin.X - refX ) / screenBounds.Width );
+
+			if (obj.LeftX.HasValue)
+				obj.LeftX = newLeft;
+			else
+				obj.X = newLeft;
+		}
+
+		// Move Y coordinate
+		if (obj.BottomY.HasValue)
+		{
+			var bottomRefY = refY + parentBounds.Height;
+
+			obj.BottomY = (float) ( ( bottomRefY - origin.Y ) / screenBounds.Height );
+		}
+		else if (obj.CenterY.HasValue)
+		{
+			var centerRefY = refY + ( 0.5 * parentBounds.Height );
+
+			obj.CenterY = (float) ( ( origin.Y - centerRefY ) / screenBounds.Height );
+		}
+		else
+		{
+			float newTop = (float) ( ( origin.Y - refY ) / screenBounds.Height );
+
+			if (obj.TopY.HasValue)
+				obj.TopY = newTop;
+			else
+				obj.Y = newTop;
+		}
 	}
 }
