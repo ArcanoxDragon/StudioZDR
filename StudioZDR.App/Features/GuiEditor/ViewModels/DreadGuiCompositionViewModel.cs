@@ -2,6 +2,7 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using JetBrains.Annotations;
 using MercuryEngine.Data.Types.DreadTypes;
 using ReactiveUI.SourceGenerators;
 using StudioZDR.App.ViewModels;
@@ -35,6 +36,8 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 			});
 	}
 
+	public event EventHandler? Disposing;
+
 	public GUI__CDisplayObjectContainer? RootContainer { get; }
 
 	public IObservable<Unit> RenderInvalidated => this.renderInvalidated;
@@ -42,6 +45,7 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 	[Reactive]
 	public partial GuiCompositionNodeViewModel Hierarchy { get; private set; }
 
+	[MustDisposeResource]
 	public IDisposable LockForReading()
 	{
 		this.hierarchyLock.EnterReadLock();
@@ -49,6 +53,7 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 		return Disposable.Create(this.hierarchyLock.ExitReadLock);
 	}
 
+	[MustDisposeResource]
 	public IDisposable LockForWriting()
 	{
 		this.hierarchyLock.EnterWriteLock();
@@ -61,9 +66,16 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 
 	public void Dispose()
 	{
-		this.renderInvalidated.Dispose();
-		this.hierarchyLock.Dispose();
-		this.hierarchyDisposables?.Dispose();
+		try
+		{
+			Disposing?.Invoke(this, EventArgs.Empty);
+		}
+		finally
+		{
+			this.renderInvalidated.Dispose();
+			this.hierarchyLock.Dispose();
+			this.hierarchyDisposables?.Dispose();
+		}
 	}
 
 	private GuiCompositionNodeViewModel BuildHierarchy(GUI__CDisplayObjectContainer? rootContainer, CompositeDisposable disposables)

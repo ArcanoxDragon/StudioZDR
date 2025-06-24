@@ -26,6 +26,8 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 	private static readonly SKColor HiddenTextDrawColor = new(255, 255, 255, (byte) ( 255 * HiddenObjectAlphaMultiplier ));
 	private static readonly SKColor TextBlurColor       = new(0, 0, 0);
 
+	private readonly ManualResetEventSlim renderingEvent = new(true);
+
 	public DreadGuiCompositionViewModel? Composition { get; set; }
 	public GuiEditorViewModel?           Editor      { get; set; }
 
@@ -46,35 +48,59 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 	public void Render(ImmediateDrawingContext context)
 	{
-		if (Composition is not { Hierarchy: { } hierarchy } composition)
-			return;
+		this.renderingEvent.Reset();
 
-		using var _ = composition.LockForReading();
-
-		if (Editor is not { ZoomFactor: var zoomFactor, PanOffset: var panOffset })
+		try
 		{
-			zoomFactor = 1.0;
-			panOffset = Vector2.Zero;
-		}
+			if (Composition is not { Hierarchy: { } hierarchy } composition)
+				return;
 
-		using var guiDrawContext = new DreadGuiDrawContext(context);
+			using var _ = composition.LockForReading();
 
-		using (guiDrawContext.Canvas.WithSavedState())
-		{
-			var centerX = (float) ( RenderBounds.Width / 2 );
-			var centerY = (float) ( RenderBounds.Height / 2 );
-
-			guiDrawContext.Canvas.Translate(panOffset.X, panOffset.Y);
-			guiDrawContext.Canvas.Scale((float) zoomFactor, (float) zoomFactor, centerX, centerY);
-
-			for (var renderPass = 0; renderPass < RenderPassCount; renderPass++)
+			if (Editor is not { ZoomFactor: var zoomFactor, PanOffset: var panOffset })
 			{
-				RenderDisplayObjectNode(guiDrawContext, hierarchy, RenderBounds, renderPass);
+				zoomFactor = 1.0;
+				panOffset = Vector2.Zero;
 			}
+
+			using var guiDrawContext = new DreadGuiDrawContext(context);
+
+			using (guiDrawContext.Canvas.WithSavedState())
+			{
+				var centerX = (float) ( RenderBounds.Width / 2 );
+				var centerY = (float) ( RenderBounds.Height / 2 );
+
+				guiDrawContext.Canvas.Translate(panOffset.X, panOffset.Y);
+				guiDrawContext.Canvas.Scale((float) zoomFactor, (float) zoomFactor, centerX, centerY);
+
+				for (var renderPass = 0; renderPass < RenderPassCount; renderPass++)
+				{
+					RenderDisplayObjectNode(guiDrawContext, hierarchy, RenderBounds, renderPass);
+				}
+			}
+		}
+		finally
+		{
+			this.renderingEvent.Set();
 		}
 	}
 
-	public void Dispose() { }
+	public void WaitForRendering()
+		=> this.renderingEvent.Wait();
+
+	public void Dispose()
+	{
+		// ICustomDrawOperation.Dispose is called after every time it is rendered!
+		// This class is *reused* between renders. We can't actually dispose here.
+	}
+
+	public void DisposeFinal()
+	{
+		// This is called when the consumer of this draw operation is actually FINISHED with
+		// this instance. We can't use the real IDisposable contract because of the behavior
+		// explained in the Dispose() method.
+		this.renderingEvent.Dispose();
+	}
 
 	public bool Equals(ICustomDrawOperation? other)
 		=> ReferenceEquals(other, this);

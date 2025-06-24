@@ -67,7 +67,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 	{
 		base.OnAttachedToVisualTree(e);
 
-		this.drawOperation?.Dispose();
+		this.drawOperation?.DisposeFinal();
 		this.drawOperation = new DreadGuiCompositionDrawOperation(this.spriteSheetManager);
 
 		AttachSubscriptions();
@@ -81,7 +81,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 	{
 		base.OnDetachedFromVisualTree(e);
 
-		this.drawOperation?.Dispose();
+		this.drawOperation?.DisposeFinal();
 		this.drawOperation = null;
 
 		DetachSubscriptions();
@@ -226,12 +226,41 @@ internal partial class GuiCompositionCanvas : ContentControl
 	{
 		base.OnPropertyChanged(change);
 
-		if (change.Property == CompositionProperty || change.Property == EditorProperty)
+		if (change.Property == CompositionProperty)
+		{
+			if (change.OldValue is DreadGuiCompositionViewModel oldComposition)
+				oldComposition.Disposing -= OnCompositionDisposing;
+			if (change.NewValue is DreadGuiCompositionViewModel newComposition)
+				newComposition.Disposing += OnCompositionDisposing;
+
+			ReleaseCurrentlyRenderingComposition();
+			AttachSubscriptions();
+			InvalidateVisual();
+			CalculateMatrix();
+		}
+
+		if (change.Property == EditorProperty)
 		{
 			AttachSubscriptions();
 			InvalidateVisual();
 			CalculateMatrix();
 		}
+	}
+
+	private void OnCompositionDisposing(object? sender, EventArgs e)
+		=> ReleaseCurrentlyRenderingComposition();
+
+	private void ReleaseCurrentlyRenderingComposition()
+	{
+		if (this.drawOperation is null)
+			return;
+
+		// To ensure we don't try to render a disposing composition,
+		// we need to null out the draw operation's reference to any
+		// composition, and then wait for the draw operation to finish
+		// rendering (if it currently is).
+		this.drawOperation.Composition = null;
+		this.drawOperation.WaitForRendering();
 	}
 
 	public override void Render(DrawingContext context)
