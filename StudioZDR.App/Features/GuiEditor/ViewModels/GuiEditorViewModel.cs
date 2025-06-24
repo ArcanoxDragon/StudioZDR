@@ -28,6 +28,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 	private readonly Subject<bool>                        canUndoSubject = new();
 	private readonly Subject<bool>                        canRedoSubject = new();
 
+	private bool ignoreNextStateChange;
+
 	public GuiEditorViewModel(
 		IWindowContext windowContext,
 		ISettingsManager settingsManager,
@@ -64,7 +66,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 		this.WhenAnyValue(m => m.OpenedGuiFile)
 			.ObserveOn(MainThreadScheduler)
 			.Subscribe(bmscp => {
-				// Reset editor state
+				// Reset editor state when loading new file
 				SelectedNodes.Clear();
 				HoveredNode = null;
 				ZoomLevel = 0.0;
@@ -76,14 +78,19 @@ public partial class GuiEditorViewModel : ViewModelBase
 			});
 
 		this.WhenAnyValue(m => m.LatestPristineState)
-			.ObserveOn(TaskPoolScheduler)
-			.Select(bmscp => bmscp?.DeepClone())
 			.ObserveOn(MainThreadScheduler)
-			.Select(bmscp => new DreadGuiCompositionViewModel(bmscp?.Root.Value))
-			.Subscribe(model => {
-				// Swap in new composition
-				Composition?.Dispose();
-				Composition = model;
+			.Subscribe(bmscp => {
+				if (this.ignoreNextStateChange)
+				{
+					this.ignoreNextStateChange = false;
+					return;
+				}
+
+				// Swap in new composition and dispose old
+				var previousComposition = Composition;
+
+				Composition = new DreadGuiCompositionViewModel(bmscp?.DeepClone().Root.Value);
+				previousComposition?.Dispose();
 			});
 
 		LoadGuiFileCommand.IsExecuting
@@ -246,6 +253,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 			SelectedNodes.Add(node);
 	}
 
+	#region Undo/Redo
+
 	public void StageUndoOperation()
 	{
 		if (LatestPristineState is null || Composition is not { RootContainer: not null })
@@ -258,8 +267,9 @@ public partial class GuiEditorViewModel : ViewModelBase
 		this.undoStack.Push(LatestPristineState);
 
 		// Store the current composition in a new "pristine" state
-		// (do NOT fire change notifications though!)
-		this._latestPristineState = CreatePristineState();
+		// (we need to ignore this state change for the purposes of rebuilding the hierarchy - we aren't really changing states yet)
+		this.ignoreNextStateChange = true;
+		LatestPristineState = CreatePristineState();
 
 		RefreshCanUndoRedo();
 	}
@@ -297,7 +307,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 	private Bmscp CreatePristineState()
 	{
 		Bmscp wrappedCurrentState = new() {
-			Root = new DreadPointer<GUI__CDisplayObjectContainer>(Composition?.RootContainer),
+			Root = Composition?.RootContainer,
 		};
 
 		return wrappedCurrentState.DeepClone();
@@ -308,6 +318,8 @@ public partial class GuiEditorViewModel : ViewModelBase
 		this.canUndoSubject.OnNext(this.undoStack.Count > 0);
 		this.canRedoSubject.OnNext(this.redoStack.Count > 0);
 	}
+
+	#endregion
 
 	[ReactiveCommand]
 	public void ResetZoomAndPan()

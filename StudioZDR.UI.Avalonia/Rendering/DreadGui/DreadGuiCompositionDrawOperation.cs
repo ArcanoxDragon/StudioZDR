@@ -46,8 +46,10 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 	public void Render(ImmediateDrawingContext context)
 	{
-		if (Composition is not { Hierarchy: { } hierarchy })
+		if (Composition is not { Hierarchy: { } hierarchy } composition)
 			return;
+
+		using var _ = composition.LockForReading();
 
 		if (Editor is not { ZoomFactor: var zoomFactor, PanOffset: var panOffset })
 		{

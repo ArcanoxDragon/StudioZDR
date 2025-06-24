@@ -10,7 +10,8 @@ namespace StudioZDR.App.Features.GuiEditor.ViewModels;
 
 public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDisposable
 {
-	private readonly Subject<Unit> renderInvalidated = new();
+	private readonly Subject<Unit>        renderInvalidated = new();
+	private readonly ReaderWriterLockSlim hierarchyLock     = new();
 
 	private CompositeDisposable? hierarchyDisposables;
 
@@ -41,12 +42,28 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 	[Reactive]
 	public partial GuiCompositionNodeViewModel Hierarchy { get; private set; }
 
+	public IDisposable LockForReading()
+	{
+		this.hierarchyLock.EnterReadLock();
+
+		return Disposable.Create(this.hierarchyLock.ExitReadLock);
+	}
+
+	public IDisposable LockForWriting()
+	{
+		this.hierarchyLock.EnterWriteLock();
+
+		return Disposable.Create(this.hierarchyLock.ExitWriteLock);
+	}
+
 	public void InvalidateRender()
 		=> this.renderInvalidated.OnNext(Unit.Default);
 
 	public void Dispose()
 	{
 		this.renderInvalidated.Dispose();
+		this.hierarchyLock.Dispose();
+		this.hierarchyDisposables?.Dispose();
 	}
 
 	private GuiCompositionNodeViewModel BuildHierarchy(GUI__CDisplayObjectContainer? rootContainer, CompositeDisposable disposables)
