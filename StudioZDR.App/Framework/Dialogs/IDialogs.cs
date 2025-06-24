@@ -1,6 +1,6 @@
 ﻿using System.Reactive;
 
-namespace StudioZDR.App.Framework;
+namespace StudioZDR.App.Framework.Dialogs;
 
 public interface IDialogs
 {
@@ -15,4 +15,8 @@ public interface IDialogs
 
 	Task<T?> ChooseAsync<T>(string title, string message, IEnumerable<T> items, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
 	where T : class;
+
+	IObservable<string?> ChooseSprite(string title, string message, ChooseSpriteOptions? options = null);
+
+	Task<string?> ChooseSpriteAsync(string title, string message, ChooseSpriteOptions? options = null);
 }

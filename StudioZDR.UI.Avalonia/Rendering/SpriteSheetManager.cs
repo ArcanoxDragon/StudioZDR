@@ -1,14 +1,16 @@
 ﻿using System.Collections.Concurrent;
 using System.Reactive.Subjects;
+using System.Runtime.CompilerServices;
 using MercuryEngine.Data.Formats;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SkiaSharp;
 using StudioZDR.App.Configuration;
+using StudioZDR.App.Rendering;
 
 namespace StudioZDR.UI.Avalonia.Rendering;
 
-internal class SpriteSheetManager : IDisposable
+internal class SpriteSheetManager : ISpriteSheetManager, IDisposable
 {
 	private const string GlobalSpriteSheetName = "global";
 
@@ -32,6 +34,25 @@ internal class SpriteSheetManager : IDisposable
 	}
 
 	public IObservable<string> SpriteLoaded => this.spriteLoadedSubject;
+
+	public async IAsyncEnumerable<string> GetAllSpriteSheetNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+	{
+		var bmsssBasePath = Path.Join(this.settings.RomFsLocation, "gui", "scripts");
+
+		foreach (string filePath in Directory.EnumerateFiles(bmsssBasePath, "sprites_*.bmsss", SearchOption.AllDirectories))
+		{
+			var bmsss = new Bmsss();
+
+			await using (var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+				await bmsss.ReadAsync(fileStream, cancellationToken);
+
+			foreach (var spriteSheetName in bmsss.SpriteSheets.Keys)
+				yield return spriteSheetName;
+		}
+	}
+
+	public ISpriteSheet GetSpriteSheet(string spriteSheetName)
+		=> this.loadedSpriteSheets.GetOrAdd(spriteSheetName, this.spriteSheetFactory);
 
 	public SKBitmap? GetOrQueueSprite(string spriteName)
 	{
@@ -86,6 +107,10 @@ internal class SpriteSheetManager : IDisposable
 	private SpriteSheet CreateSpriteSheet(string name)
 	{
 		var bmsssPath = Path.Join(this.settings.RomFsLocation, "gui", "scripts", $"sprites_{name.ToLower()}.bmsss");
+
+		if (!File.Exists(bmsssPath))
+			throw new ApplicationException($"A sprite sheet named \"{name}\" could not be found in RomFS");
+
 		var bmsss = new Bmsss();
 
 		using (var fileStream = File.Open(bmsssPath, FileMode.Open, FileAccess.Read, FileShare.Read))

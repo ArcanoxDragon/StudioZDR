@@ -3,7 +3,7 @@ using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
-using StudioZDR.App.Framework;
+using StudioZDR.App.Framework.Dialogs;
 using StudioZDR.UI.Avalonia.Views.Dialogs;
 
 namespace StudioZDR.UI.Avalonia.Framework;
@@ -83,6 +83,29 @@ public class AvaloniaDialogs(Func<WindowContext?> windowContextAccessor) : IDial
 			object? result = await dialog.ShowDialog<object?>(ParentWindow);
 
 			return result as T;
+		});
+	}
+
+	public IObservable<string?> ChooseSprite(string title, string message, ChooseSpriteOptions? options = null)
+		=> Observable.FromAsync(() => ChooseSpriteAsync(title, message, options));
+
+	public async Task<string?> ChooseSpriteAsync(string title, string message, ChooseSpriteOptions? options = null)
+	{
+		return await Dispatcher.UIThread.InvokeAsync(async () => {
+			var dialog = new SpritePickerDialog {
+				Title = title,
+				Message = message,
+				PositiveButtonAccent = options?.PositiveButtonAccent ?? true,
+				AutoSelectSpriteSheet = options?.AutoSelectSpriteSheet,
+				AutoSelectSprite = options?.AutoSelectSprite,
+			};
+
+			if (options?.PositiveButtonText is { } positiveText)
+				dialog.PositiveText = positiveText;
+			if (options?.NegativeButtonText is { } negativeText)
+				dialog.NegativeText = negativeText;
+
+			return await dialog.ShowDialog<string?>(ParentWindow);
 		});
 	}
 }

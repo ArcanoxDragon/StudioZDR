@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Concurrency;
-using StudioZDR.App.Framework;
+using StudioZDR.App.Framework.Dialogs;
 
 namespace StudioZDR.App.ViewModels;
 

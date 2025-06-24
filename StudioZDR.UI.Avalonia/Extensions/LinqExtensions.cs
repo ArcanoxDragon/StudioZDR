@@ -13,4 +13,11 @@ internal static class LinqExtensions
 		foreach (var item in source)
 			yield return ( index++, item );
 	}
+
+	/// <summary>
+	/// Returns a sequence of all items from <paramref name="source"/> that are not null.
+	/// </summary>
+	public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)
+	where T : class
+		=> source.Where(item => item is not null)!;
 }

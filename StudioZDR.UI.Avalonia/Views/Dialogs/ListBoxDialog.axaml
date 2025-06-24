@@ -13,11 +13,10 @@
 						   Name="Dialog"
 						   WindowStartupLocation="CenterOwner"
 						   Classes="Dialog NoControlButtons Immersive Acrylic"
-						   CanResize="False"
 						   Width="500"
 						   Height="600">
 
-	<Grid RowDefinitions="Auto,*" MaxWidth="600">
+	<Grid RowDefinitions="Auto,*">
 		<TextBlock Grid.Row="0"
 				   Padding="0,8,0,8"
 				   HorizontalAlignment="Center"
@@ -53,7 +52,8 @@
 
 			<Grid Grid.Row="2"
 				  ColumnDefinitions="*,10,*"
-				  Classes="ButtonContainer">
+				  Classes="ButtonContainer"
+				  MaxWidth="400">
 				<Button Content="{Binding #Dialog.PositiveText}"
 						IsDefault="True"
 						IsEnabled="{Binding HasSelection}"

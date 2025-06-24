@@ -13,6 +13,7 @@ using StudioZDR.App.Configuration;
 using StudioZDR.App.Extensions;
 using StudioZDR.App.Features.GuiEditor.Configuration;
 using StudioZDR.App.Framework;
+using StudioZDR.App.Framework.Dialogs;
 using StudioZDR.App.ViewModels;
 using Vector2 = System.Numerics.Vector2;
 
@@ -60,6 +61,17 @@ public partial class GuiEditorViewModel : ViewModelBase
 				OpenedFilePath = null;
 				OpenedFilePath = file;
 			});
+
+		PickSpriteCommand
+			.HandleExceptionsWith(ex => {
+				logger.LogError(ex, "An exception was thrown while picking a sprite");
+				return Dialogs.Alert(
+					"Error",
+					"Could not pick a sprite:\n\n" +
+					$"{ex.GetType().Name}: {ex.Message}",
+					"Dismiss");
+			})
+			.Subscribe();
 
 		this.WhenAnyValue(m => m.OpenedFilePath)
 			.ObserveOn(TaskPoolScheduler)
@@ -410,6 +422,26 @@ public partial class GuiEditorViewModel : ViewModelBase
 		var guiScriptsPath = Path.Join(Settings.RomFsLocation, "gui", "scripts");
 
 		return Path.Join(guiScriptsPath, result);
+	}
+
+	[ReactiveCommand]
+	private async Task PickSpriteAsync()
+	{
+		var options = new ChooseSpriteOptions();
+
+		if (SelectedNodes is [{ DisplayObject: GUI__CSprite sprite }] &&
+			sprite.SpriteSheetItem?.Split('/') is [var spriteSheetName, var spriteName])
+		{
+			options.AutoSelectSpriteSheet = spriteSheetName;
+			options.AutoSelectSprite = spriteName;
+		}
+
+		var result = await Dialogs.ChooseSpriteAsync("Choose Sprite", "Pick a sprite!", options);
+
+		if (result is null)
+			return;
+
+		await Dialogs.AlertAsync("Sprite Picked", $"You picked: {result}");
 	}
 
 	[ReactiveCommand(CanExecute = nameof(CanSaveFile))]

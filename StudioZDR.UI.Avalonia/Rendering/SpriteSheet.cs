@@ -1,12 +1,15 @@
 ﻿using System.Collections.Concurrent;
+using Humanizer;
 using MercuryEngine.Data.Types.DreadTypes;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
+using StudioZDR.App.Rendering;
 using StudioZDR.TegraTextureLib;
+using StudioZDR.UI.Avalonia.Extensions;
 
 namespace StudioZDR.UI.Avalonia.Rendering;
 
-internal class SpriteSheet : IDisposable
+internal class SpriteSheet : ISpriteSheet, IDisposable
 {
 	private static readonly SemaphoreSlim SpriteLoadThrottler = new(4, 4);
 
@@ -34,12 +37,18 @@ internal class SpriteSheet : IDisposable
 	public string            Name             { get; }
 	public GUI__CSpriteSheet DreadSpriteSheet { get; }
 
+	public IEnumerable<string> GetAllSpriteNames()
+		=> ( DreadSpriteSheet.Items ?? [] ).Select(i => i.Value?.ID).WhereNotNull();
+
 	public SKBitmap? GetOrQueueSprite(string spriteName)
 	{
 		ObjectDisposedException.ThrowIf(this.disposed, this);
 
 		return this.loadedSprites.GetOrAdd(spriteName, this.spriteFactory).Bitmap;
 	}
+
+	public override string ToString()
+		=> $"{Name} ({"sprites".ToQuantity(DreadSpriteSheet.Items?.Count ?? 0)})";
 
 	public void Dispose()
 	{
