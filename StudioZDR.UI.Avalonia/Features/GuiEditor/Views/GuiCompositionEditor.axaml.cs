@@ -1,8 +1,10 @@
+using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using ReactiveUI;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 
 namespace StudioZDR.UI.Avalonia.Features.GuiEditor.Views;
@@ -15,20 +17,33 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 	public static readonly DirectProperty<GuiCompositionEditor, bool> IsShiftPressedProperty
 		= AvaloniaProperty.RegisterDirect<GuiCompositionEditor, bool>(nameof(IsShiftPressed), view => view.IsShiftPressed);
 
-	private bool leftShiftPressed, rightShiftPressed;
+	private readonly HashSet<string> expandedHierarchyNodes = [];
 
+	private bool    leftShiftPressed, rightShiftPressed;
+	private string? hierarchyRootName;
+
+	[System.Diagnostics.CodeAnalysis.SuppressMessage(
+		"Trimming",
+		"IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+		Justification = "All assemblies that are reflected are included as TrimmerRootAssembly, so all necessary type metadata will be preserved")]
 	public GuiCompositionEditor()
 	{
 		InitializeComponent();
 
 		KeyDownEvent.AddClassHandler<TopLevel>(Global_OnKeyDown, handledEventsToo: true);
 		KeyUpEvent.AddClassHandler<TopLevel>(Global_OnKeyUp, handledEventsToo: true);
+
+		this.WhenActivated(disposables => {
+			ViewModel?.WhenAnyValue(vm => vm.Composition!.Hierarchy)
+				.Subscribe(_ => OnHierarchyReplaced())
+				.DisposeWith(disposables);
+		});
 	}
 
 	public bool IsShiftPressed
 	{
 		get;
-		set => SetAndRaise(IsShiftPressedProperty, ref field, value);
+		private set => SetAndRaise(IsShiftPressedProperty, ref field, value);
 	}
 
 	private void TreeView_OnPointerMoved(object? sender, PointerEventArgs e)
@@ -103,5 +118,54 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 	{
 		foreach (var item in this.TreeView.GetVisualDescendants().OfType<TreeViewItem>())
 			this.TreeView.CollapseSubTree(item);
+	}
+
+	private void OnHierarchyReplaced()
+	{
+		string? rootName = ViewModel?.Composition?.Hierarchy.Name;
+
+		if (string.Equals(rootName, this.hierarchyRootName))
+		{
+			// Same hierarchy - try to restore our state
+			RestoreExpandedNodes();
+		}
+		else
+		{
+			// Different hierarchy - clear the persisted state
+			this.expandedHierarchyNodes.Clear();
+		}
+
+		this.hierarchyRootName = rootName;
+	}
+
+	private void RestoreExpandedNodes()
+	{
+		foreach (var treeContainer in this.TreeView.GetRealizedTreeContainers().OfType<TreeViewItem>())
+		{
+			if (this.TreeView.TreeItemFromContainer(treeContainer) is not GuiCompositionNodeViewModel node)
+				continue;
+
+			treeContainer.IsExpanded = this.expandedHierarchyNodes.Contains(node.FullPath);
+		}
+	}
+
+	private void TreeView_OnItemExpanded(object? sender, RoutedEventArgs e)
+	{
+		if (e.Source is not TreeViewItem item)
+			return;
+		if (this.TreeView.TreeItemFromContainer(item) is not GuiCompositionNodeViewModel node)
+			return;
+
+		this.expandedHierarchyNodes.Add(node.FullPath);
+	}
+
+	private void TreeView_OnItemCollapsed(object? sender, RoutedEventArgs e)
+	{
+		if (e.Source is not TreeViewItem item)
+			return;
+		if (this.TreeView.TreeItemFromContainer(item) is not GuiCompositionNodeViewModel node)
+			return;
+
+		this.expandedHierarchyNodes.Remove(node.FullPath);
 	}
 }

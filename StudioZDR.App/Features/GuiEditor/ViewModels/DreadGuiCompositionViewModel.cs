@@ -87,10 +87,7 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 
 		GuiCompositionNodeViewModel CreateNode(GUI__CDisplayObject displayObject, GuiCompositionNodeViewModel? parent = null)
 		{
-			GuiCompositionNodeViewModel node = new() {
-				DisplayObject = displayObject,
-				Parent = parent,
-			};
+			GuiCompositionNodeViewModel node = new(displayObject, parent);
 
 			if (displayObject is GUI__CDisplayObjectContainer container)
 			{

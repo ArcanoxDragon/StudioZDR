@@ -113,6 +113,8 @@
 					  ItemsSource="{Binding Composition.Hierarchy.Children}"
 					  SelectedItems="{Binding SelectedNodes}"
 					  SelectionMode="Multiple"
+					  TreeViewItem.Expanded="TreeView_OnItemExpanded"
+					  TreeViewItem.Collapsed="TreeView_OnItemCollapsed"
 					  PointerMoved="TreeView_OnPointerMoved"
 					  PointerExited="TreeView_OnPointerExited">
 				<TreeView.ItemTemplate>

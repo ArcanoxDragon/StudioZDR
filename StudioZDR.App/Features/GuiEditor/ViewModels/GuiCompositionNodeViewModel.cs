@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using MercuryEngine.Data.Types.DreadTypes;
 using ReactiveUI.SourceGenerators;
@@ -12,9 +13,15 @@ public sealed partial class GuiCompositionNodeViewModel : ViewModelBase, IDispos
 	private readonly Subject<Unit> displayObjectChanges = new();
 
 	public GuiCompositionNodeViewModel()
+		: this(null) { }
+
+	public GuiCompositionNodeViewModel(GUI__CDisplayObject? displayObject, GuiCompositionNodeViewModel? parent = null)
 	{
-		this._name = "<no name>";
-		this._typeName = "Unknown Type";
+		this._displayObject = displayObject;
+		this._parent = parent;
+		this._name = GetObjectName(displayObject);
+		this._typeName = GetObjectTypeName(displayObject);
+		this._fullPath = parent is null ? this._name : $"{parent.FullPath}.{this._name}";
 		this._isVisible = true;
 		this._children = [];
 
@@ -22,7 +29,19 @@ public sealed partial class GuiCompositionNodeViewModel : ViewModelBase, IDispos
 			.Subscribe(name => Name = name);
 
 		this.WhenAnyValue(m => m.DisplayObject, GetObjectTypeName)
-			.Subscribe(typeName => TypeName = typeName);
+			.ToProperty(this, m => m.TypeName, out this._typeNameHelper, initialValue: this._typeName);
+
+		this.WhenAnyValue(m => m.Name, m => m.Parent)
+			.SelectMany(tuple => {
+				// ReSharper disable once VariableHidesOuterVariable
+				var (name, parent) = tuple;
+
+				if (parent is null)
+					return Observable.Return(name);
+
+				return parent.WhenAnyValue(p => p.FullPath).Select(parentPath => $"{parentPath}.{name}");
+			})
+			.ToProperty(this, m => m.FullPath, out this._fullPathHelper, initialValue: this._fullPath);
 	}
 
 	[Reactive]
@@ -36,8 +55,11 @@ public sealed partial class GuiCompositionNodeViewModel : ViewModelBase, IDispos
 	[Reactive]
 	public partial string Name { get; private set; }
 
-	[Reactive]
-	public partial string TypeName { get; private set; }
+	[ObservableAsProperty]
+	public partial string FullPath { get; }
+
+	[ObservableAsProperty]
+	public partial string TypeName { get; }
 
 	[Reactive]
 	public partial bool IsVisible { get; set; }
