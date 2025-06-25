@@ -120,9 +120,6 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 			{
 				if (obj.Angle.HasValue)
 					context.Canvas.RotateRadians(obj.Angle.Value, originX, originY);
-
-				if (obj.ScaleX.HasValue || obj.ScaleY.HasValue)
-					context.Canvas.Scale(obj.ScaleX ?? 1, obj.ScaleY ?? 1, originX, originY);
 			}
 
 			if (renderPass == RenderPassNormal && node.IsVisible)

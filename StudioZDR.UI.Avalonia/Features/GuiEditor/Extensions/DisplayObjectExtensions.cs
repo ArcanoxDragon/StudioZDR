@@ -9,8 +9,10 @@ internal static class DisplayObjectExtensions
 
 	public static Rect GetDisplayObjectRect(this GUI__CDisplayObject obj, Rect screenBounds, Rect parentBounds, out Point origin)
 	{
-		var objWidth = ( obj.SizeX ?? 1.0 ) * screenBounds.Width;
-		var objHeight = ( obj.SizeY ?? 1.0 ) * screenBounds.Height;
+		var scaleX = obj.ScaleX ?? 1f;
+		var scaleY = obj.ScaleY ?? 1f;
+		var objWidth = ( obj.SizeX ?? 1.0 ) * screenBounds.Width * scaleX;
+		var objHeight = ( obj.SizeY ?? 1.0 ) * screenBounds.Height * scaleY;
 		var refX = parentBounds.X;
 		var refY = parentBounds.Y;
 		double boundsX, boundsY;
