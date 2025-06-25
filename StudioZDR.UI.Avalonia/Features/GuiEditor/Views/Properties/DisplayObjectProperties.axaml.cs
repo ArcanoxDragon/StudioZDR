@@ -33,11 +33,17 @@ where TViewModel : DisplayObjectPropertiesViewModel, new()
 
 			if (ViewModel is null)
 			{
-				ViewModel = new TViewModel {
+				var newViewModel = new TViewModel {
 					Nodes = DataContext as IList<GuiCompositionNodeViewModel>,
 				}.DisposeWith(disposables);
 
-				ViewModel.InstallDefaultServices(scopeRoot.LifetimeScope);
+				newViewModel.InstallDefaultServices(scopeRoot.LifetimeScope);
+
+				// Assigning the ViewModel can cause back-and-forth binding assignments to happen,
+				// and we very much do NOT want display objects to be updated with the old/"stale"
+				// values in the controls that are being re-bound.
+				using (newViewModel.SuppressValueUpdates())
+					ViewModel = newViewModel;
 
 				ViewModel?.Changes
 					.Subscribe(_ => Editor?.StageUndoOperation())

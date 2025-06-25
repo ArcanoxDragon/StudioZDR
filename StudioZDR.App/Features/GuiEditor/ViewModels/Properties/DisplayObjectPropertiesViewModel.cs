@@ -193,6 +193,17 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 
 	#endregion
 
+	/// <summary>
+	/// Suppresses any updates of display object values from the ViewModel until the
+	/// returned <see cref="IDisposable"/> is disposed.
+	/// </summary>
+	public IDisposable SuppressValueUpdates()
+	{
+		Interlocked.Increment(ref this.refreshing);
+
+		return Disposable.Create(() => Interlocked.Decrement(ref this.refreshing));
+	}
+
 	private void SetHorizontalAnchors(HorizontalAnchor? anchor)
 	{
 		if (IsRefreshing) // Do NOT set properties on models while we're freshing FROM the models!
