@@ -12,7 +12,8 @@
 		Title="{Binding WindowTitle}"
 		WindowStartupLocation="CenterOwner"
 		Width="1280"
-		Height="800">
+		Height="800"
+		Closing="Window_OnClosing">
 
 	<Window.DataTemplates>
 		<framework:FeatureViewLocator />

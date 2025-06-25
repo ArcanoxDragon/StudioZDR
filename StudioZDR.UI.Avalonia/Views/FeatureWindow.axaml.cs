@@ -2,8 +2,10 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using StudioZDR.App.Features;
+using StudioZDR.App.Framework;
 using StudioZDR.App.ViewModels;
 using StudioZDR.UI.Avalonia.Extensions;
 using StudioZDR.UI.Avalonia.Framework;
@@ -70,6 +72,40 @@ namespace StudioZDR.UI.Avalonia.Views
 					Height = preferredSize.Height;
 					break;
 				}
+			}
+		}
+
+		private bool inWindowOnClosing;
+
+		private async void Window_OnClosing(object? sender, WindowClosingEventArgs e)
+		{
+			try
+			{
+				// TODO: Should be able to use e.IsProgrammatic, but CaptionButtons.OnClose incorrectly calls with "isProgrammatic: true"
+				if (this.inWindowOnClosing)
+					// If we recurse, skip any checks - that means we're closing after confirmation
+					return;
+
+				if (ViewModel?.FeatureViewModel is not IBlockCloseWhenDirty { IsDirty: true } blockCloseWhenDirty)
+					// No need to check for dirty state
+					return;
+
+				// Immediately cancel the close event, since we need to do some async work before closing
+				e.Cancel = true;
+				this.inWindowOnClosing = true;
+
+				var shouldClose = await blockCloseWhenDirty.ConfirmCloseWhenDirtyAsync();
+
+				if (shouldClose)
+					Close(); // Trigger the close again - the "IsProgrammatic" check above prevents infinite recursion
+			}
+			catch (Exception ex)
+			{
+				ViewModel?.Logger.LogError(ex, "Caught unhandled exception in {Window_OnClosing}", nameof(Window_OnClosing));
+			}
+			finally
+			{
+				this.inWindowOnClosing = false;
 			}
 		}
 	}

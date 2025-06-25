@@ -18,7 +18,7 @@ using Vector2 = System.Numerics.Vector2;
 
 namespace StudioZDR.App.Features.GuiEditor.ViewModels;
 
-public partial class GuiEditorViewModel : ViewModelBase
+public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty
 {
 	private readonly IWindowContext                       windowContext;
 	private readonly IOptionsMonitor<ApplicationSettings> settingsMonitor;
@@ -74,6 +74,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 				ZoomLevel = 0.0;
 				PanOffset = Vector2.Zero;
 				LatestPristineState = bmscp;
+				IsDirty = false;
 				this.undoStack.Clear();
 				this.redoStack.Clear();
 				RefreshCanUndoRedo();
@@ -218,6 +219,9 @@ public partial class GuiEditorViewModel : ViewModelBase
 	public partial bool IsSaving { get; }
 
 	[Reactive]
+	public partial bool IsDirty { get; private set; }
+
+	[Reactive]
 	public partial Exception? OpenFileException { get; set; }
 
 	[Reactive]
@@ -331,6 +335,9 @@ public partial class GuiEditorViewModel : ViewModelBase
 		LatestPristineState = CreatePristineState();
 
 		RefreshCanUndoRedo();
+
+		// Any staged change automatically makes the state "dirty"
+		IsDirty = true;
 	}
 
 	[ReactiveCommand(CanExecute = nameof(CanUndo))]
@@ -388,13 +395,19 @@ public partial class GuiEditorViewModel : ViewModelBase
 	}
 
 	[ReactiveCommand]
-	private void Close()
-		=> this.windowContext.Close();
+	private async Task CloseAsync()
+	{
+		if (IsDirty && !await ConfirmCloseWhenDirtyAsync())
+			return;
+
+		this.windowContext.Close();
+	}
 
 	[ReactiveCommand]
 	private async Task<string?> OpenFileAsync()
 	{
-		// TODO: Dirty check
+		if (!await ConfirmUnsavedChangesAsync())
+			return null;
 
 		var guiFiles = await GetAvailableGuiFilesAsync();
 		var result = await Dialogs.ChooseAsync(
@@ -410,6 +423,17 @@ public partial class GuiEditorViewModel : ViewModelBase
 		var guiScriptsPath = Path.Join(Settings.RomFsLocation, "gui", "scripts");
 
 		return Path.Join(guiScriptsPath, result);
+	}
+
+	private async Task<bool> ConfirmUnsavedChangesAsync()
+	{
+		if (OpenedGuiFile is null || !IsDirty)
+			return true;
+
+		return await Dialogs.ConfirmAsync(
+			"Unsaved Changes",
+			"You have unsaved changes. If you open another composition, your changes will be lost.\n\nContinue?"
+		);
 	}
 
 	[ReactiveCommand(CanExecute = nameof(CanSaveFile))]
@@ -432,6 +456,7 @@ public partial class GuiEditorViewModel : ViewModelBase
 		await using var fileStream = File.Open(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
 
 		await bmscp.WriteAsync(fileStream);
+		IsDirty = false;
 	}
 
 	private async Task<List<string>> GetAvailableGuiFilesAsync()
@@ -482,4 +507,19 @@ public partial class GuiEditorViewModel : ViewModelBase
 
 		return await Bmscp.FromAsync(fileStream, cancellationToken);
 	}
+
+	#region IBlockCloseWhenDirty
+
+	public async Task<bool> ConfirmCloseWhenDirtyAsync()
+	{
+		if (OpenedGuiFile is null)
+			return true;
+
+		return await Dialogs.ConfirmAsync(
+			"Unsaved Changes",
+			"You have unsaved changes. If you close the editor now, your changes will be lost.\n\nContinue?"
+		);
+	}
+
+	#endregion
 }

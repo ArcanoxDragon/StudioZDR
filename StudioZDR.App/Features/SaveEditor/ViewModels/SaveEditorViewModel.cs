@@ -9,7 +9,7 @@ using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.App.Features.SaveEditor.ViewModels;
 
-public partial class SaveEditorViewModel : ViewModelBase
+public partial class SaveEditorViewModel : ViewModelBase, IBlockCloseWhenDirty
 {
 	private readonly IFileBrowser   fileBrowser;
 	private readonly IWindowContext windowContext;
@@ -164,6 +164,23 @@ public partial class SaveEditorViewModel : ViewModelBase
 	{
 		if (await ConfirmUnsavedChangesAsync())
 			this.windowContext.Close();
+	}
+
+	#endregion
+
+	#region IBlockCloseWhenDirty
+
+	bool IBlockCloseWhenDirty.IsDirty => HasChanges;
+
+	public async Task<bool> ConfirmCloseWhenDirtyAsync()
+	{
+		if (OpenedProfilePath is null)
+			return true;
+
+		return await Dialogs.ConfirmAsync(
+			"Unsaved Changes",
+			"You have unsaved changes. If you close the editor now, your changes will be lost.\n\nContinue?"
+		);
 	}
 
 	#endregion
