@@ -18,8 +18,10 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 
 	public DreadGuiCompositionViewModel(GUI__CDisplayObjectContainer? rootContainer)
 	{
+		this.hierarchyDisposables = new CompositeDisposable();
+
 		RootContainer = rootContainer;
-		this._hierarchy = new GuiCompositionNodeViewModel();
+		Hierarchy = BuildHierarchy(rootContainer, this.hierarchyDisposables).DisposeWith(this.hierarchyDisposables);
 
 		this.WhenAnyValue(m => m.RootContainer)
 			.Subscribe(root => {

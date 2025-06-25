@@ -116,14 +116,27 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 					return;
 				}
 
+				// Record the currently-selected nodes in a way we can use to restore them
+				HashSet<string> selectedNodePaths = SelectedNodes.Select(n => n.FullPath).ToHashSet();
+
 				// Swap in new composition and dispose old
 				var previousComposition = Composition;
 
 				Composition = new DreadGuiCompositionViewModel(bmscp?.DeepClone().Root.Value);
 				previousComposition?.Dispose();
 
-				// Clear selection when swapping the composition - don't want to retain old references!
+				// Try and restore the selection
 				SelectedNodes.Clear();
+				Visit(Composition.Hierarchy);
+
+				void Visit(GuiCompositionNodeViewModel node)
+				{
+					if (selectedNodePaths.Contains(node.FullPath))
+						SelectedNodes.Add(node);
+
+					foreach (var child in node.Children)
+						Visit(child);
+				}
 			});
 
 		#endregion
