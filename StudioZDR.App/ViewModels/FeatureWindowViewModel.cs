@@ -22,10 +22,20 @@ public partial class FeatureWindowViewModel : ViewModelBase
 			.ToProperty(this, m => m.FeatureViewModel, out this._featureViewModelHelper);
 
 		// Update window title automatically
-		this.WhenAnyValue(m => m.Feature)
-			.SelectMany(feature => feature?.WhenAnyValue(f => f.Name) ?? Observable.Return(string.Empty))
+		this.WhenAnyValue(m => m.Feature, m => m.FeatureViewModel)
+			.SelectMany(pair => {
+				var (feature, featureViewModel) = pair;
+				var featureNameObservable = feature?.WhenAnyValue(f => f.Name) ?? Observable.Return(string.Empty);
+				var windowTitleObservable = ( featureViewModel as IWindowTitleProvider )?.WhenAnyValue(wtp => wtp.WindowTitle) ?? Observable.Return(default(string?));
+
+				return featureNameObservable.CombineLatest(windowTitleObservable);
+			})
 			.DistinctUntilChanged()
-			.Select(featureName => $"Studio ZDR - {featureName}".TrimEnd(' ', '-'))
+			.Select(pair => {
+				var (featureName, customWindowTitle) = pair;
+
+				return $"{customWindowTitle ?? featureName} - Studio ZDR".TrimStart(' ', '-');
+			})
 			.ToProperty(this, m => m.WindowTitle, out this._windowTitleHelper);
 
 		this.WhenActivated(disposables => {

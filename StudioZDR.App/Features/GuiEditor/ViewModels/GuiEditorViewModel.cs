@@ -18,7 +18,7 @@ using Vector2 = System.Numerics.Vector2;
 
 namespace StudioZDR.App.Features.GuiEditor.ViewModels;
 
-public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty
+public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, IWindowTitleProvider
 {
 	private readonly IWindowContext                       windowContext;
 	private readonly IOptionsMonitor<ApplicationSettings> settingsMonitor;
@@ -64,6 +64,19 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty
 		this.WhenAnyValue(m => m.OpenedFilePath)
 			.ObserveOn(TaskPoolScheduler)
 			.InvokeCommand(LoadGuiFileCommand!);
+
+		this.WhenAnyValue(m => m.OpenedFilePath)
+			.Select(Path.GetFileName)
+			.CombineLatest(this.WhenAnyValue(m => m.IsDirty))
+			.Select(pair => {
+				var (fileName, isDirty) = pair;
+				var fileNameSuffix = fileName is null ? null : $" - {fileName}";
+				var dirtySuffix = isDirty ? "*" : "";
+
+				return $"{GuiEditorFeature.FeatureName}{fileNameSuffix}{dirtySuffix}";
+			})
+			.ObserveOn(MainThreadScheduler)
+			.ToProperty(this, m => m.WindowTitle, out this._windowTitleHelper);
 
 		this.WhenAnyValue(m => m.OpenedGuiFile)
 			.ObserveOn(MainThreadScheduler)
@@ -199,6 +212,9 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty
 			disposables.Add(this.canRedoSubject);
 		});
 	}
+
+	[ObservableAsProperty]
+	public partial string? WindowTitle { get; }
 
 	[Reactive]
 	public partial string? OpenedFilePath { get; set; }
