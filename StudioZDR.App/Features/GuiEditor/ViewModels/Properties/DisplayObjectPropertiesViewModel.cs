@@ -1,12 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
-using DynamicData.Binding;
 using MercuryEngine.Data.Types.DreadTypes;
 using ReactiveUI.SourceGenerators;
 using StudioZDR.App.Features.GuiEditor.Extensions;
@@ -21,9 +19,8 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 
 	private static readonly RectangleF FullScreenBounds = new(0, 0, 1, 1);
 
-	private readonly Subject<Unit>    changes              = new();
-	private readonly SerialDisposable collectionDisposable = new();
-	private readonly SerialDisposable nodesDisposable      = new();
+	private readonly Subject<Unit>    changes         = new();
+	private readonly SerialDisposable nodesDisposable = new();
 
 	private volatile int refreshing;
 
@@ -33,28 +30,10 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			.Subscribe(nodes => {
 				AggregateAndRefreshValues();
 
-				if (nodes is ObservableCollection<GuiCompositionNodeViewModel> observableCollection)
-				{
-					this.collectionDisposable.Disposable = observableCollection
-						.ToObservableChangeSet()
-						.Subscribe(_ => {
-							AggregateAndRefreshValues();
-							this.nodesDisposable.Disposable = SubscribeAllNodes();
-						});
-
-					this.nodesDisposable.Disposable = SubscribeAllNodes();
-				}
-				else
-				{
-					this.collectionDisposable.Disposable = null;
-					this.nodesDisposable.Disposable = null;
-				}
-
-				IDisposable? SubscribeAllNodes()
-					=> nodes
-						.Select(n => n.DisplayObjectChanges)
-						.Merge()
-						.Subscribe(_ => AggregateAndRefreshValues());
+				this.nodesDisposable.Disposable = nodes
+					?.Select(n => n.DisplayObjectChanges)
+					.Merge()
+					.Subscribe(_ => AggregateAndRefreshValues());
 			});
 
 		this.WhenAnyValue(m => m.Id)
@@ -188,7 +167,7 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 	protected virtual void DisposeSelf()
 	{
 		this.changes.Dispose();
-		this.collectionDisposable.Dispose();
+		this.nodesDisposable.Dispose();
 	}
 
 	#endregion
@@ -459,7 +438,7 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			{
 				var obj = Nodes[i].DisplayObject;
 
-				RefreshValuesFromObject(obj, forceRefresh: i == 0);
+				RefreshValuesFromObject(obj, firstObject: i == 0);
 			}
 		}
 		finally
@@ -487,7 +466,7 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 		AngleWatermark = null;
 	}
 
-	protected virtual void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool forceRefresh)
+	protected virtual void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool firstObject)
 	{
 		var objHorizontalAnchor = obj?.GetHorizontalAnchor();
 		var objVerticalAnchor = obj?.GetVerticalAnchor();
@@ -502,7 +481,7 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			_                                => obj?.TopY ?? obj?.Y,
 		};
 
-		if (forceRefresh)
+		if (firstObject)
 		{
 			// Derive current values from first object
 

@@ -73,13 +73,13 @@ public partial class SpritePropertiesViewModel : DisplayObjectPropertiesViewMode
 		SpriteNameWatermark = null;
 	}
 
-	protected override void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool forceRefresh)
+	protected override void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool firstObject)
 	{
-		base.RefreshValuesFromObject(obj, forceRefresh);
+		base.RefreshValuesFromObject(obj, firstObject);
 
 		GUI__CSprite? sprite = obj as GUI__CSprite;
 
-		if (forceRefresh)
+		if (firstObject)
 		{
 			SpriteName = sprite?.SpriteSheetItem;
 		}

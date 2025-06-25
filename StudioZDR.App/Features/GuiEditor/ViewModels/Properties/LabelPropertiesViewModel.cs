@@ -55,13 +55,13 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 		Outline = false;
 	}
 
-	protected override void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool forceRefresh)
+	protected override void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool firstObject)
 	{
-		base.RefreshValuesFromObject(obj, forceRefresh);
+		base.RefreshValuesFromObject(obj, firstObject);
 
 		GUI__CLabel? label = obj as GUI__CLabel;
 
-		if (forceRefresh)
+		if (firstObject)
 		{
 			LabelText = label?.Text ?? string.Empty;
 			Font = label?.Font ?? string.Empty;
