@@ -15,6 +15,9 @@
 	x:CompileBindings="True"
 	x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.GuiCompositionEditor"
 	Name="EditorView">
+	<UserControl.KeyBindings>
+		<KeyBinding Gesture="Ctrl+A" Command="{Binding SelectAllCommand}" />
+	</UserControl.KeyBindings>
 
 	<Grid>
 		<Grid.ColumnDefinitions>

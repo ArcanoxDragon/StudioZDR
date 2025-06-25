@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Humanizer;
 using ReactiveUI;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
@@ -25,16 +26,25 @@ internal partial class GuiCompositionCanvas : ContentControl
 	public const  double MaximumZoomLevel    = 1;
 	private const double MinimumDragDistance = 5;
 
+	private static readonly TimeSpan DoubleTapTime = 350.Milliseconds();
+
+	#region Properties
+
 	public static readonly StyledProperty<DreadGuiCompositionViewModel?> CompositionProperty
 		= AvaloniaProperty.Register<GuiCompositionCanvas, DreadGuiCompositionViewModel?>(nameof(Composition));
 
 	public static readonly StyledProperty<GuiEditorViewModel?> EditorProperty
 		= AvaloniaProperty.Register<GuiCompositionCanvas, GuiEditorViewModel?>(nameof(Editor));
 
+	#endregion
+
 	private readonly SpriteSheetManager spriteSheetManager;
 
 	private CompositeDisposable?              disposables;
 	private DreadGuiCompositionDrawOperation? drawOperation;
+
+	// Misc. State
+	private DateTime lastPressedEscape;
 
 	// Panning
 	private bool    panning;
@@ -99,6 +109,8 @@ internal partial class GuiCompositionCanvas : ContentControl
 		HotReloadHelper.MetadataUpdated -= HandleMetadataReloaded;
 #endif
 	}
+
+	#region Pointer Events
 
 	protected override void OnPointerPressed(PointerPressedEventArgs e)
 	{
@@ -269,6 +281,44 @@ internal partial class GuiCompositionCanvas : ContentControl
 		this.draggingObjects.Clear();
 	}
 
+	protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+	{
+		base.OnPointerWheelChanged(e);
+
+		const double Multiplier = 0.05;
+
+		if (Editor is not { } editor)
+			return;
+
+		editor.ZoomLevel = Math.Clamp(editor.ZoomLevel + ( e.Delta.Y * Multiplier ), MinimumZoomLevel, MaximumZoomLevel);
+	}
+
+	#endregion
+
+	#region Keyboard Events
+
+	protected override void OnKeyDown(KeyEventArgs e)
+	{
+		base.OnKeyDown(e);
+
+		if (e.Key == Key.Escape)
+		{
+			DateTime pressTime = DateTime.Now;
+
+			if (pressTime - this.lastPressedEscape < DoubleTapTime)
+			{
+				// Deselect all objects when double-tapping escape
+				Editor?.SelectedNodes.Clear();
+			}
+
+			this.lastPressedEscape = pressTime;
+		}
+	}
+
+	#endregion
+
+	#region Helpers
+
 	private IEnumerable<GuiCompositionNodeViewModel> GetHoveredNodes()
 	{
 		if (Composition is not { Hierarchy: { } hierarchy })
@@ -313,17 +363,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 		return displayObject.GetDisplayObjectRect(screenBounds, parentBounds, out origin);
 	}
 
-	protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
-	{
-		base.OnPointerWheelChanged(e);
-
-		const double Multiplier = 0.05;
-
-		if (Editor is not { } editor)
-			return;
-
-		editor.ZoomLevel = Math.Clamp(editor.ZoomLevel + ( e.Delta.Y * Multiplier ), MinimumZoomLevel, MaximumZoomLevel);
-	}
+	#endregion
 
 	protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
 	{

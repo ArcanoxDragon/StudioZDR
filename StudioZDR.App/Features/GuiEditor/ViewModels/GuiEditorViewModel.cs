@@ -270,6 +270,27 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	private IObservable<bool>   CanUndo      => this.canUndoSubject;
 	private IObservable<bool>   CanRedo      => this.canRedoSubject;
 
+	#region Selection
+
+	[ReactiveCommand]
+	public void SelectAll()
+	{
+		if (Composition is not { Hierarchy: var rootNode })
+			return;
+
+		Visit(rootNode);
+		return;
+
+		void Visit(GuiCompositionNodeViewModel node)
+		{
+			if (!SelectedNodes.Contains(node))
+				SelectedNodes.Add(node);
+
+			foreach (var child in node.Children)
+				Visit(child);
+		}
+	}
+
 	public void ToggleSelected(GuiCompositionNodeViewModel node)
 	{
 		// If we remove it successfully, it was in the collection before, so don't add it.
@@ -331,6 +352,8 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 			return IsAncestorSelected(parent);
 		}
 	}
+
+	#endregion
 
 	#region Undo/Redo
 
