@@ -24,6 +24,8 @@ internal class DisplayObjectPropertiesTemplate : AvaloniaObject, IDataTemplate
 
 		if (AllHaveType<GUI__CSprite>())
 			return BuildControl<SpriteProperties>();
+		if (AllHaveType<GUI__CLabel>())
+			return BuildControl<LabelProperties>();
 		// TODO: Other subtypes
 
 		return BuildControl<DisplayObjectProperties>();

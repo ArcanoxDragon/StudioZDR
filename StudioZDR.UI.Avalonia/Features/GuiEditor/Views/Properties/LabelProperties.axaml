@@ -1,0 +1,56 @@
+<ContentControl xmlns="https://github.com/avaloniaui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+				xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+				xmlns:properties="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties"
+				mc:Ignorable="d"
+				d:DesignWidth="500" d:DesignHeight="600"
+				x:CompileBindings="True"
+				x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties.LabelProperties"
+				Name="Control">
+
+	<StackPanel>
+		<properties:DisplayObjectProperties
+			ViewModel="{Binding #Control.ViewModel, Mode=OneWay}" />
+
+		<Grid
+			RowDefinitions="Auto,32,32,32"
+			Classes="ControlGrid"
+			IsEnabled="{Binding #Control.ViewModel.CanEdit}">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<TextBlock Grid.ColumnSpan="2" Classes="GroupHeader">
+				Label Properties
+			</TextBlock>
+
+			<Label Grid.Row="1" Grid.Column="0" Target="LabelTextTextBox">
+				Text:
+			</Label>
+
+			<TextBox Grid.Row="1" Grid.Column="1"
+					 x:Name="LabelTextTextBox"
+					 Text="{Binding #Control.ViewModel.LabelText}"
+					 Watermark="{Binding #Control.ViewModel.LabelTextWatermark}" />
+
+			<Label Grid.Row="2" Grid.Column="0" Target="FontTextBox">
+				Font:
+			</Label>
+
+			<TextBox Grid.Row="2" Grid.Column="1"
+					 x:Name="FontTextBox"
+					 Text="{Binding #Control.ViewModel.Font}"
+					 Watermark="{Binding #Control.ViewModel.FontWatermark}" />
+
+			<Label Grid.Row="3" Grid.Column="0" Target="OutlineCheckBox">
+				Outline:
+			</Label>
+
+			<CheckBox Grid.Row="3" Grid.Column="1"
+					  x:Name="OutlineCheckBox"
+					  IsChecked="{Binding #Control.ViewModel.Outline}" />
+		</Grid>
+	</StackPanel>
+</ContentControl>
