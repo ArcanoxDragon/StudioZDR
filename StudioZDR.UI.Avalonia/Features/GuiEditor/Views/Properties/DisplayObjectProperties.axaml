@@ -7,13 +7,13 @@
 				xmlns:properties="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels.Properties;assembly=StudioZDR.App"
 				xmlns:c="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
 				mc:Ignorable="d"
-				d:DesignWidth="400" d:DesignHeight="400"
+				d:DesignWidth="500" d:DesignHeight="600"
 				x:CompileBindings="True"
 				x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties.DisplayObjectProperties"
 				Name="Control">
 
 	<Grid
-		RowDefinitions="35,Auto,35,35,35,35,35,35,35"
+		RowDefinitions="Auto,32,Auto,32,32,32,32,32,32,32"
 		Classes="ControlGrid"
 		IsEnabled="{Binding #Control.ViewModel.CanEdit}"
 		VerticalAlignment="Top">
@@ -22,22 +22,26 @@
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
 
-		<Label Target="IdTextBox">
+		<TextBlock Grid.ColumnSpan="2" Classes="GroupHeader">
+			Common Properties
+		</TextBlock>
+
+		<Label Grid.Row="1" Grid.Column="0" Target="IdTextBox">
 			ID:
 		</Label>
 
-		<TextBox Grid.Row="0" Grid.Column="1"
+		<TextBox Grid.Row="1" Grid.Column="1"
 				 x:Name="IdTextBox"
 				 Text="{Binding #Control.ViewModel.Id}"
 				 Watermark="{Binding #Control.ViewModel.IdWatermark}" />
 
-		<Label Grid.Row="1" Grid.Column="0"
+		<Label Grid.Row="2" Grid.Column="0"
 			   Target="VisibleCheckBox"
 			   MinHeight="31">
 			Visible:
 		</Label>
 
-		<Grid Grid.Row="1" Grid.Column="1"
+		<Grid Grid.Row="2" Grid.Column="1"
 			  ColumnDefinitions="Auto,*"
 			  HorizontalAlignment="Stretch">
 			<CheckBox Grid.Column="0"
@@ -58,11 +62,11 @@
 			</StackPanel>
 		</Grid>
 
-		<Label Grid.Row="2" Grid.Column="0" Target="HorizontalAnchor">
+		<Label Grid.Row="3" Grid.Column="0" Target="HorizontalAnchor">
 			X Anchor:
 		</Label>
 
-		<StackPanel Grid.Row="2" Grid.Column="1"
+		<StackPanel Grid.Row="3" Grid.Column="1"
 					x:Name="HorizontalAnchor"
 					Classes="ButtonGroup">
 			<c:RadioToggleButton ToolTip.Tip="Left"
@@ -88,11 +92,11 @@
 			</c:RadioToggleButton>
 		</StackPanel>
 
-		<Label Grid.Row="3" Grid.Column="0" Target="VerticalAnchor">
+		<Label Grid.Row="4" Grid.Column="0" Target="VerticalAnchor">
 			Y Anchor:
 		</Label>
 
-		<StackPanel Grid.Row="3" Grid.Column="1"
+		<StackPanel Grid.Row="4" Grid.Column="1"
 					x:Name="VerticalAnchor"
 					Classes="ButtonGroup">
 			<c:RadioToggleButton ToolTip.Tip="Top"
@@ -118,11 +122,11 @@
 			</c:RadioToggleButton>
 		</StackPanel>
 
-		<Label Grid.Row="4" Grid.Column="0" Target="PositionXTextBox">
+		<Label Grid.Row="5" Grid.Column="0" Target="PositionXTextBox">
 			Position:
 		</Label>
 
-		<NumericUpDown Grid.Row="4" Grid.Column="1"
+		<NumericUpDown Grid.Row="5" Grid.Column="1"
 					   x:Name="PositionXTextBox"
 					   Value="{Binding #Control.ViewModel.PositionX}"
 					   Watermark="{Binding #Control.ViewModel.PositionXWatermark}"
@@ -136,7 +140,7 @@
 			</NumericUpDown.InnerLeftContent>
 		</NumericUpDown>
 
-		<NumericUpDown Grid.Row="5" Grid.Column="1"
+		<NumericUpDown Grid.Row="6" Grid.Column="1"
 					   x:Name="PositionYTextBox"
 					   Value="{Binding #Control.ViewModel.PositionY}"
 					   Watermark="{Binding #Control.ViewModel.PositionYWatermark}"
@@ -150,11 +154,11 @@
 			</NumericUpDown.InnerLeftContent>
 		</NumericUpDown>
 
-		<Label Grid.Row="6" Grid.Column="0" Target="SizeXTextBox">
+		<Label Grid.Row="7" Grid.Column="0" Target="SizeXTextBox">
 			Size:
 		</Label>
 
-		<NumericUpDown Grid.Row="6" Grid.Column="1"
+		<NumericUpDown Grid.Row="7" Grid.Column="1"
 					   x:Name="SizeXTextBox"
 					   Value="{Binding #Control.ViewModel.SizeX}"
 					   Watermark="{Binding #Control.ViewModel.SizeXWatermark}"
@@ -168,7 +172,7 @@
 			</NumericUpDown.InnerLeftContent>
 		</NumericUpDown>
 
-		<NumericUpDown Grid.Row="7" Grid.Column="1"
+		<NumericUpDown Grid.Row="8" Grid.Column="1"
 					   x:Name="SizeYTextBox"
 					   Value="{Binding #Control.ViewModel.SizeY}"
 					   Watermark="{Binding #Control.ViewModel.SizeYWatermark}"
@@ -182,11 +186,11 @@
 			</NumericUpDown.InnerLeftContent>
 		</NumericUpDown>
 
-		<Label Grid.Row="8" Grid.Column="0" Target="AngleTextBox">
+		<Label Grid.Row="9" Grid.Column="0" Target="AngleTextBox">
 			Angle:
 		</Label>
 
-		<NumericUpDown Grid.Row="8" Grid.Column="1"
+		<NumericUpDown Grid.Row="9" Grid.Column="1"
 					   x:Name="AngleTextBox"
 					   Value="{Binding #Control.ViewModel.Angle, Converter={x:Static converters:RadiansToDegreesConverter.Instance}}"
 					   Watermark="{Binding #Control.ViewModel.AngleWatermark}"

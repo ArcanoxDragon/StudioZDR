@@ -8,4 +8,5 @@
 	<StyleInclude Source="/Styles/ScrollViewer.axaml" />
 	<StyleInclude Source="/Styles/TabControl.axaml" />
 	<StyleInclude Source="/Styles/Window.axaml" />
+	<StyleInclude Source="/Styles/GuiEditor/DisplayObjectProperties.axaml" />
 </Styles>
