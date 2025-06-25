@@ -13,7 +13,7 @@
 				Name="Control">
 
 	<Grid
-		RowDefinitions="Auto,32,Auto,32,32,32,32,32"
+		RowDefinitions="Auto,32,Auto,32,32,32,32,32,32"
 		ColumnDefinitions="100,*"
 		Classes="ControlGrid"
 		IsEnabled="{Binding #Control.ViewModel.CanEdit}"
@@ -189,11 +189,47 @@
 			</NumericUpDown>
 		</Grid>
 
-		<Label Grid.Row="7" Grid.Column="0" Target="AngleTextBox">
+		<Label Grid.Row="7" Grid.Column="0" Target="ScaleXTextBox">
+			Scale:
+		</Label>
+
+		<Grid Grid.Row="7" Grid.Column="1"
+			  ColumnSpacing="6"
+			  ColumnDefinitions="*,*">
+			<NumericUpDown Grid.Column="0"
+						   x:Name="ScaleXTextBox"
+						   Value="{Binding #Control.ViewModel.ScaleX}"
+						   Watermark="{Binding #Control.ViewModel.ScaleXWatermark}"
+						   Increment="0.01">
+				<NumericUpDown.InnerLeftContent>
+					<Label Margin="4,0,0,0"
+						   Target="ScaleXTextBox"
+						   VerticalContentAlignment="Center">
+						X
+					</Label>
+				</NumericUpDown.InnerLeftContent>
+			</NumericUpDown>
+
+			<NumericUpDown Grid.Column="1"
+						   x:Name="ScaleYTextBox"
+						   Value="{Binding #Control.ViewModel.ScaleY}"
+						   Watermark="{Binding #Control.ViewModel.ScaleYWatermark}"
+						   Increment="0.01">
+				<NumericUpDown.InnerLeftContent>
+					<Label Margin="4,0,0,0"
+						   Target="ScaleYTextBox"
+						   VerticalAlignment="Center">
+						Y
+					</Label>
+				</NumericUpDown.InnerLeftContent>
+			</NumericUpDown>
+		</Grid>
+
+		<Label Grid.Row="8" Grid.Column="0" Target="AngleTextBox">
 			Angle:
 		</Label>
 
-		<NumericUpDown Grid.Row="7" Grid.Column="1"
+		<NumericUpDown Grid.Row="8" Grid.Column="1"
 					   x:Name="AngleTextBox"
 					   Value="{Binding #Control.ViewModel.Angle, Converter={x:Static converters:RadiansToDegreesConverter.Instance}}"
 					   Watermark="{Binding #Control.ViewModel.AngleWatermark}"

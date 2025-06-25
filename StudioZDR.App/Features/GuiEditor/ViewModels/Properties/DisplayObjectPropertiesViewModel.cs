@@ -57,6 +57,12 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 		this.WhenAnyValue(m => m.SizeY)
 			.Subscribe(y => SetAllValues(n => n.SizeY, y));
 
+		this.WhenAnyValue(m => m.ScaleX)
+			.Subscribe(x => SetAllValues(n => n.ScaleX, x));
+
+		this.WhenAnyValue(m => m.ScaleY)
+			.Subscribe(y => SetAllValues(n => n.ScaleY, y));
+
 		this.WhenAnyValue(m => m.Angle)
 			.Subscribe(angle => SetAllValues(n => n.Angle, angle));
 	}
@@ -125,6 +131,22 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 
 	[Reactive]
 	public partial string? SizeYWatermark { get; set; }
+
+	#endregion
+
+	#region Scale
+
+	[Reactive]
+	public partial float? ScaleX { get; set; }
+
+	[Reactive]
+	public partial string? ScaleXWatermark { get; set; }
+
+	[Reactive]
+	public partial float? ScaleY { get; set; }
+
+	[Reactive]
+	public partial string? ScaleYWatermark { get; set; }
 
 	#endregion
 
@@ -462,6 +484,10 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 		SizeXWatermark = null;
 		SizeY = null;
 		SizeYWatermark = null;
+		ScaleX = null;
+		ScaleXWatermark = null;
+		ScaleY = null;
+		ScaleYWatermark = null;
 		Angle = null;
 		AngleWatermark = null;
 	}
@@ -493,6 +519,8 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			PositionY = objPositionY;
 			SizeX = obj?.SizeX;
 			SizeY = obj?.SizeY;
+			ScaleX = obj?.ScaleX;
+			ScaleY = obj?.ScaleY;
 			Angle = obj?.Angle;
 		}
 		else
@@ -535,6 +563,18 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			{
 				SizeY = null;
 				SizeYWatermark = MultipleValuesPlaceholder;
+			}
+
+			if (obj?.ScaleX != ScaleX)
+			{
+				ScaleX = null;
+				ScaleXWatermark = MultipleValuesPlaceholder;
+			}
+
+			if (obj?.ScaleY != ScaleY)
+			{
+				ScaleY = null;
+				ScaleYWatermark = MultipleValuesPlaceholder;
 			}
 
 			if (obj?.Angle != Angle)
