@@ -18,8 +18,17 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 	private const int RenderPassOverlay = 1;
 	private const int RenderPassCount   = 2;
 
+	private const float BorderStrokeWidth           = 1;
+	private const float BorderCornerRadius          = 4;
 	private const float HiddenObjectAlphaMultiplier = 0.125f;
+	private const float SelectionBoxStrokeWidth     = 0; // Hairline
+	private const float SelectionBoxDashLength      = 5;
+	private const float SelectionHandleSize         = 10;
 
+	private static readonly float[] SelectionBoxDashIntervals = [SelectionBoxDashLength, SelectionBoxDashLength];
+
+	private static readonly SKColor Black               = new(0, 0, 0);
+	private static readonly SKColor White               = new(255, 255, 255);
 	private static readonly SKColor HoverBorderColor    = new(255, 0, 255, 64);
 	private static readonly SKColor SelectedBorderColor = new(0, 255, 255);
 	private static readonly SKColor TextDrawColor       = new(255, 255, 255);
@@ -76,6 +85,13 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 				for (var renderPass = 0; renderPass < RenderPassCount; renderPass++)
 				{
 					RenderDisplayObjectNode(guiDrawContext, hierarchy, RenderBounds, renderPass);
+
+					if (renderPass == RenderPassOverlay && Editor is { SelectedNodes.Count: > 0 })
+					{
+						Rect overallSelectionBounds = Editor.SelectedNodes.GetOverallBounds(RenderBounds);
+
+						RenderSelectionBox(guiDrawContext, overallSelectionBounds);
+					}
 				}
 			}
 		}
@@ -110,7 +126,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 		if (node is not { DisplayObject: { } obj })
 			return;
 
-		var objBounds = obj.GetDisplayObjectRect(RenderBounds, parentBounds, out var origin);
+		var objBounds = obj.GetDisplayObjectBounds(RenderBounds, parentBounds, out var origin);
 		var originX = (float) origin.X;
 		var originY = (float) origin.Y;
 
@@ -136,7 +152,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 			}
 			else if (renderPass == RenderPassOverlay)
 			{
-				context.Paint.Color = new SKColor(255, 255, 255);
+				context.Paint.Color = White;
 
 				if (Editor?.SelectedObjects is { } selectedObjects && selectedObjects.Contains(obj))
 					RenderDisplayObjectBounds(context, objBounds, SelectedBorderColor);
@@ -154,7 +170,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 	private void RenderSprite(DreadGuiDrawContext context, GUI__CSprite sprite, Rect parentBounds)
 	{
-		var spriteRect = sprite.GetDisplayObjectRect(RenderBounds, parentBounds);
+		var spriteRect = sprite.GetDisplayObjectBounds(RenderBounds, parentBounds);
 		var spriteColorAlpha = sprite.ColorA ?? 1.0f;
 
 		// This is "in-game" visibility, not editor visibility
@@ -170,8 +186,8 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 		using (context.Canvas.WithSavedState())
 		{
-			var centerX = (float) ( spriteRect.X + 0.5 * spriteRect.Width );
-			var centerY = (float) ( spriteRect.Y + 0.5 * spriteRect.Height );
+			var centerX = (float) ( spriteRect.X + ( 0.5 * spriteRect.Width ) );
+			var centerY = (float) ( spriteRect.Y + ( 0.5 * spriteRect.Height ) );
 
 			if (sprite is { FlipX: true, FlipY: true })
 				context.Canvas.Scale(-1, -1, centerX, centerY);
@@ -196,7 +212,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 	{
 		const int TextSize = 20;
 		const int TextOffset = 8;
-		var labelRect = label.GetDisplayObjectRect(RenderBounds, parentBounds);
+		var labelRect = label.GetDisplayObjectBounds(RenderBounds, parentBounds);
 		var halfHeight = labelRect.Height / 2;
 		var textToDraw = ( label.Text ?? label.ID ?? "GUI::CLabel" ).Replace('|', '\n');
 
@@ -208,7 +224,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 		var textX = context.Paint.TextAlign switch {
 			SKTextAlign.Right  => labelRect.X + labelRect.Width,
-			SKTextAlign.Center => labelRect.X + 0.5 * labelRect.Width,
+			SKTextAlign.Center => labelRect.X + ( 0.5 * labelRect.Width ),
 			_                  => labelRect.X,
 		};
 
@@ -216,21 +232,63 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 		context.Paint.TextAlign = SKTextAlign.Left;
 	}
 
-	private static void RenderDisplayObjectBounds(DreadGuiDrawContext context, Rect rect, SKColor borderColor, SKColor? fillColor = null)
+	private void RenderDisplayObjectBounds(DreadGuiDrawContext context, Rect rect, SKColor borderColor)
 	{
-		const float CornerRadius = 4.0f;
+		var zoomFactor = Editor?.ZoomFactor ?? 1.0;
 
-		if (fillColor.HasValue)
-		{
-			context.Paint.Style = SKPaintStyle.Fill;
-			context.Paint.Color = fillColor.Value;
-			context.Canvas.DrawRoundRect(rect.ToSKRect(), CornerRadius, CornerRadius, context.Paint);
-		}
-
+		context.Paint.StrokeWidth = (float) ( BorderStrokeWidth / zoomFactor );
 		context.Paint.Style = SKPaintStyle.Stroke;
 		context.Paint.Color = borderColor;
-		context.Canvas.DrawRoundRect(rect.ToSKRect(), CornerRadius, CornerRadius, context.Paint);
-		context.Paint.Color = new SKColor(255, 255, 255);
+		context.Canvas.DrawRoundRect(rect.ToSKRect(), BorderCornerRadius, BorderCornerRadius, context.Paint);
+		context.Paint.Color = White;
+	}
+
+	private void RenderSelectionBox(DreadGuiDrawContext context, Rect rect)
+	{
+		using var blackDashEffect = SKPathEffect.CreateDash(SelectionBoxDashIntervals, 0);
+		using var whiteDashEffect = SKPathEffect.CreateDash(SelectionBoxDashIntervals, SelectionBoxDashLength);
+
+		// Draw black dashes
+		context.Paint.Style = SKPaintStyle.Stroke;
+		context.Paint.StrokeWidth = SelectionBoxStrokeWidth;
+		context.Paint.PathEffect = blackDashEffect;
+		context.Paint.Color = Black;
+		context.Canvas.DrawRect(rect.ToSKRect(), context.Paint);
+
+		// Draw white dashes
+		context.Paint.PathEffect = whiteDashEffect;
+		context.Paint.Color = White;
+		context.Canvas.DrawRect(rect.ToSKRect(), context.Paint);
+
+		// Draw selection handles
+		var zoomFactor = Editor?.ZoomFactor ?? 1.0;
+		var scaledHalfHandleSize = ( SelectionHandleSize / 2 ) / zoomFactor;
+
+		context.Paint.StrokeWidth = SelectionBoxStrokeWidth;
+		context.Paint.PathEffect = null;
+
+		DrawSelectionHandle(rect.TopLeft);
+		DrawSelectionHandle(rect.TopMiddle);
+		DrawSelectionHandle(rect.TopRight);
+		DrawSelectionHandle(rect.MiddleRight);
+		DrawSelectionHandle(rect.BottomRight);
+		DrawSelectionHandle(rect.BottomMiddle);
+		DrawSelectionHandle(rect.BottomLeft);
+		DrawSelectionHandle(rect.MiddleLeft);
+
+		void DrawSelectionHandle(Point point)
+		{
+			var topLeft = new Point(point.X - scaledHalfHandleSize, point.Y - scaledHalfHandleSize);
+			var bottomRight = new Point(point.X + scaledHalfHandleSize, point.Y + scaledHalfHandleSize);
+			var handleRect = new Rect(topLeft, bottomRight);
+
+			context.Paint.Style = SKPaintStyle.Fill;
+			context.Paint.Color = White;
+			context.Canvas.DrawRect(handleRect.ToSKRect(), context.Paint);
+			context.Paint.Style = SKPaintStyle.Stroke;
+			context.Paint.Color = Black;
+			context.Canvas.DrawRect(handleRect.ToSKRect(), context.Paint);
+		}
 	}
 
 	private static Rect GetRenderBounds(Rect controlBounds)

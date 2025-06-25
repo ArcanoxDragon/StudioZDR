@@ -1,13 +1,49 @@
 ﻿using MercuryEngine.Data.Types.DreadTypes;
+using StudioZDR.App.Features.GuiEditor.ViewModels;
+using StudioZDR.UI.Avalonia.Extensions;
 
 namespace StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
 
 internal static class DisplayObjectExtensions
 {
-	public static Rect GetDisplayObjectRect(this GUI__CDisplayObject obj, Rect screenBounds, Rect parentBounds)
-		=> GetDisplayObjectRect(obj, screenBounds, parentBounds, out _);
+	public static Rect GetOverallBounds(this IEnumerable<GuiCompositionNodeViewModel> nodes, Rect screenBounds)
+	{
+		Dictionary<GuiCompositionNodeViewModel, Rect> knownBounds = [];
+		IEnumerable<Rect> allNodeBounds = nodes.Select(GetBounds);
 
-	public static Rect GetDisplayObjectRect(this GUI__CDisplayObject obj, Rect screenBounds, Rect parentBounds, out Point origin)
+		return allNodeBounds.GetOverallBoundingBox();
+
+		Rect GetBounds(GuiCompositionNodeViewModel node)
+		{
+			if (!knownBounds.TryGetValue(node, out var bounds))
+			{
+				Rect parentBounds = node.Parent is { } parent ? GetBounds(parent) : screenBounds;
+
+				bounds = node.DisplayObject?.GetDisplayObjectBounds(screenBounds, parentBounds) ?? new Rect();
+				knownBounds.Add(node, bounds);
+			}
+
+			return bounds;
+		}
+	}
+
+	public static Rect GetDisplayObjectBounds(this GuiCompositionNodeViewModel node, Rect screenBounds, out Point origin)
+	{
+		if (node.DisplayObject is not { } displayObject)
+		{
+			origin = default;
+			return new Rect();
+		}
+
+		Rect parentBounds = node.Parent?.GetDisplayObjectBounds(screenBounds, out _) ?? screenBounds;
+
+		return displayObject.GetDisplayObjectBounds(screenBounds, parentBounds, out origin);
+	}
+
+	public static Rect GetDisplayObjectBounds(this GUI__CDisplayObject obj, Rect screenBounds, Rect parentBounds)
+		=> GetDisplayObjectBounds(obj, screenBounds, parentBounds, out _);
+
+	public static Rect GetDisplayObjectBounds(this GUI__CDisplayObject obj, Rect screenBounds, Rect parentBounds, out Point origin)
 	{
 		var scaleX = obj.ScaleX ?? 1f;
 		var scaleY = obj.ScaleY ?? 1f;

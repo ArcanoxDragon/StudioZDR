@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Humanizer;
 using ReactiveUI;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
+using StudioZDR.UI.Avalonia.Extensions;
 using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
 using StudioZDR.UI.Avalonia.Rendering;
 using StudioZDR.UI.Avalonia.Rendering.DreadGui;
@@ -22,9 +23,12 @@ namespace StudioZDR.UI.Avalonia.Features.GuiEditor.Views;
 
 internal partial class GuiCompositionCanvas : ContentControl
 {
-	public const  double MinimumZoomLevel    = -1;
-	public const  double MaximumZoomLevel    = 1;
-	private const double MinimumDragDistance = 5;
+	public const  double MinimumZoomLevel             = -1;
+	public const  double MaximumZoomLevel             = 1;
+	private const double MinimumDragDistance          = 5;
+	private const double MinimumDragDistanceSquared   = MinimumDragDistance * MinimumDragDistance;
+	private const double ResizeHandleTolerance        = 5;
+	private const double ResizeHandleToleranceSquared = ResizeHandleTolerance * ResizeHandleTolerance;
 
 	private static readonly TimeSpan DoubleTapTime = 350.Milliseconds();
 
@@ -56,6 +60,8 @@ internal partial class GuiCompositionCanvas : ContentControl
 	private          bool                 dragging;
 	private          bool                 dragLatched;
 	private          Point                dragStart;
+	private          bool                 dragIsResize;
+	private          ResizeType           resizeType;
 
 	public GuiCompositionCanvas()
 	{
@@ -122,7 +128,10 @@ internal partial class GuiCompositionCanvas : ContentControl
 			// Don't allow starting one if already doing another
 			return;
 
+		var ctrlPressed = ( e.KeyModifiers & KeyModifiers.Control ) == KeyModifiers.Control;
+		var screenBounds = GetScreenBounds();
 		var point = e.GetCurrentPoint(this);
+		var transformedPosition = point.Position.Transform(InverseTransformMatrix);
 
 		if (point.Properties.IsBarrelButtonPressed || point.Properties.IsRightButtonPressed)
 		{
@@ -141,9 +150,16 @@ internal partial class GuiCompositionCanvas : ContentControl
 			point.Pointer.Capture(this);
 
 			var hoveredNodes = GetHoveredNodes().ToList();
-			var anySelectedUnderPointer = editor.SelectedNodes.Intersect(hoveredNodes).Any();
+			var selectionBounds = editor.SelectedNodes.GetOverallBounds(screenBounds);
+			var considerSelection = editor.SelectedNodes.Count > 0 && !ctrlPressed;
+			var pointerInsideSelection = considerSelection && selectionBounds.Contains(transformedPosition);
 
-			if (anySelectedUnderPointer)
+			if (considerSelection && TryGetResizeType(selectionBounds, transformedPosition, out var resizeType))
+			{
+				// Clicked on a resize handle - immediately start resizing
+				StartDragging(resizeType);
+			}
+			else if (pointerInsideSelection)
 			{
 				// Immediately start dragging
 				StartDragging();
@@ -160,7 +176,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 					return;
 				}
 
-				if (( e.KeyModifiers & KeyModifiers.Control ) == KeyModifiers.Control)
+				if (ctrlPressed)
 				{
 					// Toggle the node as being selected
 					editor.ToggleSelected(innermostHoveredNode);
@@ -175,17 +191,19 @@ internal partial class GuiCompositionCanvas : ContentControl
 			}
 		}
 
-		void StartDragging()
+		void StartDragging(ResizeType? resizeType = null)
 		{
-			this.dragStart = point.Position;
+			this.dragStart = transformedPosition;
 			this.draggingObjects.AddRange(editor.GetTopmostSelectedNodes().Select(node => new DraggingObject(node, GetInitialObjectPosition(node))));
-			this.dragLatched = false;
+			this.dragLatched = resizeType.HasValue; // Resize drags start immediately without needing a large enough "latching" movement
 			this.dragging = true;
+			this.dragIsResize = resizeType.HasValue;
+			this.resizeType = resizeType ?? default;
 		}
 
 		Point GetInitialObjectPosition(GuiCompositionNodeViewModel node)
 		{
-			GetNodeBounds(node, out var origin);
+			node.GetDisplayObjectBounds(screenBounds, out var origin);
 			return origin;
 		}
 	}
@@ -194,7 +212,9 @@ internal partial class GuiCompositionCanvas : ContentControl
 	{
 		base.OnPointerMoved(e);
 
+		var ctrlPressed = ( e.KeyModifiers & KeyModifiers.Control ) == KeyModifiers.Control;
 		var newPosition = e.GetPosition(this);
+		var transformedPosition = newPosition.Transform(InverseTransformMatrix);
 
 		LastCursorPosition = newPosition;
 		InvalidateVisual();
@@ -211,50 +231,130 @@ internal partial class GuiCompositionCanvas : ContentControl
 		}
 		else if (this.dragging)
 		{
-			var delta = ( newPosition - this.dragStart ) / editor.ZoomFactor;
+			var delta = transformedPosition - this.dragStart;
+			var dragLengthSquared = ( (Vector) delta ).SquaredLength;
 
-			if (!this.dragLatched && ( (Vector) delta ).Length > MinimumDragDistance)
+			if (!this.dragLatched && dragLengthSquared > MinimumDragDistanceSquared)
 				this.dragLatched = true;
 
 			if (this.dragLatched)
-			{
-				Rect screenBounds = GetScreenBounds();
-
-				foreach (var (node, initialPosition) in this.draggingObjects)
-				{
-					if (node.DisplayObject is not { } displayObject)
-						continue;
-
-					Rect parentBounds = node.Parent is null ? screenBounds : GetNodeBounds(node.Parent, out _);
-					Point newObjectPosition = initialPosition + delta;
-
-					displayObject.MoveOriginTo(screenBounds, parentBounds, newObjectPosition);
-					node.NotifyOfDisplayObjectChange();
-				}
-			}
-		}
-		else if (editor.IsMouseSelectionEnabled)
-		{
-			var hoveredNodes = GetHoveredNodes().ToList();
-			var anySelectedUnderPointer = editor.SelectedNodes.Intersect(hoveredNodes).Any();
-
-			if (anySelectedUnderPointer)
-			{
-				// If the pointer is over any selected nodes, don't show the selection "ghost"
-				editor.HoveredNode = null;
-				Cursor = new Cursor(StandardCursorType.SizeAll);
-			}
-			else
-			{
-				// We want the "innermost" node to appear hovered, but not any of its parents
-				editor.HoveredNode = hoveredNodes.LastOrDefault();
-				Cursor = Cursor.Default;
-			}
+				MoveDraggedObjects(transformedPosition, delta);
 		}
 		else
 		{
-			// Reset the cursor
-			Cursor = Cursor.Default;
+			var screenBounds = GetScreenBounds();
+			var selectionBounds = editor.SelectedNodes.GetOverallBounds(screenBounds);
+			var considerSelection = editor.SelectedNodes.Count > 0 && !ctrlPressed;
+			var pointerInsideSelection = considerSelection && selectionBounds.Contains(transformedPosition);
+			GuiCompositionNodeViewModel? hoveredNode = null;
+
+			if (considerSelection && TryGetResizeType(selectionBounds, transformedPosition, out var resizeType))
+			{
+				// Cursor is near a resize handle
+				Cursor = new Cursor(resizeType.Cursor);
+			}
+			else if (pointerInsideSelection)
+			{
+				// If the pointer is over any selected nodes, don't show the selection "ghost"
+				Cursor = new Cursor(StandardCursorType.SizeAll);
+			}
+			else if (editor.IsMouseSelectionEnabled)
+			{
+				var hoveredNodes = GetHoveredNodes().ToList();
+
+				// We want the "innermost" node to appear hovered, but not any of its parents
+				hoveredNode = hoveredNodes.LastOrDefault();
+				Cursor = Cursor.Default;
+			}
+			else
+			{
+				// Reset the cursor and hovered node
+				Cursor = Cursor.Default;
+			}
+
+			editor.HoveredNode = hoveredNode;
+		}
+	}
+
+	private void MoveDraggedObjects(Point cursorPosition, Point delta)
+	{
+		var (resizeOrigin, _, doResizeX, doResizeY) = this.resizeType;
+		var screenBounds = GetScreenBounds();
+		var fullResizeDistanceX = Math.Abs(this.dragStart.X - resizeOrigin.X);
+		var fullResizeDistanceY = Math.Abs(this.dragStart.Y - resizeOrigin.Y);
+		var resizeDirectionX = Math.Sign(this.dragStart.X - resizeOrigin.X);
+		var resizeDirectionY = Math.Sign(this.dragStart.Y - resizeOrigin.Y);
+		var resizeScaleX = ( cursorPosition.X - resizeOrigin.X ) / fullResizeDistanceX * resizeDirectionX;
+		var resizeScaleY = ( cursorPosition.Y - resizeOrigin.Y ) / fullResizeDistanceY * resizeDirectionY;
+
+		foreach (var draggingObject in this.draggingObjects)
+		{
+			var (node, initialPosition) = draggingObject;
+
+			if (node.DisplayObject is not { } displayObject)
+				continue;
+
+			var parentBounds = node.Parent?.GetDisplayObjectBounds(screenBounds, out _) ?? screenBounds;
+			Point newObjectPosition;
+
+			if (this.dragIsResize)
+			{
+				// Objects move by an amount proportional to their distance from the drag origin
+				var objectToResizeOrigin = initialPosition - resizeOrigin;
+				var deltaScaleX = doResizeX ? Math.Abs(objectToResizeOrigin.X / fullResizeDistanceX) : 0;
+				var deltaScaleY = doResizeY ? Math.Abs(objectToResizeOrigin.Y / fullResizeDistanceY) : 0;
+				var objDelta = new Point(delta.X * deltaScaleX, delta.Y * deltaScaleY);
+
+				newObjectPosition = initialPosition + objDelta;
+
+				if (doResizeX)
+					displayObject.ScaleX = draggingObject.InitialScaleX * (float) resizeScaleX;
+				if (doResizeY)
+					displayObject.ScaleY = draggingObject.InitialScaleY * (float) resizeScaleY;
+			}
+			else
+			{
+				// All objects move by the same amount
+				newObjectPosition = initialPosition + delta;
+			}
+
+			displayObject.MoveOriginTo(screenBounds, parentBounds, newObjectPosition);
+			node.NotifyOfDisplayObjectChange();
+		}
+	}
+
+	private static bool TryGetResizeType(Rect bounds, Point point, out ResizeType resizeType)
+	{
+		var origin = default(Point);
+		var cursorResult = default(StandardCursorType);
+		var resizeXResult = false;
+		var resizeYResult = false;
+		var success = Try(bounds.TopLeft, bounds.BottomRight, StandardCursorType.TopLeftCorner, resizeX: true, resizeY: true) ||
+					  Try(bounds.TopMiddle, bounds.BottomMiddle, StandardCursorType.TopSide, resizeX: false, resizeY: true) ||
+					  Try(bounds.TopRight, bounds.BottomLeft, StandardCursorType.TopRightCorner, resizeX: true, resizeY: true) ||
+					  Try(bounds.MiddleRight, bounds.MiddleLeft, StandardCursorType.RightSide, resizeX: true, resizeY: false) ||
+					  Try(bounds.BottomRight, bounds.TopLeft, StandardCursorType.BottomRightCorner, resizeX: true, resizeY: true) ||
+					  Try(bounds.BottomMiddle, bounds.TopMiddle, StandardCursorType.BottomSide, resizeX: false, resizeY: true) ||
+					  Try(bounds.BottomLeft, bounds.TopRight, StandardCursorType.BottomLeftCorner, resizeX: true, resizeY: true) ||
+					  Try(bounds.MiddleLeft, bounds.MiddleRight, StandardCursorType.LeftSide, resizeX: true, resizeY: false);
+
+		resizeType = new ResizeType(origin, cursorResult, resizeXResult, resizeYResult);
+		return success;
+
+		bool Try(Point testPoint, Point originCandidate, StandardCursorType cursor, bool resizeX, bool resizeY)
+		{
+			var squaredDistance = ( (Vector) ( point - testPoint ) ).SquaredLength;
+			var isSuccess = squaredDistance < ResizeHandleToleranceSquared;
+
+			if (isSuccess)
+			{
+				origin = originCandidate;
+				cursorResult = cursor;
+				resizeXResult = resizeX;
+				resizeYResult = resizeY;
+			}
+
+			return isSuccess;
 		}
 	}
 
@@ -277,6 +377,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 
 		this.panning = false;
 		this.dragging = false;
+		this.dragIsResize = false;
 		this.dragLatched = false;
 		this.draggingObjects.Clear();
 	}
@@ -335,7 +436,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 			if (node is not { IsVisible: true, DisplayObject: { } displayObject })
 				yield break;
 
-			var objBounds = displayObject.GetDisplayObjectRect(screenBounds, parentBounds);
+			var objBounds = displayObject.GetDisplayObjectBounds(screenBounds, parentBounds);
 
 			if (objBounds.Contains(transformedCursorPosition))
 				yield return node;
@@ -348,20 +449,6 @@ internal partial class GuiCompositionCanvas : ContentControl
 
 	private Rect GetScreenBounds()
 		=> this.drawOperation?.RenderBounds ?? new Rect(0, 0, Bounds.Width, Bounds.Height);
-
-	private Rect GetNodeBounds(GuiCompositionNodeViewModel node, out Point origin)
-	{
-		if (node.DisplayObject is not { } displayObject)
-		{
-			origin = default;
-			return new Rect();
-		}
-
-		Rect screenBounds = GetScreenBounds();
-		Rect parentBounds = node.Parent is null ? screenBounds : GetNodeBounds(node.Parent, out _);
-
-		return displayObject.GetDisplayObjectRect(screenBounds, parentBounds, out origin);
-	}
 
 	#endregion
 
@@ -487,5 +574,11 @@ internal partial class GuiCompositionCanvas : ContentControl
 	}
 #endif
 
-	private sealed record DraggingObject(GuiCompositionNodeViewModel Node, Point InitialPosition);
+	private sealed record DraggingObject(GuiCompositionNodeViewModel Node, Point InitialPosition)
+	{
+		public float InitialScaleX { get; } = Node.DisplayObject?.ScaleX ?? 1f;
+		public float InitialScaleY { get; } = Node.DisplayObject?.ScaleY ?? 1f;
+	}
+
+	private readonly record struct ResizeType(Point Origin, StandardCursorType Cursor, bool X, bool Y);
 }
