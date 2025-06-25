@@ -88,7 +88,7 @@
 									Binding #Control.ViewModel.HorizontalAnchor, 
 									Converter={x:Static converters:EqualsConverter.Instance},
 									ConverterParameter={x:Static properties:HorizontalAnchor.Right}}">
-				<i:Icon Value="fa-solid fa-objects-align-left" />
+				<i:Icon Value="fa-solid fa-objects-align-right" />
 			</c:RadioToggleButton>
 		</StackPanel>
 
