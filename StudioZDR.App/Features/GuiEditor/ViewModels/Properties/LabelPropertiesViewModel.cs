@@ -37,7 +37,7 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 
 	#endregion
 
-	#region Font
+	#region Outline
 
 	[Reactive]
 	public partial bool? Outline { get; set; }
@@ -60,28 +60,31 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 		base.RefreshValuesFromObject(obj, firstObject);
 
 		GUI__CLabel? label = obj as GUI__CLabel;
+		string labelText = label?.Text ?? string.Empty;
+		string font = label?.Font ?? string.Empty;
+		bool outline = label?.Outline ?? false;
 
 		if (firstObject)
 		{
-			LabelText = label?.Text ?? string.Empty;
-			Font = label?.Font ?? string.Empty;
-			Outline = label?.Outline ?? false;
+			LabelText = labelText;
+			Font = font;
+			Outline = outline;
 		}
 		else
 		{
-			if (label?.Text != LabelText)
+			if (labelText != LabelText)
 			{
 				LabelText = null;
 				LabelTextWatermark = MultipleValuesPlaceholder;
 			}
 
-			if (label?.Font != Font)
+			if (font != Font)
 			{
 				Font = null;
 				FontWatermark = MultipleValuesPlaceholder;
 			}
 
-			if (label?.Outline != Outline)
+			if (outline != Outline)
 				Outline = null;
 		}
 	}

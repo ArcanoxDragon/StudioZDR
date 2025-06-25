@@ -13,15 +13,11 @@
 				Name="Control">
 
 	<Grid
-		RowDefinitions="Auto,32,Auto,32,32,32,32,32,32,32"
+		RowDefinitions="Auto,32,Auto,32,32,32,32,32"
+		ColumnDefinitions="100,*"
 		Classes="ControlGrid"
 		IsEnabled="{Binding #Control.ViewModel.CanEdit}"
 		VerticalAlignment="Top">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
-			<ColumnDefinition Width="*" />
-		</Grid.ColumnDefinitions>
-
 		<TextBlock Grid.ColumnSpan="2" Classes="GroupHeader">
 			Common Properties
 		</TextBlock>
@@ -49,8 +45,7 @@
 					  IsChecked="{Binding #Control.ViewModel.IsVisible}" />
 
 			<StackPanel Grid.Column="1">
-				<TextBlock Width="NaN"
-						   MinWidth="{Binding $parent[StackPanel].Bounds.Width}"
+				<TextBlock MinWidth="{Binding $parent[StackPanel].Bounds.Width}"
 						   MaxWidth="{Binding $parent[StackPanel].Bounds.Width}"
 						   Foreground="{DynamicResource TextFillColorTertiary}"
 						   FontSize="11"
@@ -126,71 +121,79 @@
 			Position:
 		</Label>
 
-		<NumericUpDown Grid.Row="5" Grid.Column="1"
-					   x:Name="PositionXTextBox"
-					   Value="{Binding #Control.ViewModel.PositionX}"
-					   Watermark="{Binding #Control.ViewModel.PositionXWatermark}"
-					   Increment="0.01">
-			<NumericUpDown.InnerLeftContent>
-				<Label Margin="4,0,0,0"
-					   Target="PositionXTextBox"
-					   VerticalContentAlignment="Center">
-					X
-				</Label>
-			</NumericUpDown.InnerLeftContent>
-		</NumericUpDown>
+		<Grid Grid.Row="5" Grid.Column="1"
+			  ColumnSpacing="6"
+			  ColumnDefinitions="*,*">
+			<NumericUpDown Grid.Column="0"
+						   x:Name="PositionXTextBox"
+						   Value="{Binding #Control.ViewModel.PositionX}"
+						   Watermark="{Binding #Control.ViewModel.PositionXWatermark}"
+						   Increment="0.01">
+				<NumericUpDown.InnerLeftContent>
+					<Label Margin="4,0,0,0"
+						   Target="PositionXTextBox"
+						   VerticalContentAlignment="Center">
+						X
+					</Label>
+				</NumericUpDown.InnerLeftContent>
+			</NumericUpDown>
 
-		<NumericUpDown Grid.Row="6" Grid.Column="1"
-					   x:Name="PositionYTextBox"
-					   Value="{Binding #Control.ViewModel.PositionY}"
-					   Watermark="{Binding #Control.ViewModel.PositionYWatermark}"
-					   Increment="0.01">
-			<NumericUpDown.InnerLeftContent>
-				<Label Margin="4,0,0,0"
-					   Target="PositionYTextBox"
-					   VerticalAlignment="Center">
-					Y
-				</Label>
-			</NumericUpDown.InnerLeftContent>
-		</NumericUpDown>
+			<NumericUpDown Grid.Column="1"
+						   x:Name="PositionYTextBox"
+						   Value="{Binding #Control.ViewModel.PositionY}"
+						   Watermark="{Binding #Control.ViewModel.PositionYWatermark}"
+						   Increment="0.01">
+				<NumericUpDown.InnerLeftContent>
+					<Label Margin="4,0,0,0"
+						   Target="PositionYTextBox"
+						   VerticalAlignment="Center">
+						Y
+					</Label>
+				</NumericUpDown.InnerLeftContent>
+			</NumericUpDown>
+		</Grid>
 
-		<Label Grid.Row="7" Grid.Column="0" Target="SizeXTextBox">
+		<Label Grid.Row="6" Grid.Column="0" Target="SizeXTextBox">
 			Size:
 		</Label>
 
-		<NumericUpDown Grid.Row="7" Grid.Column="1"
-					   x:Name="SizeXTextBox"
-					   Value="{Binding #Control.ViewModel.SizeX}"
-					   Watermark="{Binding #Control.ViewModel.SizeXWatermark}"
-					   Increment="0.01">
-			<NumericUpDown.InnerLeftContent>
-				<Label Margin="4,0,0,0"
-					   Target="SizeXTextBox"
-					   VerticalContentAlignment="Center">
-					X
-				</Label>
-			</NumericUpDown.InnerLeftContent>
-		</NumericUpDown>
+		<Grid Grid.Row="6" Grid.Column="1"
+			  ColumnSpacing="6"
+			  ColumnDefinitions="*,*">
+			<NumericUpDown Grid.Column="0"
+						   x:Name="SizeXTextBox"
+						   Value="{Binding #Control.ViewModel.SizeX}"
+						   Watermark="{Binding #Control.ViewModel.SizeXWatermark}"
+						   Increment="0.01">
+				<NumericUpDown.InnerLeftContent>
+					<Label Margin="4,0,0,0"
+						   Target="SizeXTextBox"
+						   VerticalContentAlignment="Center">
+						X
+					</Label>
+				</NumericUpDown.InnerLeftContent>
+			</NumericUpDown>
 
-		<NumericUpDown Grid.Row="8" Grid.Column="1"
-					   x:Name="SizeYTextBox"
-					   Value="{Binding #Control.ViewModel.SizeY}"
-					   Watermark="{Binding #Control.ViewModel.SizeYWatermark}"
-					   Increment="0.01">
-			<NumericUpDown.InnerLeftContent>
-				<Label Margin="4,0,0,0"
-					   Target="SizeYTextBox"
-					   VerticalAlignment="Center">
-					Y
-				</Label>
-			</NumericUpDown.InnerLeftContent>
-		</NumericUpDown>
+			<NumericUpDown Grid.Column="1"
+						   x:Name="SizeYTextBox"
+						   Value="{Binding #Control.ViewModel.SizeY}"
+						   Watermark="{Binding #Control.ViewModel.SizeYWatermark}"
+						   Increment="0.01">
+				<NumericUpDown.InnerLeftContent>
+					<Label Margin="4,0,0,0"
+						   Target="SizeYTextBox"
+						   VerticalAlignment="Center">
+						Y
+					</Label>
+				</NumericUpDown.InnerLeftContent>
+			</NumericUpDown>
+		</Grid>
 
-		<Label Grid.Row="9" Grid.Column="0" Target="AngleTextBox">
+		<Label Grid.Row="7" Grid.Column="0" Target="AngleTextBox">
 			Angle:
 		</Label>
 
-		<NumericUpDown Grid.Row="9" Grid.Column="1"
+		<NumericUpDown Grid.Row="7" Grid.Column="1"
 					   x:Name="AngleTextBox"
 					   Value="{Binding #Control.ViewModel.Angle, Converter={x:Static converters:RadiansToDegreesConverter.Instance}}"
 					   Watermark="{Binding #Control.ViewModel.AngleWatermark}"

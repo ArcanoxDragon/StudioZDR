@@ -3,7 +3,7 @@
 		xmlns:properties="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties">
 	<Design.PreviewWith>
 		<Border Width="400" Padding="10" Grid.IsSharedSizeScope="True">
-			<properties:SpriteProperties />
+			<properties:LabelProperties />
 		</Border>
 	</Design.PreviewWith>
 
@@ -28,9 +28,55 @@
 
 	<Style Selector=":is(properties|IDisplayObjectPropertiesControl) NumericUpDown">
 		<Setter Property="MinHeight" Value="0" />
-	</Style>
 
-	<Style Selector=":is(properties|IDisplayObjectPropertiesControl) NumericUpDown /template/ ButtonSpinner#PART_Spinner">
-		<Setter Property="MinHeight" Value="0" />
+		<Style Selector="^ /template/ ButtonSpinner#PART_Spinner">
+			<Setter Property="MinHeight" Value="0" />
+			<Setter Property="Template">
+				<!--
+				It's pretty cringe that we have to override the ENTIRE template with
+				a near identical copy of the original template just to change a couple
+				individual styles on template parts, but such is life, apparently?
+				-->
+				<ControlTemplate>
+					<DataValidationErrors>
+						<Grid>
+							<ContentPresenter Name="PART_ContentPresenter"
+											  ContentTemplate="{TemplateBinding ContentTemplate}"
+											  Content="{TemplateBinding Content}"
+											  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+											  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+											  Padding="{TemplateBinding Padding}" />
+
+							<StackPanel Name="PART_SpinnerPanel"
+										HorizontalAlignment="Left"
+										Orientation="Horizontal"
+										IsVisible="{TemplateBinding ShowButtonSpinner}"
+										Grid.Column="0"
+										Background="Transparent">
+								<RepeatButton Name="PART_IncreaseButton"
+											  Theme="{DynamicResource ButtonSpinnerButton}"
+											  VerticalContentAlignment="Center"
+											  Foreground="{TemplateBinding Foreground}"
+											  FontSize="12"
+											  Margin="0"
+											  MinWidth="24"
+											  CornerRadius="0"
+											  Content="&#xE70E;" />
+
+								<RepeatButton Name="PART_DecreaseButton"
+											  Theme="{DynamicResource ButtonSpinnerButton}"
+											  Foreground="{TemplateBinding Foreground}"
+											  VerticalContentAlignment="Center"
+											  FontSize="12"
+											  Margin="0"
+											  MinWidth="24"
+											  CornerRadius="0,4,4,0"
+											  Content="&#xE70D;" />
+							</StackPanel>
+						</Grid>
+					</DataValidationErrors>
+				</ControlTemplate>
+			</Setter>
+		</Style>
 	</Style>
 </Styles>

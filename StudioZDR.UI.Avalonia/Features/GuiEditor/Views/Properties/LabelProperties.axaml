@@ -14,14 +14,10 @@
 			ViewModel="{Binding #Control.ViewModel, Mode=OneWay}" />
 
 		<Grid
-			RowDefinitions="Auto,32,32,32"
+			RowDefinitions="Auto,32,32,Auto"
+			ColumnDefinitions="100,*"
 			Classes="ControlGrid"
 			IsEnabled="{Binding #Control.ViewModel.CanEdit}">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
-				<ColumnDefinition Width="*" />
-			</Grid.ColumnDefinitions>
-
 			<TextBlock Grid.ColumnSpan="2" Classes="GroupHeader">
 				Label Properties
 			</TextBlock>
@@ -45,12 +41,31 @@
 					 Watermark="{Binding #Control.ViewModel.FontWatermark}" />
 
 			<Label Grid.Row="3" Grid.Column="0" Target="OutlineCheckBox">
-				Outline:
+				<!--
+				The BMSCP property is called "Outline", but it produces a shadow
+				in Dread, so we call it "Shadow" in the UI.
+				-->
+				Shadow:
 			</Label>
 
-			<CheckBox Grid.Row="3" Grid.Column="1"
-					  x:Name="OutlineCheckBox"
-					  IsChecked="{Binding #Control.ViewModel.Outline}" />
+			<Grid Grid.Row="3" Grid.Column="1"
+				  ColumnDefinitions="Auto,*"
+				  HorizontalAlignment="Stretch">
+				<CheckBox Grid.Column="0"
+						  x:Name="OutlineCheckBox"
+						  IsChecked="{Binding #Control.ViewModel.Outline}" />
+
+				<StackPanel Grid.Column="1">
+					<TextBlock MinWidth="{Binding $parent[StackPanel].Bounds.Width}"
+							   MaxWidth="{Binding $parent[StackPanel].Bounds.Width}"
+							   Foreground="{DynamicResource TextFillColorTertiary}"
+							   FontSize="11"
+							   TextWrapping="Wrap">
+						Causes a sharp black shadow of the label's text to appear
+						behind the label, slightly below and to the right of it.
+					</TextBlock>
+				</StackPanel>
+			</Grid>
 		</Grid>
 	</StackPanel>
 </ContentControl>

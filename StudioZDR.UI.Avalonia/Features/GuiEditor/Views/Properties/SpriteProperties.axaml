@@ -16,13 +16,9 @@
 
 		<Grid
 			RowDefinitions="Auto,32"
+			ColumnDefinitions="100,*"
 			Classes="ControlGrid"
 			IsEnabled="{Binding #Control.ViewModel.CanEdit}">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
-				<ColumnDefinition Width="*" />
-			</Grid.ColumnDefinitions>
-
 			<TextBlock Grid.ColumnSpan="2" Classes="GroupHeader">
 				Sprite Properties
 			</TextBlock>
