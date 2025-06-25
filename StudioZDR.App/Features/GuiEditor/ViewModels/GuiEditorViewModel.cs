@@ -44,6 +44,8 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 		this._isMouseSelectionEnabled = settingsMonitor.CurrentValue.GetFeatureSettings<GuiEditorSettings>().MouseSelectionEnabled;
 		this._zoomLevel = 0;
 
+		#region OpenFileCommand
+
 		OpenFileCommand
 			.HandleExceptionsWith(ex => {
 				logger.LogError(ex, "An exception was thrown while loading all available GUI files");
@@ -60,6 +62,10 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 				OpenedFilePath = null;
 				OpenedFilePath = file;
 			});
+
+		#endregion
+
+		#region OpenedFilePath
 
 		this.WhenAnyValue(m => m.OpenedFilePath)
 			.ObserveOn(TaskPoolScheduler)
@@ -78,6 +84,10 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 			.ObserveOn(MainThreadScheduler)
 			.ToProperty(this, m => m.WindowTitle, out this._windowTitleHelper);
 
+		#endregion
+
+		#region OpenedGuiFile
+
 		this.WhenAnyValue(m => m.OpenedGuiFile)
 			.ObserveOn(MainThreadScheduler)
 			.Subscribe(bmscp => {
@@ -93,6 +103,10 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 				RefreshCanUndoRedo();
 			});
 
+		#endregion
+
+		#region LatestPristineState
+
 		this.WhenAnyValue(m => m.LatestPristineState)
 			.ObserveOn(MainThreadScheduler)
 			.Subscribe(bmscp => {
@@ -107,7 +121,14 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 				Composition = new DreadGuiCompositionViewModel(bmscp?.DeepClone().Root.Value);
 				previousComposition?.Dispose();
+
+				// Clear selection when swapping the composition - don't want to retain old references!
+				SelectedNodes.Clear();
 			});
+
+		#endregion
+
+		#region LoadGuiFileCommand
 
 		LoadGuiFileCommand.IsExecuting
 			.ToProperty(this, m => m.IsLoading, out this._isLoadingHelper);
@@ -120,6 +141,10 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 			}))
 			.ObserveOn(MainThreadScheduler)
 			.Subscribe(file => OpenedGuiFile = file);
+
+		#endregion
+
+		#region SaveFileCommand
 
 		CanSaveFile = Observable.Return(Settings.IsOutputLocationValid)
 			.CombineLatest(
@@ -142,6 +167,10 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 			.ObserveOn(MainThreadScheduler)
 			.Subscribe();
 
+		#endregion
+
+		#region Zoom
+
 		this.WhenAnyValue(m => m.ZoomLevel, level => Math.Pow(10, level))
 			.ToProperty(this, m => m.ZoomFactor, out this._zoomFactorHelper);
 
@@ -156,6 +185,8 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 				PanOffset *= (float) scaleFactor;
 			});
+
+		#endregion
 
 		this.WhenAnyValue(m => m.HoveredNode, n => n?.DisplayObject)
 			.ToProperty(this, m => m.HoveredObject, out this._hoveredObjectHelper);
