@@ -471,7 +471,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 		return await Dialogs.ConfirmAsync(
 			"Unsaved Changes",
-			"You have unsaved changes. If you open another composition, your changes will be lost.\n\nContinue?"
+			"You have unsaved changes. If you open another composition, your changes will be lost.\n\nDo you still want to proceed?"
 		);
 	}
 
@@ -556,7 +556,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 		return await Dialogs.ConfirmAsync(
 			"Unsaved Changes",
-			"You have unsaved changes. If you close the editor now, your changes will be lost.\n\nContinue?"
+			"You have unsaved changes. If you close the editor now, your changes will be lost.\n\nDo you still want to close?"
 		);
 	}
 
