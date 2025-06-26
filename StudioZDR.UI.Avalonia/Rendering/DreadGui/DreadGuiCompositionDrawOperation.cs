@@ -74,7 +74,9 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 				panOffset = Vector2.Zero;
 			}
 
-			using var guiDrawContext = new DreadGuiDrawContext(spriteSheetManager, context, RenderBounds);
+			using var guiDrawContext = new DreadGuiDrawContext(spriteSheetManager, context, RenderBounds) {
+				Editor = Editor,
+			};
 
 			using (guiDrawContext.Canvas.WithSavedState())
 			{

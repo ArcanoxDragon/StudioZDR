@@ -11,6 +11,8 @@ internal class SpriteGridRenderer : DisplayObjectRenderer<GUI__CSpriteGrid>
 	{
 		if (string.IsNullOrEmpty(spriteGrid.CellDefaultSpriteSheetItem))
 			return;
+		if (context.SpriteSheetManager.GetOrQueueSprite(spriteGrid.CellDefaultSpriteSheetItem) is not { } spriteBitmap)
+			return;
 
 		using var _ = context.Canvas.WithSavedState();
 		var spriteColorAlpha = spriteGrid.ColorA ?? 1.0f;
@@ -27,6 +29,7 @@ internal class SpriteGridRenderer : DisplayObjectRenderer<GUI__CSpriteGrid>
 			(byte) ( 255 * spriteColorAlpha )
 		);
 		var spriteBlendMode = DreadGuiDrawContext.TranslateBlendMode(spriteGrid.BlendMode);
+		using var spriteColorFilter = SKColorFilter.CreateBlendMode(spriteTintColor, SKBlendMode.Modulate);
 
 		// Determine sprite grid dimensions - grid is centered on the object
 		var cellWidth = ( spriteGrid.CellSizeX ?? 0 ) * context.RenderBounds.Width;
@@ -38,6 +41,8 @@ internal class SpriteGridRenderer : DisplayObjectRenderer<GUI__CSpriteGrid>
 		var totalGridHeight = cellHeight * cellCountY;
 		var gridTopLeft = gridBounds.Center - new Point(totalGridWidth / 2, totalGridHeight / 2);
 
+		context.Paint.ColorFilter = spriteColorFilter;
+
 		for (var y = 0; y < cellCountY; y++)
 		for (var x = 0; x < cellCountX; x++)
 		{
@@ -45,7 +50,9 @@ internal class SpriteGridRenderer : DisplayObjectRenderer<GUI__CSpriteGrid>
 			var cellTopLeft = gridTopLeft + cellOffset;
 			var cellRect = new Rect(cellTopLeft, cellSize);
 
-			context.RenderSprite(cellRect, spriteGrid.CellDefaultSpriteSheetItem, spriteTintColor, spriteBlendMode);
+			context.RenderSprite(cellRect, spriteBitmap, blendMode: spriteBlendMode);
 		}
+
+		context.Paint.ColorFilter = null;
 	}
 }

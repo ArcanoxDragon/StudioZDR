@@ -19,16 +19,14 @@ internal sealed class DreadGuiDrawContext : IDisposable
 
 	#endregion
 
-	private readonly SpriteSheetManager spriteSheetManager;
-
 	public DreadGuiDrawContext(SpriteSheetManager spriteSheetManager, ImmediateDrawingContext drawingContext, Rect renderBounds)
 	{
 		if (drawingContext.TryGetFeature<ISkiaSharpApiLeaseFeature>() is not { } skiaLeaseFeature)
 			throw new ApplicationException("Could not obtain Skia API lease feature!");
 
-		this.spriteSheetManager = spriteSheetManager;
-
+		SpriteSheetManager = spriteSheetManager;
 		SkiaLease = skiaLeaseFeature.Lease();
+		RenderBounds = renderBounds;
 		Paint = new SKPaint {
 			TextSize = 14,
 			SubpixelText = true,
@@ -36,14 +34,14 @@ internal sealed class DreadGuiDrawContext : IDisposable
 			StrokeWidth = 2,
 		};
 		TextBlurFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, SKMaskFilter.ConvertRadiusToSigma(4));
-		RenderBounds = renderBounds;
 	}
 
-	public ISkiaSharpApiLease  SkiaLease      { get; }
-	public SKPaint             Paint          { get; }
-	public SKMaskFilter        TextBlurFilter { get; }
-	public Rect                RenderBounds   { get; }
-	public GuiEditorViewModel? Editor         { get; init; }
+	public SpriteSheetManager  SpriteSheetManager { get; }
+	public ISkiaSharpApiLease  SkiaLease          { get; }
+	public Rect                RenderBounds       { get; }
+	public SKPaint             Paint              { get; }
+	public SKMaskFilter        TextBlurFilter     { get; }
+	public GuiEditorViewModel? Editor             { get; init; }
 
 	public SKCanvas Canvas => SkiaLease.SkCanvas;
 
@@ -99,24 +97,34 @@ internal sealed class DreadGuiDrawContext : IDisposable
 
 	public void RenderSprite(Rect spriteRect, string spriteName, SKColor? tintColor = null, SKBlendMode blendMode = SKBlendMode.SrcOver)
 	{
-		if (this.spriteSheetManager.GetOrQueueSprite(spriteName) is not { } spriteBitmap)
+		if (SpriteSheetManager.GetOrQueueSprite(spriteName) is not { } spriteBitmap)
 			return;
 
+		RenderSprite(spriteRect, spriteBitmap, tintColor, blendMode);
+	}
+
+	public void RenderSprite(Rect spriteRect, SKBitmap spriteBitmap, SKColor? tintColor = null, SKBlendMode blendMode = SKBlendMode.SrcOver)
+	{
 		SKColorFilter? spriteColorFilter = null;
 
 		try
 		{
 			if (tintColor.HasValue)
+			{
 				spriteColorFilter = SKColorFilter.CreateBlendMode(tintColor.Value, SKBlendMode.Modulate);
+				Paint.ColorFilter = spriteColorFilter;
+			}
 
-			Paint.ColorFilter = spriteColorFilter;
 			Paint.BlendMode = blendMode;
 			Canvas.DrawBitmap(spriteBitmap, spriteRect.ToSKRect(), Paint);
-			Paint.ColorFilter = null;
 		}
 		finally
 		{
-			spriteColorFilter?.Dispose();
+			if (spriteColorFilter != null)
+			{
+				Paint.ColorFilter = null;
+				spriteColorFilter.Dispose();
+			}
 		}
 	}
 
