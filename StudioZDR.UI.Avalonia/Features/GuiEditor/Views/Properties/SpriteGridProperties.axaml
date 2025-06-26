@@ -1,0 +1,118 @@
+<ContentControl xmlns="https://github.com/avaloniaui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+				xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+				xmlns:properties="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties"
+				xmlns:i="https://github.com/projektanker/icons.avalonia"
+				mc:Ignorable="d"
+				d:DesignWidth="500" d:DesignHeight="600"
+				x:CompileBindings="True"
+				x:Class="StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties.SpriteGridProperties"
+				Name="Control">
+
+	<StackPanel>
+		<properties:DisplayObjectProperties
+			ViewModel="{Binding #Control.ViewModel, Mode=OneWay}" />
+
+		<Grid
+			RowDefinitions="Auto,32,32,32"
+			ColumnDefinitions="100,*"
+			Classes="ControlGrid"
+			IsEnabled="{Binding #Control.ViewModel.CanEdit}">
+			<TextBlock Grid.ColumnSpan="2" Classes="GroupHeader">
+				Sprite Grid Properties
+			</TextBlock>
+
+			<Label Grid.Row="1" Grid.Column="0" Target="SpriteTextBox">
+				Sprite:
+			</Label>
+
+			<TextBox Grid.Row="1" Grid.Column="1"
+					 x:Name="SpriteTextBox"
+					 Text="{Binding #Control.ViewModel.SpriteName}"
+					 Watermark="{Binding #Control.ViewModel.SpriteNameWatermark}"
+					 IsReadOnly="True">
+				<TextBox.InnerRightContent>
+					<Button Classes="TextBoxRightAccessory"
+							Command="{Binding #Control.ViewModel.ChooseSpriteCommand}">
+						<i:Icon Value="fa-solid fa-ellipsis" />
+					</Button>
+				</TextBox.InnerRightContent>
+			</TextBox>
+
+			<Label Grid.Row="2" Grid.Column="0" Target="CellSizeXTextBox">
+				Cell Size:
+			</Label>
+
+			<Grid Grid.Row="2" Grid.Column="1"
+				  ColumnSpacing="6"
+				  ColumnDefinitions="*,*">
+				<NumericUpDown Grid.Column="0"
+							   x:Name="CellSizeXTextBox"
+							   Value="{Binding #Control.ViewModel.CellSizeX}"
+							   Watermark="{Binding #Control.ViewModel.CellSizeXWatermark}"
+							   Increment="0.01">
+					<NumericUpDown.InnerLeftContent>
+						<Label Margin="4,0,0,0"
+							   Target="CellSizeXTextBox"
+							   VerticalContentAlignment="Center">
+							X
+						</Label>
+					</NumericUpDown.InnerLeftContent>
+				</NumericUpDown>
+
+				<NumericUpDown Grid.Column="1"
+							   x:Name="CellSizeYTextBox"
+							   Value="{Binding #Control.ViewModel.CellSizeY}"
+							   Watermark="{Binding #Control.ViewModel.CellSizeYWatermark}"
+							   Increment="0.01">
+					<NumericUpDown.InnerLeftContent>
+						<Label Margin="4,0,0,0"
+							   Target="CellSizeYTextBox"
+							   VerticalAlignment="Center">
+							Y
+						</Label>
+					</NumericUpDown.InnerLeftContent>
+				</NumericUpDown>
+			</Grid>
+
+			<Label Grid.Row="3" Grid.Column="0" Target="CellCountXTextBox">
+				Cell Count:
+			</Label>
+
+			<Grid Grid.Row="3" Grid.Column="1"
+				  ColumnSpacing="6"
+				  ColumnDefinitions="*,*">
+				<NumericUpDown Grid.Column="0"
+							   x:Name="CellCountXTextBox"
+							   Value="{Binding #Control.ViewModel.CellCountX}"
+							   Watermark="{Binding #Control.ViewModel.CellCountXWatermark}"
+							   FormatString="0"
+							   Increment="1">
+					<NumericUpDown.InnerLeftContent>
+						<Label Margin="4,0,0,0"
+							   Target="CellCountXTextBox"
+							   VerticalContentAlignment="Center">
+							X
+						</Label>
+					</NumericUpDown.InnerLeftContent>
+				</NumericUpDown>
+
+				<NumericUpDown Grid.Column="1"
+							   x:Name="CellCountYTextBox"
+							   Value="{Binding #Control.ViewModel.CellCountY}"
+							   Watermark="{Binding #Control.ViewModel.CellCountYWatermark}"
+							   FormatString="0"
+							   Increment="1">
+					<NumericUpDown.InnerLeftContent>
+						<Label Margin="4,0,0,0"
+							   Target="CellCountYTextBox"
+							   VerticalAlignment="Center">
+							Y
+						</Label>
+					</NumericUpDown.InnerLeftContent>
+				</NumericUpDown>
+			</Grid>
+		</Grid>
+	</StackPanel>
+</ContentControl>

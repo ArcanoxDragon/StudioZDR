@@ -22,11 +22,12 @@ internal class DisplayObjectPropertiesTemplate : AvaloniaObject, IDataTemplate
 		if (param is not IList<GuiCompositionNodeViewModel> nodes)
 			return new DisplayObjectProperties { Editor = Editor };
 
-		if (AllHaveType<GUI__CSprite>())
-			return BuildControl<SpriteProperties>();
 		if (AllHaveType<GUI__CLabel>())
 			return BuildControl<LabelProperties>();
-		// TODO: Other subtypes
+		if (AllHaveType<GUI__CSprite>())
+			return BuildControl<SpriteProperties>();
+		if (AllHaveType<GUI__CSpriteGrid>())
+			return BuildControl<SpriteGridProperties>();
 
 		return BuildControl<DisplayObjectProperties>();
 
