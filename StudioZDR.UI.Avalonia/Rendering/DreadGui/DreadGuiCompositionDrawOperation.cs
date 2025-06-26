@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using System.Diagnostics.CodeAnalysis;
+using Avalonia.Media;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using MercuryEngine.Data.Types.DreadTypes;
@@ -6,6 +7,7 @@ using SkiaSharp;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 using StudioZDR.UI.Avalonia.Extensions;
 using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
+using StudioZDR.UI.Avalonia.Rendering.DreadGui.ObjectRenderers;
 using Vector2 = System.Numerics.Vector2;
 
 namespace StudioZDR.UI.Avalonia.Rendering.DreadGui;
@@ -18,12 +20,9 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 	private const int RenderPassOverlay = 1;
 	private const int RenderPassCount   = 2;
 
-	private const float BorderStrokeWidth           = 1;
-	private const float BorderCornerRadius          = 4;
-	private const float HiddenObjectAlphaMultiplier = 0.125f;
-	private const float SelectionBoxStrokeWidth     = 0; // Hairline
-	private const float SelectionBoxDashLength      = 5;
-	private const float SelectionHandleSize         = 10;
+	private const float SelectionBoxStrokeWidth = 0; // Hairline
+	private const float SelectionBoxDashLength  = 5;
+	private const float SelectionHandleSize     = 10;
 
 	private static readonly float[] SelectionBoxDashIntervals = [SelectionBoxDashLength, SelectionBoxDashLength];
 
@@ -31,9 +30,12 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 	private static readonly SKColor White               = new(255, 255, 255);
 	private static readonly SKColor HoverBorderColor    = new(255, 0, 255, 64);
 	private static readonly SKColor SelectedBorderColor = new(0, 255, 255);
-	private static readonly SKColor TextDrawColor       = new(255, 255, 255);
-	private static readonly SKColor HiddenTextDrawColor = new(255, 255, 255, (byte) ( 255 * HiddenObjectAlphaMultiplier ));
-	private static readonly SKColor TextBlurColor       = new(0, 0, 0);
+
+	private static readonly Dictionary<Type, IDisplayObjectRenderer> DisplayObjectRenderers = new() {
+		{ typeof(GUI__CLabel), new LabelRenderer() },
+		{ typeof(GUI__CSprite), new SpriteRenderer() },
+		{ typeof(GUI__CSpriteGrid), new SpriteGridRenderer() },
+	};
 
 	private readonly ManualResetEventSlim renderingEvent = new(true);
 
@@ -61,7 +63,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 		try
 		{
-			if (Composition is not { Hierarchy: { } hierarchy } composition)
+			if (Composition is not { Hierarchy: var hierarchy } composition)
 				return;
 
 			using var _ = composition.LockForReading();
@@ -72,7 +74,7 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 				panOffset = Vector2.Zero;
 			}
 
-			using var guiDrawContext = new DreadGuiDrawContext(context);
+			using var guiDrawContext = new DreadGuiDrawContext(spriteSheetManager, context, RenderBounds);
 
 			using (guiDrawContext.Canvas.WithSavedState())
 			{
@@ -140,24 +142,17 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 			if (renderPass == RenderPassNormal && node.IsVisible)
 			{
-				switch (obj)
-				{
-					case GUI__CSprite sprite:
-						RenderSprite(context, sprite, parentBounds);
-						break;
-					case GUI__CLabel label:
-						RenderLabel(context, label, parentBounds);
-						break;
-				}
+				if (TryGetRenderer(obj, out var renderer))
+					renderer.RenderObject(context, obj, parentBounds);
 			}
 			else if (renderPass == RenderPassOverlay)
 			{
 				context.Paint.Color = White;
 
 				if (Editor?.SelectedObjects is { } selectedObjects && selectedObjects.Contains(obj))
-					RenderDisplayObjectBounds(context, objBounds, SelectedBorderColor);
+					context.RenderDisplayObjectBounds(objBounds, SelectedBorderColor);
 				if (ReferenceEquals(obj, Editor?.HoveredObject))
-					RenderDisplayObjectBounds(context, objBounds, HoverBorderColor);
+					context.RenderDisplayObjectBounds(objBounds, HoverBorderColor);
 			}
 
 			if (node.IsVisible)
@@ -166,81 +161,6 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 					RenderDisplayObjectNode(context, childNode, objBounds, renderPass);
 			}
 		}
-	}
-
-	private void RenderSprite(DreadGuiDrawContext context, GUI__CSprite sprite, Rect parentBounds)
-	{
-		var spriteRect = sprite.GetDisplayObjectBounds(RenderBounds, parentBounds);
-		var spriteColorAlpha = sprite.ColorA ?? 1.0f;
-
-		// This is "in-game" visibility, not editor visibility
-		if (sprite.Visible is false)
-			spriteColorAlpha *= HiddenObjectAlphaMultiplier;
-
-		var spriteTintColor = new SKColor(
-			(byte) ( 255 * ( sprite.ColorR ?? 1.0f ) ),
-			(byte) ( 255 * ( sprite.ColorG ?? 1.0f ) ),
-			(byte) ( 255 * ( sprite.ColorB ?? 1.0f ) ),
-			(byte) ( 255 * spriteColorAlpha )
-		);
-
-		using (context.Canvas.WithSavedState())
-		{
-			var centerX = (float) ( spriteRect.X + ( 0.5 * spriteRect.Width ) );
-			var centerY = (float) ( spriteRect.Y + ( 0.5 * spriteRect.Height ) );
-
-			if (sprite is { FlipX: true, FlipY: true })
-				context.Canvas.Scale(-1, -1, centerX, centerY);
-			else if (sprite.FlipX is true)
-				context.Canvas.Scale(-1, 1, centerX, centerY);
-			else if (sprite.FlipY is true)
-				context.Canvas.Scale(1, -1, centerX, centerY);
-
-			if (!string.IsNullOrEmpty(sprite.SpriteSheetItem) && spriteSheetManager.GetOrQueueSprite(sprite.SpriteSheetItem) is { } spriteBitmap)
-			{
-				using var spriteColorFilter = SKColorFilter.CreateBlendMode(spriteTintColor, SKBlendMode.Modulate);
-
-				context.Paint.BlendMode = SKBlendMode.SrcATop;
-				context.Paint.ColorFilter = spriteColorFilter;
-				context.Canvas.DrawBitmap(spriteBitmap, spriteRect.ToSKRect(), context.Paint);
-				context.Paint.ColorFilter = null;
-			}
-		}
-	}
-
-	private void RenderLabel(DreadGuiDrawContext context, GUI__CLabel label, Rect parentBounds)
-	{
-		const int TextSize = 20;
-		const int TextOffset = 8;
-		var labelRect = label.GetDisplayObjectBounds(RenderBounds, parentBounds);
-		var halfHeight = labelRect.Height / 2;
-		var textToDraw = ( label.Text ?? label.ID ?? "GUI::CLabel" ).Replace('|', '\n');
-
-		context.Paint.TextAlign = label.TextAlignment switch {
-			"Right"    => SKTextAlign.Right,
-			"Centered" => SKTextAlign.Center,
-			_          => SKTextAlign.Left,
-		};
-
-		var textX = context.Paint.TextAlign switch {
-			SKTextAlign.Right  => labelRect.X + labelRect.Width,
-			SKTextAlign.Center => labelRect.X + ( 0.5 * labelRect.Width ),
-			_                  => labelRect.X,
-		};
-
-		RenderText(context, textToDraw, textX, labelRect.Y + halfHeight + TextOffset, TextSize, visible: label.Visible is not false);
-		context.Paint.TextAlign = SKTextAlign.Left;
-	}
-
-	private void RenderDisplayObjectBounds(DreadGuiDrawContext context, Rect rect, SKColor borderColor)
-	{
-		var zoomFactor = Editor?.ZoomFactor ?? 1.0;
-
-		context.Paint.StrokeWidth = (float) ( BorderStrokeWidth / zoomFactor );
-		context.Paint.Style = SKPaintStyle.Stroke;
-		context.Paint.Color = borderColor;
-		context.Canvas.DrawRoundRect(rect.ToSKRect(), BorderCornerRadius, BorderCornerRadius, context.Paint);
-		context.Paint.Color = White;
 	}
 
 	private void RenderSelectionBox(DreadGuiDrawContext context, Rect rect)
@@ -317,37 +237,19 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 		return new Rect(renderX, renderY, renderWidth, renderHeight).Deflate(2); // Deflated to give room for root corner radius
 	}
 
-	private static void RenderText(DreadGuiDrawContext context, string text, double x, double y, double textSize = 14.0, bool visible = true)
+	private static bool TryGetRenderer(GUI__CDisplayObject displayObject, [NotNullWhen(true)] out IDisplayObjectRenderer? renderer)
 	{
-		const double LineSeparation = 2;
+		var candidateType = displayObject.GetType();
 
-		var lines = text.Split('\n');
-
-		// Draw text shadow for contrast (text is drawn twice for darker shadow)
-		context.Paint.Style = SKPaintStyle.Fill;
-		context.Paint.Color = TextBlurColor;
-		context.Paint.MaskFilter = context.TextBlurFilter;
-		context.Paint.FakeBoldText = true;
-		context.Paint.TextSize = (float) textSize;
-		DrawLines(2);
-
-		// Draw normal text on top of shadow
-		context.Paint.Color = visible ? TextDrawColor : HiddenTextDrawColor;
-		context.Paint.MaskFilter = null;
-		context.Paint.FakeBoldText = false;
-		DrawLines(1);
-
-		void DrawLines(int count)
+		while (candidateType != null)
 		{
-			var lineY = y;
+			if (DisplayObjectRenderers.TryGetValue(candidateType, out renderer))
+				return true;
 
-			foreach (var line in lines)
-			{
-				for (var i = 0; i < count; i++)
-					context.Canvas.DrawText(line, (float) x, (float) lineY, context.Paint);
-
-				lineY += textSize + LineSeparation;
-			}
+			candidateType = candidateType.BaseType;
 		}
+
+		renderer = null;
+		return false;
 	}
 }
