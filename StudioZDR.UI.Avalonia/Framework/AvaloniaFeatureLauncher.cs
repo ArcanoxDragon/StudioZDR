@@ -4,12 +4,12 @@ using StudioZDR.UI.Avalonia.Views;
 
 namespace StudioZDR.UI.Avalonia.Framework;
 
-public class AvaloniaFeatureLauncher(WindowContext windowContext) : IFeatureLauncher
+public class AvaloniaFeatureLauncher : IFeatureLauncher
 {
 	public void LaunchFeature(IFeature feature)
 	{
 		var featureWindow = new FeatureWindow(feature);
 
-		featureWindow.Show(windowContext.CurrentWindow);
+		featureWindow.Show();
 	}
 }
