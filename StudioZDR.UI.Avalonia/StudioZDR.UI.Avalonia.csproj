@@ -72,7 +72,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\MercuryEngine.Data\src\MercuryEngine.Data.TegraTextureLib\MercuryEngine.Data.TegraTextureLib.csproj" />
 		<ProjectReference Include="..\StudioZDR.App\StudioZDR.App.csproj" />
-		<ProjectReference Include="..\StudioZDR.TegraTextureLib\StudioZDR.TegraTextureLib.csproj" />
 	</ItemGroup>
 </Project>

@@ -30,11 +30,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{2C939D82-DCB1-409A-9712-DA2DED7B246E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MercuryEngine.Data.TegraTextureLib", "MercuryEngine.Data\src\MercuryEngine.Data.TegraTextureLib\MercuryEngine.Data.TegraTextureLib.csproj", "{36FDB91B-5883-2ED5-3F30-34F90B51623A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioZDR.TegraTextureLib.Tests", "tests\StudioZDR.TegraTextureLib.Tests\StudioZDR.TegraTextureLib.Tests.csproj", "{B67F29C2-0456-4753-A65D-B4E528F22462}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioZDR.TegraTextureLib", "StudioZDR.TegraTextureLib\StudioZDR.TegraTextureLib.csproj", "{54C35FC2-1EEE-4D2E-AE15-E4D0479E5E1A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MercuryEngine.Data.TegraTextureLib.Tests", "MercuryEngine.Data\test\MercuryEngine.Data.TegraTextureLib.Tests\MercuryEngine.Data.TegraTextureLib.Tests.csproj", "{F9F67028-A7F7-2839-7A06-45B739019B9F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,14 +76,14 @@ Global
 		{64AF3C71-A182-4FD4-81D6-450A3B62A59D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64AF3C71-A182-4FD4-81D6-450A3B62A59D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64AF3C71-A182-4FD4-81D6-450A3B62A59D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B67F29C2-0456-4753-A65D-B4E528F22462}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B67F29C2-0456-4753-A65D-B4E528F22462}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B67F29C2-0456-4753-A65D-B4E528F22462}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B67F29C2-0456-4753-A65D-B4E528F22462}.Release|Any CPU.Build.0 = Release|Any CPU
-		{54C35FC2-1EEE-4D2E-AE15-E4D0479E5E1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{54C35FC2-1EEE-4D2E-AE15-E4D0479E5E1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{54C35FC2-1EEE-4D2E-AE15-E4D0479E5E1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{54C35FC2-1EEE-4D2E-AE15-E4D0479E5E1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36FDB91B-5883-2ED5-3F30-34F90B51623A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36FDB91B-5883-2ED5-3F30-34F90B51623A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36FDB91B-5883-2ED5-3F30-34F90B51623A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36FDB91B-5883-2ED5-3F30-34F90B51623A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9F67028-A7F7-2839-7A06-45B739019B9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9F67028-A7F7-2839-7A06-45B739019B9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9F67028-A7F7-2839-7A06-45B739019B9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9F67028-A7F7-2839-7A06-45B739019B9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,7 +97,8 @@ Global
 		{1C479344-E2CD-4312-B37E-101DF1C18724} = {839A3961-7506-4151-98E6-579607302E0E}
 		{07F90CF6-EDE7-4968-A4C0-A94B1B2CD5D1} = {839A3961-7506-4151-98E6-579607302E0E}
 		{64AF3C71-A182-4FD4-81D6-450A3B62A59D} = {1C479344-E2CD-4312-B37E-101DF1C18724}
-		{B67F29C2-0456-4753-A65D-B4E528F22462} = {2C939D82-DCB1-409A-9712-DA2DED7B246E}
+		{36FDB91B-5883-2ED5-3F30-34F90B51623A} = {839A3961-7506-4151-98E6-579607302E0E}
+		{F9F67028-A7F7-2839-7A06-45B739019B9F} = {1C479344-E2CD-4312-B37E-101DF1C18724}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F6B7CE5F-E0F2-430D-A555-F4A0A63B59C7}

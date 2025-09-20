@@ -1,11 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using Humanizer;
+using MercuryEngine.Data.TegraTextureLib;
 using MercuryEngine.Data.Types.DreadTypes;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using StudioZDR.App.Extensions;
 using StudioZDR.App.Rendering;
-using StudioZDR.TegraTextureLib;
 
 namespace StudioZDR.UI.Avalonia.Rendering;
 
