@@ -18,20 +18,20 @@ internal class LabelRenderer : DisplayObjectRenderer<GUI__CLabel>
 		var halfHeight = labelRect.Height / 2;
 		var textToDraw = ( label.Text ?? label.ID ?? "GUI::CLabel" ).Replace('|', '\n');
 
-		context.Paint.TextAlign = label.TextAlignment switch {
+		context.TextAlign = label.TextAlignment switch {
 			"Right"    => SKTextAlign.Right,
 			"Centered" => SKTextAlign.Center,
 			_          => SKTextAlign.Left,
 		};
 
 		var textColor = label.Visible is true ? TextDrawColor : HiddenTextDrawColor;
-		var textX = context.Paint.TextAlign switch {
+		var textX = context.TextAlign switch {
 			SKTextAlign.Right  => labelRect.X + labelRect.Width,
 			SKTextAlign.Center => labelRect.X + ( 0.5 * labelRect.Width ),
 			_                  => labelRect.X,
 		};
 
 		context.RenderText(textToDraw, textX, labelRect.Y + halfHeight + TextOffset, TextSize, textColor);
-		context.Paint.TextAlign = SKTextAlign.Left;
+		context.TextAlign = SKTextAlign.Left;
 	}
 }

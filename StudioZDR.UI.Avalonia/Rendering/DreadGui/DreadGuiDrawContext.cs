@@ -28,10 +28,12 @@ internal sealed class DreadGuiDrawContext : IDisposable
 		SkiaLease = skiaLeaseFeature.Lease();
 		RenderBounds = renderBounds;
 		Paint = new SKPaint {
-			TextSize = 14,
-			SubpixelText = true,
 			IsAntialias = true,
 			StrokeWidth = 2,
+		};
+		Font = new SKFont {
+			Size = 14,
+			Subpixel = true,
 		};
 		TextBlurFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, SKMaskFilter.ConvertRadiusToSigma(4));
 	}
@@ -40,6 +42,8 @@ internal sealed class DreadGuiDrawContext : IDisposable
 	public ISkiaSharpApiLease  SkiaLease          { get; }
 	public Rect                RenderBounds       { get; }
 	public SKPaint             Paint              { get; }
+	public SKFont              Font               { get; }
+	public SKTextAlign         TextAlign          { get; set; }
 	public SKMaskFilter        TextBlurFilter     { get; }
 	public GuiEditorViewModel? Editor             { get; init; }
 
@@ -70,15 +74,15 @@ internal sealed class DreadGuiDrawContext : IDisposable
 			Paint.Style = SKPaintStyle.Fill;
 			Paint.Color = shadowColor.Value;
 			Paint.MaskFilter = TextBlurFilter;
-			Paint.FakeBoldText = true;
-			Paint.TextSize = (float) textSize;
+			Font.Embolden = true;
+			Font.Size = (float) textSize;
 			DrawLines(2);
 		}
 
 		// Draw normal text on top of shadow
 		Paint.Color = color ?? White;
 		Paint.MaskFilter = null;
-		Paint.FakeBoldText = false;
+		Font.Embolden = false;
 		DrawLines(1);
 
 		void DrawLines(int count)
@@ -88,7 +92,7 @@ internal sealed class DreadGuiDrawContext : IDisposable
 			foreach (var line in lines)
 			{
 				for (var i = 0; i < count; i++)
-					Canvas.DrawText(line, (float) x, (float) lineY, Paint);
+					Canvas.DrawText(line, (float) x, (float) lineY, TextAlign, Font, Paint);
 
 				lineY += textSize + LineSeparation;
 			}
@@ -144,6 +148,7 @@ internal sealed class DreadGuiDrawContext : IDisposable
 	{
 		SkiaLease.Dispose();
 		Paint.Dispose();
+		Font.Dispose();
 		TextBlurFilter.Dispose();
 	}
 }
