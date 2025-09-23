@@ -34,6 +34,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MercuryEngine.Data.TegraTex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MercuryEngine.Data.TegraTextureLib.Tests", "MercuryEngine.Data\test\MercuryEngine.Data.TegraTextureLib.Tests\MercuryEngine.Data.TegraTextureLib.Tests.csproj", "{F9F67028-A7F7-2839-7A06-45B739019B9F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MercuryEngine.Data.Converters", "MercuryEngine.Data\src\MercuryEngine.Data.Converters\MercuryEngine.Data.Converters.csproj", "{EDF34091-A0C7-557A-5019-26FB01AC62A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MercuryEngine.Data.Converters.Tests", "MercuryEngine.Data\test\MercuryEngine.Data.Converters.Tests\MercuryEngine.Data.Converters.Tests.csproj", "{B4349AFD-E1CA-F04B-8C12-E612F497E33F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,6 +88,14 @@ Global
 		{F9F67028-A7F7-2839-7A06-45B739019B9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9F67028-A7F7-2839-7A06-45B739019B9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9F67028-A7F7-2839-7A06-45B739019B9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDF34091-A0C7-557A-5019-26FB01AC62A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDF34091-A0C7-557A-5019-26FB01AC62A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDF34091-A0C7-557A-5019-26FB01AC62A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDF34091-A0C7-557A-5019-26FB01AC62A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4349AFD-E1CA-F04B-8C12-E612F497E33F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4349AFD-E1CA-F04B-8C12-E612F497E33F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4349AFD-E1CA-F04B-8C12-E612F497E33F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4349AFD-E1CA-F04B-8C12-E612F497E33F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,6 +111,8 @@ Global
 		{64AF3C71-A182-4FD4-81D6-450A3B62A59D} = {1C479344-E2CD-4312-B37E-101DF1C18724}
 		{36FDB91B-5883-2ED5-3F30-34F90B51623A} = {839A3961-7506-4151-98E6-579607302E0E}
 		{F9F67028-A7F7-2839-7A06-45B739019B9F} = {1C479344-E2CD-4312-B37E-101DF1C18724}
+		{EDF34091-A0C7-557A-5019-26FB01AC62A9} = {839A3961-7506-4151-98E6-579607302E0E}
+		{B4349AFD-E1CA-F04B-8C12-E612F497E33F} = {1C479344-E2CD-4312-B37E-101DF1C18724}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F6B7CE5F-E0F2-430D-A555-F4A0A63B59C7}
