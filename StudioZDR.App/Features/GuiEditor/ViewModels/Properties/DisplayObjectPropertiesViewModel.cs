@@ -10,6 +10,7 @@ using ReactiveUI.SourceGenerators;
 using StudioZDR.App.Features.GuiEditor.Extensions;
 using StudioZDR.App.Utility;
 using StudioZDR.App.ViewModels;
+using Vector4 = System.Numerics.Vector4;
 
 namespace StudioZDR.App.Features.GuiEditor.ViewModels.Properties;
 
@@ -65,6 +66,9 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 
 		this.WhenAnyValue(m => m.Angle)
 			.Subscribe(angle => SetAllValues(n => n.Angle, angle));
+
+		this.WhenAnyValue(m => m.Color)
+			.Subscribe(SetColor);
 	}
 
 	public IObservable<Unit> Changes => this.changes;
@@ -157,6 +161,16 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 
 	[Reactive]
 	public partial string? AngleWatermark { get; set; }
+
+	#endregion
+
+	#region Color
+
+	[Reactive]
+	public partial Vector4? Color { get; set; }
+
+	[Reactive]
+	public partial bool ColorIsAmbiguous { get; set; }
 
 	#endregion
 
@@ -313,6 +327,37 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 
 			didChange |= SetValue(node, xPropertyExpression, x);
 			didChange |= SetValue(node, yPropertyExpression, y);
+		}
+
+		if (didChange)
+			this.changes.OnNext(Unit.Default);
+	}
+
+	private void SetColor(Vector4? color)
+	{
+		if (IsRefreshing) // Do NOT set properties on models while we're freshing FROM the models!
+			return;
+		if (Nodes is null or [])
+			return;
+
+		var didChange = false;
+		using var delayedNotifications = new CompositeDisposable();
+
+		foreach (var node in Nodes)
+		{
+			if (node.DisplayObject is not { } obj)
+				continue;
+
+			node.DelayChangeNotifications().DisposeWith(delayedNotifications);
+
+			var prevColor = obj.GetColor();
+
+			if (color == prevColor)
+				continue;
+
+			obj.SetColor(color);
+			node.NotifyOfDisplayObjectChange();
+			didChange = true;
 		}
 
 		if (didChange)
@@ -490,6 +535,8 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 		ScaleYWatermark = null;
 		Angle = null;
 		AngleWatermark = null;
+		Color = null;
+		ColorIsAmbiguous = false;
 	}
 
 	protected virtual void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool firstObject)
@@ -522,6 +569,8 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			ScaleX = obj?.ScaleX;
 			ScaleY = obj?.ScaleY;
 			Angle = obj?.Angle;
+			Color = obj?.GetColor();
+			ColorIsAmbiguous = false;
 		}
 		else
 		{
@@ -581,6 +630,12 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			{
 				Angle = null;
 				AngleWatermark = MultipleValuesPlaceholder;
+			}
+
+			if (obj?.GetColor() != Color)
+			{
+				Color = null;
+				ColorIsAmbiguous = true;
 			}
 			// ReSharper restore CompareOfFloatsByEqualityOperator
 		}

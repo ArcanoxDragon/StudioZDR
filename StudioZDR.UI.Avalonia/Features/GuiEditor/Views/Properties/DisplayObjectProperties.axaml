@@ -13,7 +13,7 @@
 				Name="Control">
 
 	<Grid
-		RowDefinitions="Auto,32,Auto,32,32,32,32,32,32"
+		RowDefinitions="Auto,32,Auto,32,32,32,32,32,32,32"
 		ColumnDefinitions="100,*"
 		Classes="ControlGrid"
 		IsEnabled="{Binding #Control.ViewModel.CanEdit}"
@@ -234,5 +234,22 @@
 					   Value="{Binding #Control.ViewModel.Angle, Converter={x:Static converters:RadiansToDegreesConverter.Instance}}"
 					   Watermark="{Binding #Control.ViewModel.AngleWatermark}"
 					   Increment="1" />
+
+		<Label Grid.Row="9" Grid.Column="0">
+			Color:
+		</Label>
+
+		<Panel Grid.Row="9" Grid.Column="1">
+			<Label VerticalAlignment="Center"
+				   FontStyle="Italic"
+				   Foreground="{DynamicResource TextFillColorTertiary}"
+				   IsVisible="{Binding #Control.ViewModel.ColorIsAmbiguous}">
+				Multiple Values
+			</Label>
+
+			<ColorPicker Color="{Binding #Control.ViewModel.Color, Converter={StaticResource VectorToColorConverter}}"
+						 Width="{Binding $parent.Bounds.Width}"
+						 IsVisible="{Binding !#Control.ViewModel.ColorIsAmbiguous}" />
+		</Panel>
 	</Grid>
 </ContentControl>
