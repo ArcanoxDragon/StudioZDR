@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Humanizer;
-using MercuryEngine.Data.TegraTextureLib;
+using ImageMagick;
+using MercuryEngine.Data.TegraTextureLib.Formats;
 using MercuryEngine.Data.Types.DreadTypes;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
@@ -133,10 +134,20 @@ internal class SpriteSheet : ISpriteSheet, IDisposable
 		await using (var fileStream = File.Open(bctexPath, FileMode.Open, FileAccess.Read, FileShare.Read))
 			await bctex.ReadAsync(fileStream).ConfigureAwait(false);
 
-		var bitmap = bctex.Textures.First().ToBitmap();
+		// Convert Magick image to Skia
+		using var magickImage = bctex.Textures.First().ToImage();
+		var skiaBitmap = new SKBitmap((int) magickImage.Width, (int) magickImage.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+
+		{
+			using var srcPixels = magickImage.GetPixels();
+			using var dstPixels = skiaBitmap.PeekPixels();
+			var srcPixelBytes = srcPixels.ToByteArray(PixelMapping.RGBA);
+
+			srcPixelBytes.CopyTo(dstPixels.GetPixelSpan());
+		}
 
 		lock (this.spriteSheetLock)
-			return this.spriteSheetTexture = bitmap;
+			return this.spriteSheetTexture = skiaBitmap;
 	}
 
 	private sealed record SpriteHolder(string Name) : IDisposable

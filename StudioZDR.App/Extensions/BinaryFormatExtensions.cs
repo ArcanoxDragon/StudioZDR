@@ -8,7 +8,7 @@ internal static class BinaryFormatExtensions
 	where T : BinaryFormat<T>, new()
 	{
 		T cloned = new();
-		using MemoryStream stream = new((int) format.Size);
+		using MemoryStream stream = new((int) format.GetSize(0));
 
 		format.Write(stream);
 		stream.Seek(0, SeekOrigin.Begin);
