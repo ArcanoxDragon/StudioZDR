@@ -19,6 +19,13 @@
 		<KeyBinding Gesture="Ctrl+A" Command="{Binding SelectAllCommand}" />
 	</UserControl.KeyBindings>
 
+	<UserControl.Styles>
+		<Style Selector=".ToolBar > :is(Button)">
+			<Setter Property="VerticalAlignment" Value="Stretch" />
+			<Setter Property="Height" Value="36" />
+		</Style>
+	</UserControl.Styles>
+
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition />
@@ -32,7 +39,8 @@
 				  ColumnDefinitions="*,Auto"
 				  Margin="6">
 				<StackPanel Orientation="Horizontal"
-							Spacing="6">
+							Spacing="6"
+							Classes="ToolBar">
 					<Button Command="{Binding UndoCommand}"
 							HotKey="Ctrl+Z"
 							ToolTip.Tip="Undo Last Action (Ctrl+Z)">
@@ -49,7 +57,8 @@
 				<StackPanel Grid.Column="1"
 							Margin="12,0,0,0"
 							Orientation="Horizontal"
-							Spacing="6">
+							Spacing="6"
+							Classes="ToolBar">
 					<ToggleButton IsChecked="{Binding IsMouseSelectionEnabled}"
 								  ToolTip.Tip="Toggle Mouse Selection">
 						<i:Icon Value="fa-arrow-pointer" />
@@ -96,7 +105,25 @@
 
 			<StackPanel Margin="6"
 						Orientation="Horizontal"
-						Spacing="6">
+						Spacing="6"
+						Classes="ToolBar">
+				<!--<DropDownButton ToolTip.Tip="Add Item">
+					<i:Icon Value="fa-plus" />
+
+					<DropDownButton.Flyout>
+						<MenuFlyout>
+							<MenuItem Header="CDisplayObjectContainer" />
+							<MenuItem Header="CLabel" />
+							<MenuItem Header="CSprite" />
+						</MenuFlyout>
+					</DropDownButton.Flyout>
+				</DropDownButton>-->
+
+				<Button Command="{Binding CloneSelectedObjectsCommand}"
+						ToolTip.Tip="Duplicate Selected">
+					<i:Icon Value="fa-regular fa-copy" />
+				</Button>
+
 				<Button Command="{Binding DeleteSelectedObjectsCommand}"
 						HotKey="Delete"
 						ToolTip.Tip="Delete Selected">

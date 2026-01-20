@@ -3,6 +3,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using DynamicData;
 using DynamicData.Binding;
 using MercuryEngine.Data.Formats;
 using MercuryEngine.Data.Types.DreadTypes;
@@ -341,6 +342,41 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 		// If we did not remove it, it was absent before, so we should add it.
 		if (!SelectedNodes.Remove(node))
 			SelectedNodes.Add(node);
+	}
+
+	[ReactiveCommand(CanExecute = nameof(HasSelection))]
+	public void CloneSelectedObjects()
+	{
+		if (Composition is not { } composition)
+			return;
+
+		using var _ = composition.LockForWriting();
+		var clonedNodes = new List<GuiCompositionNodeViewModel>();
+
+		foreach (GuiCompositionNodeViewModel node in GetTopmostSelectedNodes())
+		{
+			if (node.Parent is not { } parent)
+				// This would mean we're cloning the root - can't do that!
+				continue;
+
+			// Clone the node and add the clone to its parent
+			var clone = node.Clone();
+
+			clonedNodes.Add(clone);
+			clone.Parent = parent;
+			parent.Children.Add(clone);
+
+			// Add the clone's display object to the parent container, if possible
+			if (parent.DisplayObject is GUI__CDisplayObjectContainer parentContainer && clone.DisplayObject is { } displayObject)
+				parentContainer.Children.Add(displayObject);
+		}
+
+		// Select the newly cloned nodes
+		SelectedNodes.Clear();
+		SelectedNodes.AddRange(clonedNodes);
+
+		// Stage the delete as an undo operation
+		StageUndoOperation();
 	}
 
 	[ReactiveCommand(CanExecute = nameof(HasSelection))]
