@@ -1,8 +1,8 @@
 diff --git a/icons/metadata/icons.json b/icons/metadata/icons.json
-index e7b4bf83d03c162ba9b90ee4b94f9a2e8aa22c09..e3e3ef589e028f24fb7496b0f0b727826f0282f6 100644
+index 47e3274e372826b8a6b02c525a4dfd8688b1e3d2..9ea07a55f86854acf9a5661fd7fa999c3f4435b6 100644
 --- a/icons/metadata/icons.json
 +++ b/icons/metadata/icons.json
-@@ -52771,8 +52771,8 @@
+@@ -211796,8 +211796,8 @@
          "viewBox": [
            0,
            0,
