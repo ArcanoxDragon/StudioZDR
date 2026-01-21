@@ -19,13 +19,13 @@ public sealed partial class GuiCompositionNodeViewModel : ViewModelBase, IDispos
 
 	public GuiCompositionNodeViewModel(GUI__CDisplayObject? displayObject, GuiCompositionNodeViewModel? parent = null)
 	{
-		this._displayObject = displayObject;
-		this._parent = parent;
-		this._name = GetObjectName(displayObject);
+		DisplayObject = displayObject;
+		Parent = parent;
+		Name = GetObjectName(displayObject);
 		this._typeName = GetObjectTypeName(displayObject);
-		this._fullPath = parent is null ? this._name : $"{parent.FullPath}.{this._name}";
-		this._isVisible = true;
-		this._children = [];
+		this._fullPath = parent is null ? Name : $"{parent.FullPath}.{Name}";
+		IsVisible = true;
+		Children = [];
 
 		this.WhenAnyValue(m => m.DisplayObject, GetObjectName)
 			.Subscribe(name => Name = name);

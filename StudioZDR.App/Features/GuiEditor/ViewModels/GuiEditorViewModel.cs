@@ -42,8 +42,8 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	{
 		this.windowContext = windowContext;
 		this.settingsMonitor = settingsMonitor;
-		this._isMouseSelectionEnabled = settingsMonitor.CurrentValue.GetFeatureSettings<GuiEditorSettings>().MouseSelectionEnabled;
-		this._zoomLevel = 0;
+		IsMouseSelectionEnabled = settingsMonitor.CurrentValue.GetFeatureSettings<GuiEditorSettings>().MouseSelectionEnabled;
+		ZoomLevel = 0;
 
 		#region OpenFileCommand
 
@@ -70,7 +70,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 		this.WhenAnyValue(m => m.OpenedFilePath)
 			.ObserveOn(TaskPoolScheduler)
-			.InvokeCommand(LoadGuiFileCommand!);
+			.InvokeCommand(LoadGuiFileCommand);
 
 		this.WhenAnyValue(m => m.OpenedFilePath)
 			.Select(Path.GetFileName)

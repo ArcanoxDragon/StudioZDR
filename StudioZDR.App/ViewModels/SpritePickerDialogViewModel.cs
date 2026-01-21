@@ -1,5 +1,4 @@
-﻿using System.Reactive.Disposables;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
 using Microsoft.Extensions.Logging;
 using ReactiveUI.SourceGenerators;
 using StudioZDR.App.Extensions;
@@ -11,7 +10,7 @@ public partial class SpritePickerDialogViewModel : ViewModelBase
 {
 	public SpritePickerDialogViewModel(ISpriteSheetManager? spriteSheetManager = null, ILogger<SpritePickerDialogViewModel>? logger = null)
 	{
-		this._spriteSheets = [];
+		SpriteSheets = [];
 
 		LoadSpriteSheetsCommand
 			.HandleExceptionsWith(ex => {
