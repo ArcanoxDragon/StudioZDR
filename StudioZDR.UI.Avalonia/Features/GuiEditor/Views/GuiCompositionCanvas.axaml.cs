@@ -6,6 +6,8 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Humanizer;
 using ReactiveUI;
+using StudioZDR.App.Features.GuiEditor.Extensions;
+using StudioZDR.App.Features.GuiEditor.HelperTypes;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 using StudioZDR.UI.Avalonia.Extensions;
 using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
@@ -129,7 +131,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 			return;
 
 		var ctrlPressed = ( e.KeyModifiers & KeyModifiers.Control ) == KeyModifiers.Control;
-		var screenBounds = GetScreenBounds();
+		var screenBounds = GetScreenBounds().ToRectangleF();
 		var point = e.GetCurrentPoint(this);
 		var transformedPosition = point.Position.Transform(InverseTransformMatrix);
 
@@ -152,9 +154,9 @@ internal partial class GuiCompositionCanvas : ContentControl
 			var hoveredNodes = GetHoveredNodes().ToList();
 			var selectionBounds = editor.SelectedNodes.GetOverallBounds(screenBounds);
 			var considerSelection = editor.SelectedNodes.Count > 0 && !ctrlPressed;
-			var pointerInsideSelection = considerSelection && selectionBounds.Contains(transformedPosition);
+			var pointerInsideSelection = considerSelection && selectionBounds.Contains(transformedPosition.ToPointF());
 
-			if (considerSelection && TryGetResizeType(selectionBounds, transformedPosition, out var resizeType))
+			if (considerSelection && TryGetResizeType(selectionBounds.ToAvalonia(), transformedPosition, out var resizeType))
 			{
 				// Clicked on a resize handle - immediately start resizing
 				StartDragging(resizeType);
@@ -202,10 +204,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 		}
 
 		Point GetInitialObjectPosition(GuiCompositionNodeViewModel node)
-		{
-			node.GetDisplayObjectBounds(screenBounds, out var origin);
-			return origin;
-		}
+			=> node.GetTransform(screenBounds).Origin.ToAvalonia();
 	}
 
 	protected override void OnPointerMoved(PointerEventArgs e)
@@ -242,13 +241,13 @@ internal partial class GuiCompositionCanvas : ContentControl
 		}
 		else
 		{
-			var screenBounds = GetScreenBounds();
+			var screenBounds = GetScreenBounds().ToRectangleF();
 			var selectionBounds = editor.SelectedNodes.GetOverallBounds(screenBounds);
 			var considerSelection = editor.SelectedNodes.Count > 0 && !ctrlPressed;
-			var pointerInsideSelection = considerSelection && selectionBounds.Contains(transformedPosition);
+			var pointerInsideSelection = considerSelection && selectionBounds.Contains(transformedPosition.ToPointF());
 			GuiCompositionNodeViewModel? hoveredNode = null;
 
-			if (considerSelection && TryGetResizeType(selectionBounds, transformedPosition, out var resizeType))
+			if (considerSelection && TryGetResizeType(selectionBounds.ToAvalonia(), transformedPosition, out var resizeType))
 			{
 				// Cursor is near a resize handle
 				Cursor = new Cursor(resizeType.Cursor);
@@ -279,7 +278,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 	private void MoveDraggedObjects(Point cursorPosition, Point delta)
 	{
 		var (resizeOrigin, _, doResizeX, doResizeY) = this.resizeType;
-		var screenBounds = GetScreenBounds();
+		var screenBounds = GetScreenBounds().ToRectangleF();
 		var fullResizeDistanceX = Math.Abs(this.dragStart.X - resizeOrigin.X);
 		var fullResizeDistanceY = Math.Abs(this.dragStart.Y - resizeOrigin.Y);
 		var resizeDirectionX = Math.Sign(this.dragStart.X - resizeOrigin.X);
@@ -294,7 +293,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 			if (node.DisplayObject is not { } displayObject)
 				continue;
 
-			var parentBounds = node.Parent?.GetDisplayObjectBounds(screenBounds, out _) ?? screenBounds;
+			var parentBounds = node.Parent?.GetTransform(screenBounds) ?? GuiTransform.CreateDefault(screenBounds);
 			Point newObjectPosition;
 
 			if (this.dragIsResize)
@@ -318,7 +317,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 				newObjectPosition = initialPosition + delta;
 			}
 
-			displayObject.MoveOriginTo(screenBounds, parentBounds, newObjectPosition);
+			displayObject.MoveOriginTo(parentBounds, newObjectPosition.ToPointF());
 			node.NotifyOfDisplayObjectChange();
 		}
 	}
@@ -425,20 +424,21 @@ internal partial class GuiCompositionCanvas : ContentControl
 		if (Composition is not { Hierarchy: { } hierarchy })
 			yield break;
 
-		Rect screenBounds = GetScreenBounds();
-		Point transformedCursorPosition = LastCursorPosition.Transform(InverseTransformMatrix);
+		var screenBounds = GetScreenBounds().ToRectangleF();
+		var rootBounds = GuiTransform.CreateDefault(screenBounds);
+		var transformedCursorPosition = LastCursorPosition.Transform(InverseTransformMatrix);
 
-		foreach (var found in Visit(hierarchy, screenBounds))
+		foreach (var found in Visit(hierarchy, rootBounds))
 			yield return found;
 
-		IEnumerable<GuiCompositionNodeViewModel> Visit(GuiCompositionNodeViewModel node, Rect parentBounds)
+		IEnumerable<GuiCompositionNodeViewModel> Visit(GuiCompositionNodeViewModel node, GuiTransform parentTransform)
 		{
 			if (node is not { IsVisible: true, DisplayObject: { } displayObject })
 				yield break;
 
-			var objBounds = displayObject.GetDisplayObjectBounds(screenBounds, parentBounds);
+			var objBounds = displayObject.GetTransform(parentTransform);
 
-			if (objBounds.Contains(transformedCursorPosition))
+			if (objBounds.AxisAlignedBoundingBox.Contains(transformedCursorPosition.ToPointF()))
 				yield return node;
 
 			foreach (var child in node.Children)

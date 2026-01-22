@@ -1,21 +1,32 @@
 ﻿using MercuryEngine.Data.Types.DreadTypes;
 using SkiaSharp;
+using StudioZDR.App.Extensions;
+using StudioZDR.App.Features.GuiEditor.Extensions;
+using StudioZDR.App.Features.GuiEditor.HelperTypes;
 using StudioZDR.UI.Avalonia.Extensions;
-using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
 
 namespace StudioZDR.UI.Avalonia.Rendering.DreadGui.ObjectRenderers;
 
 internal class SpriteRenderer : DisplayObjectRenderer<GUI__CSprite>
 {
-	protected override void RenderObjectCore(DreadGuiDrawContext context, GUI__CSprite sprite, Rect parentBounds)
+	protected override void RenderObjectCore(DreadGuiDrawContext context, GUI__CSprite sprite, GuiTransform parentTransform)
 	{
 		if (string.IsNullOrEmpty(sprite.SpriteSheetItem))
 			return;
 
+		var spriteTransform = sprite.GetTransform(parentTransform);
+		var spriteCenter = spriteTransform.AxisAlignedBoundingBox.Center.ToAvalonia();
+		var centerX = (float) spriteCenter.X;
+		var centerY = (float) spriteCenter.Y;
+
+		// Figure out the unrotated bounding box of the sprite (not the AABB envelope) since we will be drawing on an already-rotated canvas
+		var halfSizeVec = new Vector(spriteTransform.Size.Width / 2.0, spriteTransform.Size.Height / 2.0);
+		var topLeft = spriteCenter - halfSizeVec;
+		var bottomRight = spriteCenter + halfSizeVec;
+		var spriteRect = new Rect(topLeft, bottomRight);
 		using var _ = context.Canvas.WithSavedState();
-		var spriteRect = sprite.GetDisplayObjectBounds(context.RenderBounds, parentBounds);
-		var centerX = (float) ( spriteRect.X + ( 0.5 * spriteRect.Width ) );
-		var centerY = (float) ( spriteRect.Y + ( 0.5 * spriteRect.Height ) );
+
+		context.Canvas.RotateRadians(spriteTransform.Angle, centerX, centerY);
 
 		if (sprite is { FlipX: true, FlipY: true })
 			context.Canvas.Scale(-1, -1, centerX, centerY);

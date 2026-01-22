@@ -1,6 +1,7 @@
 ﻿using MercuryEngine.Data.Types.DreadTypes;
 using SkiaSharp;
-using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
+using StudioZDR.App.Features.GuiEditor.Extensions;
+using StudioZDR.App.Features.GuiEditor.HelperTypes;
 
 namespace StudioZDR.UI.Avalonia.Rendering.DreadGui.ObjectRenderers;
 
@@ -12,9 +13,9 @@ internal class LabelRenderer : DisplayObjectRenderer<GUI__CLabel>
 	private static readonly SKColor TextDrawColor       = new(255, 255, 255);
 	private static readonly SKColor HiddenTextDrawColor = new(255, 255, 255, (byte) ( 255 * DreadGuiDrawContext.HiddenObjectAlphaMultiplier ));
 
-	protected override void RenderObjectCore(DreadGuiDrawContext context, GUI__CLabel label, Rect parentBounds)
+	protected override void RenderObjectCore(DreadGuiDrawContext context, GUI__CLabel label, GuiTransform parentTransform)
 	{
-		var labelRect = label.GetDisplayObjectBounds(context.RenderBounds, parentBounds);
+		var labelRect = label.GetTransform(parentTransform).AxisAlignedBoundingBox;
 		var halfHeight = labelRect.Height / 2;
 		var textToDraw = ( label.Text ?? label.ID ?? "GUI::CLabel" ).Replace('|', '\n');
 
@@ -27,7 +28,7 @@ internal class LabelRenderer : DisplayObjectRenderer<GUI__CLabel>
 		var textColor = label.Visible is true ? TextDrawColor : HiddenTextDrawColor;
 		var textX = context.TextAlign switch {
 			SKTextAlign.Right  => labelRect.X + labelRect.Width,
-			SKTextAlign.Center => labelRect.X + ( 0.5 * labelRect.Width ),
+			SKTextAlign.Center => labelRect.X + ( 0.5f * labelRect.Width ),
 			_                  => labelRect.X,
 		};
 

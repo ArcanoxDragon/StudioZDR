@@ -1,13 +1,15 @@
 ﻿using MercuryEngine.Data.Types.DreadTypes;
 using SkiaSharp;
+using StudioZDR.App.Extensions;
+using StudioZDR.App.Features.GuiEditor.Extensions;
+using StudioZDR.App.Features.GuiEditor.HelperTypes;
 using StudioZDR.UI.Avalonia.Extensions;
-using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
 
 namespace StudioZDR.UI.Avalonia.Rendering.DreadGui.ObjectRenderers;
 
 internal class SpriteGridRenderer : DisplayObjectRenderer<GUI__CSpriteGrid>
 {
-	protected override void RenderObjectCore(DreadGuiDrawContext context, GUI__CSpriteGrid spriteGrid, Rect parentBounds)
+	protected override void RenderObjectCore(DreadGuiDrawContext context, GUI__CSpriteGrid spriteGrid, GuiTransform parentTransform)
 	{
 		if (string.IsNullOrEmpty(spriteGrid.CellDefaultSpriteSheetItem))
 			return;
@@ -16,7 +18,7 @@ internal class SpriteGridRenderer : DisplayObjectRenderer<GUI__CSpriteGrid>
 
 		using var _ = context.Canvas.WithSavedState();
 		var spriteColorAlpha = spriteGrid.ColorA ?? 1.0f;
-		var gridBounds = spriteGrid.GetDisplayObjectBounds(context.RenderBounds, parentBounds);
+		var gridBounds = spriteGrid.GetTransform(parentTransform);
 
 		// This is "in-game" visibility, not editor visibility
 		if (spriteGrid.Visible is false)
@@ -39,7 +41,7 @@ internal class SpriteGridRenderer : DisplayObjectRenderer<GUI__CSpriteGrid>
 		var cellCountY = spriteGrid.GridSizeY ?? 0;
 		var totalGridWidth = cellWidth * cellCountX;
 		var totalGridHeight = cellHeight * cellCountY;
-		var gridTopLeft = gridBounds.Center - new Point(totalGridWidth / 2, totalGridHeight / 2);
+		var gridTopLeft = gridBounds.AxisAlignedBoundingBox.Center.ToAvalonia() - new Point(totalGridWidth / 2, totalGridHeight / 2);
 
 		context.Paint.ColorFilter = spriteColorFilter;
 

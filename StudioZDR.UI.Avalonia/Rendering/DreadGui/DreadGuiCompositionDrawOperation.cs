@@ -4,6 +4,8 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using MercuryEngine.Data.Types.DreadTypes;
 using SkiaSharp;
+using StudioZDR.App.Features.GuiEditor.Extensions;
+using StudioZDR.App.Features.GuiEditor.HelperTypes;
 using StudioZDR.App.Features.GuiEditor.ViewModels;
 using StudioZDR.UI.Avalonia.Extensions;
 using StudioZDR.UI.Avalonia.Features.GuiEditor.Extensions;
@@ -80,21 +82,23 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 
 			using (guiDrawContext.Canvas.WithSavedState())
 			{
-				var centerX = (float) ( RenderBounds.Width / 2 );
-				var centerY = (float) ( RenderBounds.Height / 2 );
+				var renderBoundsF = RenderBounds.ToRectangleF();
+				var rootBounds = GuiTransform.CreateDefault(renderBoundsF);
+				var centerX = renderBoundsF.Width / 2f;
+				var centerY = renderBoundsF.Height / 2f;
 
 				guiDrawContext.Canvas.Translate(panOffset.X, panOffset.Y);
 				guiDrawContext.Canvas.Scale((float) zoomFactor, (float) zoomFactor, centerX, centerY);
 
 				for (var renderPass = 0; renderPass < RenderPassCount; renderPass++)
 				{
-					RenderDisplayObjectNode(guiDrawContext, hierarchy, RenderBounds, renderPass);
+					RenderDisplayObjectNode(guiDrawContext, hierarchy, rootBounds, renderPass);
 
 					if (renderPass == RenderPassOverlay && Editor is { SelectedNodes.Count: > 0 })
 					{
-						Rect overallSelectionBounds = Editor.SelectedNodes.GetOverallBounds(RenderBounds);
+						var overallSelectionBounds = Editor.SelectedNodes.GetOverallBounds(renderBoundsF);
 
-						RenderSelectionBox(guiDrawContext, overallSelectionBounds);
+						RenderSelectionBox(guiDrawContext, overallSelectionBounds.ToAvalonia());
 					}
 				}
 			}
@@ -125,43 +129,37 @@ internal class DreadGuiCompositionDrawOperation(SpriteSheetManager spriteSheetMa
 	public bool Equals(ICustomDrawOperation? other)
 		=> ReferenceEquals(other, this);
 
-	private void RenderDisplayObjectNode(DreadGuiDrawContext context, GuiCompositionNodeViewModel? node, Rect parentBounds, int renderPass)
+	private void RenderDisplayObjectNode(DreadGuiDrawContext context, GuiCompositionNodeViewModel? node, GuiTransform parentTransform, int renderPass)
 	{
 		if (node is not { DisplayObject: { } obj })
 			return;
 
-		var objBounds = obj.GetDisplayObjectBounds(RenderBounds, parentBounds, out var origin);
-		var originX = (float) origin.X;
-		var originY = (float) origin.Y;
+		var objBounds = obj.GetTransform(parentTransform);
 
 		using (context.Canvas.WithSavedState())
 		{
-			if (obj.Angle.HasValue || obj.ScaleX.HasValue || obj.ScaleY.HasValue)
-			{
-				if (obj.Angle.HasValue)
-					context.Canvas.RotateRadians(obj.Angle.Value, originX, originY);
-			}
-
 			if (renderPass == RenderPassNormal && node.IsVisible)
 			{
 				if (TryGetRenderer(obj, out var renderer))
-					renderer.RenderObject(context, obj, parentBounds);
+					renderer.RenderObject(context, obj, parentTransform);
 			}
 			else if (renderPass == RenderPassOverlay)
 			{
 				context.Paint.Color = White;
 
-				if (Editor?.SelectedObjects is { } selectedObjects && selectedObjects.Contains(obj))
-					context.RenderDisplayObjectBounds(objBounds, SelectedBorderColor);
-				if (ReferenceEquals(obj, Editor?.HoveredObject))
-					context.RenderDisplayObjectBounds(objBounds, HoverBorderColor);
-			}
+				var aabb = objBounds.AxisAlignedBoundingBox.ToAvalonia();
 
-			if (node.IsVisible)
-			{
-				foreach (var childNode in node.Children)
-					RenderDisplayObjectNode(context, childNode, objBounds, renderPass);
+				if (Editor?.SelectedObjects is { } selectedObjects && selectedObjects.Contains(obj))
+					context.RenderDisplayObjectBounds(aabb, SelectedBorderColor);
+				if (ReferenceEquals(obj, Editor?.HoveredObject))
+					context.RenderDisplayObjectBounds(aabb, HoverBorderColor);
 			}
+		}
+
+		if (node.IsVisible)
+		{
+			foreach (var childNode in node.Children)
+				RenderDisplayObjectNode(context, childNode, objBounds, renderPass);
 		}
 	}
 

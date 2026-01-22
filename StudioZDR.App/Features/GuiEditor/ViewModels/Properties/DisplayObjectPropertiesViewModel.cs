@@ -8,8 +8,10 @@ using System.Reflection;
 using MercuryEngine.Data.Types.DreadTypes;
 using ReactiveUI.SourceGenerators;
 using StudioZDR.App.Features.GuiEditor.Extensions;
+using StudioZDR.App.Features.GuiEditor.HelperTypes;
 using StudioZDR.App.Utility;
 using StudioZDR.App.ViewModels;
+using Vector2 = System.Numerics.Vector2;
 using Vector4 = System.Numerics.Vector4;
 
 namespace StudioZDR.App.Features.GuiEditor.ViewModels.Properties;
@@ -18,7 +20,7 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 {
 	protected const string MultipleValuesPlaceholder = "<multiple>";
 
-	private static readonly RectangleF FullScreenBounds = new(0, 0, 1, 1);
+	private static readonly GuiTransform FullScreenTransform = GuiTransform.CreateDefault(new RectangleF(0, 0, 1, 1));
 
 	private readonly Subject<Unit>    changes         = new();
 	private readonly SerialDisposable nodesDisposable = new();
@@ -231,21 +233,44 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			if (node.DisplayObject is not { } obj)
 				continue;
 
-			var bounds = GetDisplayObjectBounds(node, out var parentBounds);
+			var transform = GetTransform(node, out var parentTransform);
+			var parentBounds = parentTransform.OrientedBoundingBox;
+			var objBounds = transform.OrientedBoundingBox;
 
 			if (anchor == Properties.HorizontalAnchor.Right)
 			{
-				obj.RightX = parentBounds.Right - bounds.Right;
+				// Take a vector from the parent's top right pointing to the object's top right, and project that
+				// along the parent's "left vector", producing the object's inset in from the parent's right edge (in
+				// the parent's local space).
+				var parentTopRightToObjTopRight = objBounds.TopRight - parentBounds.TopRight;
+				var parentLeftVector = -parentBounds.RightVector; // Need the "left vector" because positive RightX values move the object left
+				var insetFromRight = Vector2.Dot(parentTopRightToObjTopRight, parentLeftVector) / parentLeftVector.Length();
+
+				obj.RightX = insetFromRight;
 				obj.X = obj.LeftX = obj.CenterX = null;
 			}
 			else if (anchor == Properties.HorizontalAnchor.Center)
 			{
-				obj.CenterX = ( bounds.Left + bounds.Width / 2f ) - ( parentBounds.Left + parentBounds.Width / 2f );
+				// Take a vector from the parent's center pointing to the object's center, and project that along
+				// the parent's right vector, producing the X-offset of the object from its parent's center (in the
+				// parent's local space).
+				var parentCenterToObjCenter = objBounds.Center - parentBounds.Center;
+				var parentRightVector = parentBounds.RightVector;
+				var xOffset = Vector2.Dot(parentCenterToObjCenter, parentRightVector) / parentRightVector.Length();
+
+				obj.CenterX = xOffset;
 				obj.X = obj.LeftX = obj.RightX = null;
 			}
 			else
 			{
-				obj.X = bounds.Left - parentBounds.Left;
+				// Take a vector from the parent's top left pointing to the object's top left, and project that
+				// along the parent's right vector, producing the X-offset of the object from its parent's left
+				// edge (in the parent's local space).
+				var parentTopLeftToObjTopLeft = objBounds.TopLeft - parentBounds.TopLeft;
+				var parentRightVector = parentBounds.RightVector;
+				var xOffset = Vector2.Dot(parentTopLeftToObjTopLeft, parentRightVector) / parentRightVector.Length();
+
+				obj.X = xOffset;
 				obj.LeftX = obj.CenterX = obj.RightX = null;
 			}
 
@@ -268,21 +293,44 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			if (node.DisplayObject is not { } obj)
 				continue;
 
-			var bounds = GetDisplayObjectBounds(node, out var parentBounds);
+			var transform = GetTransform(node, out var parentTransform);
+			var parentBounds = parentTransform.OrientedBoundingBox;
+			var objBounds = transform.OrientedBoundingBox;
 
 			if (anchor == Properties.VerticalAnchor.Bottom)
 			{
-				obj.BottomY = parentBounds.Bottom - bounds.Bottom;
+				// Take a vector from the parent's bottom left pointing to the object's bottom left, and project that
+				// along the parent's "up vector", producing the object's inset in from the parent's bottom edge (in
+				// the parent's local space).
+				var parentBottomLeftToObjBottomLeft = objBounds.BottomLeft - parentBounds.BottomLeft;
+				var parentUpVector = -parentBounds.DownVector; // Need the "up vector" because positive BottomY values move the object up
+				var insetFromBottom = Vector2.Dot(parentBottomLeftToObjBottomLeft, parentUpVector) / parentUpVector.Length();
+
+				obj.BottomY = insetFromBottom;
 				obj.Y = obj.TopY = obj.CenterY = null;
 			}
 			else if (anchor == Properties.VerticalAnchor.Center)
 			{
-				obj.CenterY = ( bounds.Top + bounds.Height / 2f ) - ( parentBounds.Top + parentBounds.Height / 2f );
+				// Take a vector from the parent's center pointing to the object's center, and project that along
+				// the parent's down vector, producing the Y-offset of the object from its parent's center (in the
+				// parent's local space).
+				var parentCenterToObjCenter = objBounds.Center - parentBounds.Center;
+				var parentDownVector = parentBounds.DownVector;
+				var yOffset = Vector2.Dot(parentCenterToObjCenter, parentDownVector) / parentDownVector.Length();
+
+				obj.CenterY = yOffset;
 				obj.Y = obj.TopY = obj.BottomY = null;
 			}
 			else
 			{
-				obj.Y = bounds.Top - parentBounds.Top;
+				// Take a vector from the parent's top left pointing to the object's top left, and project that
+				// along the parent's down vector, producing the Y-offset of the object from its parent's top
+				// edge (in the parent's local space).
+				var parentTopLeftToObjTopLeft = objBounds.TopLeft - parentBounds.TopLeft;
+				var parentDownVector = parentBounds.DownVector;
+				var yOffset = Vector2.Dot(parentTopLeftToObjTopLeft, parentDownVector) / parentDownVector.Length();
+
+				obj.Y = yOffset;
 				obj.TopY = obj.CenterY = obj.BottomY = null;
 			}
 
@@ -364,62 +412,17 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			this.changes.OnNext(Unit.Default);
 	}
 
-	// TODO: Consolidate this with the similar method in DreadGuiCompositionDrawOperation somehow
-	private static RectangleF GetDisplayObjectBounds(GuiCompositionNodeViewModel? node, out RectangleF parentBounds)
+	private static GuiTransform GetTransform(GuiCompositionNodeViewModel? node, out GuiTransform parentTransform)
 	{
 		if (node?.DisplayObject is not { } obj)
 		{
-			parentBounds = FullScreenBounds;
-			return FullScreenBounds;
+			parentTransform = FullScreenTransform;
+			return FullScreenTransform;
 		}
 
-		parentBounds = GetDisplayObjectBounds(node.Parent, out _);
+		parentTransform = GetTransform(node.Parent, out _);
 
-		var objWidth = obj.SizeX ?? 1.0f;
-		var objHeight = obj.SizeY ?? 1.0f;
-		var refX = parentBounds.X;
-		var refY = parentBounds.Y;
-		float boundsX, boundsY;
-
-		if (obj.RightX.HasValue)
-		{
-			var rightRefX = refX + parentBounds.Width;
-			var originX = rightRefX - obj.RightX.Value;
-
-			boundsX = originX - objWidth;
-		}
-		else if (obj.CenterX.HasValue)
-		{
-			var centerRefX = refX + 0.5f * parentBounds.Width;
-			var originX = centerRefX + obj.CenterX.Value;
-
-			boundsX = originX - 0.5f * objWidth;
-		}
-		else
-		{
-			boundsX = refX + ( obj.LeftX ?? obj.X ?? 0.0f );
-		}
-
-		if (obj.BottomY.HasValue)
-		{
-			var bottomRefY = refY + parentBounds.Height;
-			var originY = bottomRefY - obj.BottomY.Value;
-
-			boundsY = originY - objHeight;
-		}
-		else if (obj.CenterY.HasValue)
-		{
-			var centerRefY = refY + 0.5f * parentBounds.Height;
-			var originY = centerRefY + obj.CenterY.Value;
-
-			boundsY = originY - 0.5f * objHeight;
-		}
-		else
-		{
-			boundsY = refY + ( obj.TopY ?? obj.Y ?? 0.0f );
-		}
-
-		return new RectangleF(boundsX, boundsY, objWidth, objHeight);
+		return obj.GetTransform(parentTransform);
 	}
 
 	protected void SetAllValues<T>(Expression<Func<GUI__CDisplayObject, T>> propertyExpression, T value)
