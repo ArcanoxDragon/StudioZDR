@@ -7,6 +7,7 @@ using DynamicData;
 using DynamicData.Binding;
 using MercuryEngine.Data.Formats;
 using MercuryEngine.Data.Types.DreadTypes;
+using MercuryEngine.Data.Types.Fields;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReactiveUI.SourceGenerators;
@@ -351,32 +352,40 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 			return;
 
 		using var _ = composition.LockForWriting();
-		var clonedNodes = new List<GuiCompositionNodeViewModel>();
+		var clonedObjects = new HashSet<GUI__CDisplayObject>(ReferenceEqualityComparer.Instance);
 
 		foreach (GuiCompositionNodeViewModel node in GetTopmostSelectedNodes())
 		{
-			if (node.Parent is not { } parent)
-				// This would mean we're cloning the root - can't do that!
+			if (node.DisplayObject is not { } displayObject)
+				// Invalid node!
+				continue;
+			if (node.Parent is not { DisplayObject: GUI__CDisplayObjectContainer parentContainer })
+				// Node must belong to another container node
 				continue;
 
-			// Clone the node and add the clone to its parent
-			var clone = node.Clone();
+			// Clone node by serializing and deserializing it again.
+			// We use DreadPointer<T> instead of DeepClone so that we get the correct derived display object type.
+			var objPointer = new DreadPointer<GUI__CDisplayObject>(displayObject);
+			var clonedPointer = objPointer.DeepClone();
+			var clonedObject = clonedPointer.Value!;
 
-			clonedNodes.Add(clone);
-			clone.Parent = parent;
-			parent.Children.Add(clone);
-
-			// Add the clone's display object to the parent container, if possible
-			if (parent.DisplayObject is GUI__CDisplayObjectContainer parentContainer && clone.DisplayObject is { } displayObject)
-				parentContainer.Children.Add(displayObject);
+			// Add the cloned object to the parent container (and our "cloned objects" set)
+			clonedObjects.Add(clonedObject);
+			parentContainer.Children.Add(clonedObject);
 		}
-
-		// Select the newly cloned nodes
-		SelectedNodes.Clear();
-		SelectedNodes.AddRange(clonedNodes);
 
 		// Stage the delete as an undo operation
 		StageUndoOperation();
+
+		// Rebuild the hierarchy to ensure all subscriptions are up-to-date
+		composition.RebuildHierarchy();
+
+		// Select the newly-cloned objects
+		var nodesToSelect = composition.Hierarchy.EnumerateSelfAndChildren()
+			.Where(n => n.DisplayObject != null && clonedObjects.Contains(n.DisplayObject));
+
+		SelectedNodes.Clear();
+		SelectedNodes.AddRange(nodesToSelect);
 	}
 
 	[ReactiveCommand(CanExecute = nameof(HasSelection))]
@@ -502,6 +511,98 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	{
 		this.canUndoSubject.OnNext(this.undoStack.Count > 0);
 		this.canRedoSubject.OnNext(this.redoStack.Count > 0);
+	}
+
+	#endregion
+
+	#region Adding Items
+
+	[ReactiveCommand]
+	public void AddDisplayObjectContainer()
+		=> AddObject(() => new GUI__CDisplayObjectContainer {
+			ID = "NewContainer",
+			SizeX = 0.5f,
+			SizeY = 0.5f,
+		});
+
+	[ReactiveCommand]
+	public void AddLabel()
+		=> AddObject(() => new GUI__CLabel {
+			ID = "NewLabel",
+			Text = "New Label",
+			Font = "digital_small",
+			TextAlignment = "Centered",
+			TextVerticalAlignment = "Centered",
+			SizeX = 0.5f,
+			SizeY = 0.1f,
+		});
+
+	[ReactiveCommand]
+	public async Task AddSpriteAsync()
+	{
+		var sprite = await Dialogs.ChooseSpriteAsync(
+			"Choose New Sprite",
+			"Choose a sprite for the new CSprite object");
+
+		if (sprite is null)
+			return;
+
+		AddObject(() => new GUI__CSprite {
+			ID = "NewSprite",
+			SpriteSheetItem = sprite,
+			BlendMode = "AlphaBlend",
+			USelMode = "Scale",
+			VSelMode = "Scale",
+			// TODO: Dynamic sprite size? (need abstraction over SpriteSheetManager)
+			SizeX = 0.25f,
+			SizeY = 0.25f,
+		});
+	}
+
+	private void AddObject(Func<GUI__CDisplayObject> objectFactory)
+	{
+		if (Composition is not { } composition)
+			return;
+		if (GetTargetContainerForAdd() is not { } targetContainer)
+			return;
+
+		// Create and add new object
+		var newObject = objectFactory();
+
+		// Set common properties for all object types
+		newObject.Enabled = true;
+		newObject.Visible = true;
+		newObject.CenterX = 0.0f;
+		newObject.CenterY = 0.0f;
+		newObject.ColorR = 1.0f;
+		newObject.ColorG = 1.0f;
+		newObject.ColorB = 1.0f;
+		newObject.ColorA = 1.0f;
+
+		targetContainer.Children.Add(newObject);
+
+		// Stage the new object as an undo operation
+		StageUndoOperation();
+
+		// Rebuild hierarchy to update node structure and subscriptions
+		composition.RebuildHierarchy();
+
+		// Select new node
+		var nodeToSelect = composition.Hierarchy.EnumerateSelfAndChildren().SingleOrDefault(n => ReferenceEquals(n.DisplayObject, newObject));
+
+		SelectedNodes.Clear();
+
+		if (nodeToSelect != null)
+			SelectedNodes.Add(nodeToSelect);
+	}
+
+	private GUI__CDisplayObjectContainer? GetTargetContainerForAdd()
+	{
+		if (SelectedNodes is [{ DisplayObject: GUI__CDisplayObjectContainer singleSelectedContainer }])
+			return singleSelectedContainer;
+
+		// Add to root if a single container is not selected
+		return Composition?.Hierarchy.DisplayObject as GUI__CDisplayObjectContainer;
 	}
 
 	#endregion

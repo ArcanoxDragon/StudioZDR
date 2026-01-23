@@ -14,7 +14,7 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 	private readonly Subject<Unit>        renderInvalidated = new();
 	private readonly ReaderWriterLockSlim hierarchyLock     = new();
 
-	private CompositeDisposable? hierarchyDisposables;
+	private CompositeDisposable hierarchyDisposables;
 
 	public DreadGuiCompositionViewModel(GUI__CDisplayObjectContainer? rootContainer)
 	{
@@ -24,18 +24,7 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 		Hierarchy = BuildHierarchy(rootContainer, this.hierarchyDisposables).DisposeWith(this.hierarchyDisposables);
 
 		this.WhenAnyValue(m => m.RootContainer)
-			.Subscribe(root => {
-				this.hierarchyDisposables?.Dispose();
-
-				if (root is null)
-				{
-					this.hierarchyDisposables = null;
-					return;
-				}
-
-				this.hierarchyDisposables = new CompositeDisposable();
-				Hierarchy = BuildHierarchy(root, this.hierarchyDisposables).DisposeWith(this.hierarchyDisposables);
-			});
+			.Subscribe(_ => RebuildHierarchy());
 	}
 
 	public event EventHandler? Disposing;
@@ -65,6 +54,18 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 
 	public void InvalidateRender()
 		=> this.renderInvalidated.OnNext(Unit.Default);
+
+	public void RebuildHierarchy()
+	{
+		var prevHierarchyDisposables = Interlocked.Exchange(ref this.hierarchyDisposables, new CompositeDisposable());
+
+		prevHierarchyDisposables.Dispose();
+
+		if (RootContainer is null)
+			return;
+
+		Hierarchy = BuildHierarchy(RootContainer, this.hierarchyDisposables).DisposeWith(this.hierarchyDisposables);
+	}
 
 	public void Dispose()
 	{

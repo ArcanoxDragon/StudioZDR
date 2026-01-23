@@ -107,17 +107,17 @@
 						Orientation="Horizontal"
 						Spacing="6"
 						Classes="ToolBar">
-				<!--<DropDownButton ToolTip.Tip="Add Item">
+				<DropDownButton ToolTip.Tip="Add Item">
 					<i:Icon Value="fa-plus" />
 
 					<DropDownButton.Flyout>
 						<MenuFlyout>
-							<MenuItem Header="CDisplayObjectContainer" />
-							<MenuItem Header="CLabel" />
-							<MenuItem Header="CSprite" />
+							<MenuItem Header="CDisplayObjectContainer" Command="{Binding AddDisplayObjectContainerCommand}" />
+							<MenuItem Header="CLabel" Command="{Binding AddLabelCommand}" />
+							<MenuItem Header="CSprite" Command="{Binding AddSpriteCommand}" />
 						</MenuFlyout>
 					</DropDownButton.Flyout>
-				</DropDownButton>-->
+				</DropDownButton>
 
 				<Button Command="{Binding CloneSelectedObjectsCommand}"
 						ToolTip.Tip="Duplicate Selected">
@@ -143,36 +143,44 @@
 				</Button>
 			</StackPanel>
 
-			<TreeView x:Name="TreeView" Grid.Row="1"
-					  ItemsSource="{Binding Composition.Hierarchy.Children}"
-					  SelectedItems="{Binding SelectedNodes}"
-					  SelectionMode="Multiple"
-					  TreeViewItem.Expanded="TreeView_OnItemExpanded"
-					  TreeViewItem.Collapsed="TreeView_OnItemCollapsed"
-					  PointerMoved="TreeView_OnPointerMoved"
-					  PointerExited="TreeView_OnPointerExited">
-				<TreeView.ItemTemplate>
-					<TreeDataTemplate ItemsSource="{Binding Children}">
-						<!-- Transparent background on Grid allows it to detect pointer events, e.g. for double clicking -->
-						<Grid ColumnDefinitions="*,60"
-							  Background="Transparent">
-							<StackPanel Spacing="4">
-								<TextBlock Text="{Binding Name}" />
-								<TextBlock Text="{Binding TypeName}"
-										   FontSize="10"
-										   Foreground="{DynamicResource TextFillColorSecondary}" />
-							</StackPanel>
+			<ScrollViewer x:Name="TreeViewScrollViewer" Grid.Row="1">
+				<TreeView x:Name="TreeView"
+						  ItemsSource="{Binding Composition.Hierarchy.Children}"
+						  SelectedItems="{Binding SelectedNodes}"
+						  SelectionMode="Multiple"
+						  TreeViewItem.Expanded="TreeView_OnItemExpanded"
+						  TreeViewItem.Collapsed="TreeView_OnItemCollapsed"
+						  PointerMoved="TreeView_OnPointerMoved"
+						  PointerExited="TreeView_OnPointerExited">
+					<TreeView.Styles>
+						<Style Selector="TreeViewItem">
+							<Setter Property="DragDrop.AllowDrop" Value="True" />
+						</Style>
+					</TreeView.Styles>
 
-							<Button Grid.Column="1"
-									HorizontalAlignment="Center"
-									VerticalAlignment="Center"
-									Click="ToggleVisible_OnClick">
-								<i:Icon Value="{Binding IsVisible, Converter={x:Static views:GuiCompositionEditor.IsVisibleIconConverter}}" />
-							</Button>
-						</Grid>
-					</TreeDataTemplate>
-				</TreeView.ItemTemplate>
-			</TreeView>
+					<TreeView.ItemTemplate>
+						<TreeDataTemplate ItemsSource="{Binding Children}">
+							<!-- Transparent background on Grid allows it to detect pointer events, e.g. for double clicking -->
+							<Grid ColumnDefinitions="*,60"
+								  Background="Transparent">
+								<StackPanel Spacing="4">
+									<TextBlock Text="{Binding Name}" />
+									<TextBlock Text="{Binding TypeName}"
+											   FontSize="10"
+											   Foreground="{DynamicResource TextFillColorSecondary}" />
+								</StackPanel>
+
+								<Button Grid.Column="1"
+										HorizontalAlignment="Center"
+										VerticalAlignment="Center"
+										Click="ToggleVisible_OnClick">
+									<i:Icon Value="{Binding IsVisible, Converter={x:Static views:GuiCompositionEditor.IsVisibleIconConverter}}" />
+								</Button>
+							</Grid>
+						</TreeDataTemplate>
+					</TreeView.ItemTemplate>
+				</TreeView>
+			</ScrollViewer>
 
 			<GridSplitter Grid.Row="2"
 						  ResizeBehavior="PreviousAndNext"

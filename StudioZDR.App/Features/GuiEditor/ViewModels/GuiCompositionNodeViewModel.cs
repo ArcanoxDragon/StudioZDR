@@ -3,9 +3,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using MercuryEngine.Data.Types.DreadTypes;
-using MercuryEngine.Data.Types.Fields;
 using ReactiveUI.SourceGenerators;
-using StudioZDR.App.Extensions;
 using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.App.Features.GuiEditor.ViewModels;
@@ -69,45 +67,6 @@ public sealed partial class GuiCompositionNodeViewModel : ViewModelBase, IDispos
 	[Reactive]
 	public partial ObservableCollection<GuiCompositionNodeViewModel> Children { get; set; }
 
-	public GuiCompositionNodeViewModel Clone()
-	{
-		// Create cloned node
-		var clone = new GuiCompositionNodeViewModel {
-			Name = Name,
-			IsVisible = IsVisible,
-		};
-
-		// Clone DisplayObject into new node
-		if (DisplayObject is { } displayObject)
-		{
-			// We use a DreadPointer so that the clone is of the correct type (since DeepClone<T> on an object will just return that exact type)
-			var objPointer = new DreadPointer<GUI__CDisplayObject>(displayObject);
-			var clonedPointer = objPointer.DeepClone();
-
-			clone.DisplayObject = clonedPointer.Value;
-
-			if (clone.DisplayObject is GUI__CDisplayObjectContainer container)
-			{
-				// Clear out the container's children, as those clones are invalid. We will repopulate it below.
-				container.Children.Clear();
-			}
-		}
-
-		// Clone our children into new node
-		foreach (var child in Children)
-		{
-			var clonedChild = child.Clone();
-
-			clonedChild.Parent = clone;
-			clone.Children.Add(clonedChild);
-
-			if (clone.DisplayObject is GUI__CDisplayObjectContainer container && clonedChild.DisplayObject != null)
-				container.Children.Add(clonedChild.DisplayObject);
-		}
-
-		return clone;
-	}
-
 	[ReactiveCommand]
 	public void ToggleVisible(bool withChildren)
 	{
@@ -126,6 +85,15 @@ public sealed partial class GuiCompositionNodeViewModel : ViewModelBase, IDispos
 
 		if (propertyName is nameof(GUI__CDisplayObject.ID))
 			Name = GetObjectName(DisplayObject);
+	}
+
+	public IEnumerable<GuiCompositionNodeViewModel> EnumerateSelfAndChildren()
+	{
+		yield return this;
+
+		foreach (var child in Children)
+		foreach (var item in child.EnumerateSelfAndChildren())
+			yield return item;
 	}
 
 	public void Dispose()
