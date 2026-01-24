@@ -357,17 +357,20 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 			if (node.DisplayObject is not { } obj)
 				continue;
 
+			var horizontalAnchor = obj.GetHorizontalAnchor();
+			var verticalAnchor = obj.GetVerticalAnchor();
+
 			node.DelayChangeNotifications().DisposeWith(delayedNotifications);
 
 			obj.X = obj.LeftX = obj.CenterX = obj.RightX = null;
 			obj.Y = obj.TopY = obj.CenterY = obj.BottomY = null;
 
-			Expression<Func<GUI__CDisplayObject, float?>> xPropertyExpression = obj.GetHorizontalAnchor() switch {
+			Expression<Func<GUI__CDisplayObject, float?>> xPropertyExpression = horizontalAnchor switch {
 				Properties.HorizontalAnchor.Right  => o => o.RightX,
 				Properties.HorizontalAnchor.Center => o => o.CenterX,
 				_                                  => o => o.X,
 			};
-			Expression<Func<GUI__CDisplayObject, float?>> yPropertyExpression = obj.GetVerticalAnchor() switch {
+			Expression<Func<GUI__CDisplayObject, float?>> yPropertyExpression = verticalAnchor switch {
 				Properties.VerticalAnchor.Bottom => o => o.BottomY,
 				Properties.VerticalAnchor.Center => o => o.CenterY,
 				_                                => o => o.Y,
