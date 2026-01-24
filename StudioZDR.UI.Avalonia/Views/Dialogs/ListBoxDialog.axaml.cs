@@ -2,6 +2,7 @@ using System.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
+using StudioZDR.App.Framework.Dialogs;
 using StudioZDR.App.ViewModels;
 
 namespace StudioZDR.UI.Avalonia.Views.Dialogs;
@@ -20,6 +21,9 @@ public partial class ListBoxDialog : ReactiveWindow<ListBoxDialogViewModel>
 
 	public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
 		AvaloniaProperty.Register<ListBoxDialog, IDataTemplate?>(nameof(ItemTemplate));
+
+	public static readonly StyledProperty<IReadOnlyList<ExtraDialogOption>> ExtraOptionsProperty
+		= AvaloniaProperty.Register<ListBoxDialog, IReadOnlyList<ExtraDialogOption>>(nameof(ExtraOptions), defaultValue: []);
 
 	public static readonly StyledProperty<string> PositiveTextProperty = AvaloniaProperty.Register<ListBoxDialog, string>(
 		nameof(PositiveText),
@@ -44,7 +48,13 @@ public partial class ListBoxDialog : ReactiveWindow<ListBoxDialogViewModel>
 		ViewModel = new ListBoxDialogViewModel();
 
 		if (Design.IsDesignMode)
+		{
 			Message = "Sample Dialog Text";
+
+			ExtraOptions = [
+				new ExtraDialogCheckboxOption("My Option", "This is the description for my option"),
+			];
+		}
 	}
 
 	/// <summary>
@@ -72,6 +82,12 @@ public partial class ListBoxDialog : ReactiveWindow<ListBoxDialogViewModel>
 	{
 		get => GetValue(ItemTemplateProperty);
 		set => SetValue(ItemTemplateProperty, value);
+	}
+
+	public IReadOnlyList<ExtraDialogOption> ExtraOptions
+	{
+		get => GetValue(ExtraOptionsProperty);
+		set => SetValue(ExtraOptionsProperty, value);
 	}
 
 	/// <summary>

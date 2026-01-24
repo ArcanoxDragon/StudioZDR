@@ -4,6 +4,7 @@
 						   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 						   xmlns:viewModels="clr-namespace:StudioZDR.App.ViewModels;assembly=StudioZDR.App"
 						   xmlns:reactiveUi="http://reactiveui.net"
+						   xmlns:dialogs="clr-namespace:StudioZDR.UI.Avalonia.Framework.Dialogs"
 						   mc:Ignorable="d"
 						   x:Class="StudioZDR.UI.Avalonia.Views.Dialogs.ListBoxDialog"
 						   x:TypeArguments="viewModels:ListBoxDialogViewModel"
@@ -24,7 +25,7 @@
 				   Text="{Binding #Dialog.Title}" />
 
 		<Grid Grid.Row="1"
-			  RowDefinitions="Auto,*,Auto"
+			  RowDefinitions="Auto,*,Auto,Auto"
 			  Margin="20,10">
 			<TextBlock Grid.Row="0"
 					   Text="{Binding #Dialog.Message}"
@@ -50,7 +51,16 @@
 				</ListBox>
 			</Border>
 
-			<Grid Grid.Row="2"
+			<ItemsRepeater Grid.Row="2"
+						   IsVisible="{Binding #Dialog.ExtraOptions.Count}"
+						   ItemsSource="{Binding #Dialog.ExtraOptions}"
+						   Margin="0,0,0,10">
+				<ItemsRepeater.ItemTemplate>
+					<dialogs:DialogOptionDataTemplate />
+				</ItemsRepeater.ItemTemplate>
+			</ItemsRepeater>
+
+			<Grid Grid.Row="3"
 				  ColumnDefinitions="*,10,*"
 				  Classes="ButtonContainer"
 				  MaxWidth="400">

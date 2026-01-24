@@ -1,6 +1,7 @@
 ﻿using StudioZDR.App.Framework;
 using StudioZDR.App.Framework.Dialogs;
 using StudioZDR.App.Rendering;
+using StudioZDR.UI.Avalonia.Framework.Dialogs;
 using StudioZDR.UI.Avalonia.Rendering;
 
 namespace StudioZDR.UI.Avalonia.Framework;

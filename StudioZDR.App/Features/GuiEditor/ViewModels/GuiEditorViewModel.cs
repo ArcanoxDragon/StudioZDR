@@ -15,6 +15,7 @@ using StudioZDR.App.Configuration;
 using StudioZDR.App.Extensions;
 using StudioZDR.App.Features.GuiEditor.Configuration;
 using StudioZDR.App.Framework;
+using StudioZDR.App.Framework.Dialogs;
 using StudioZDR.App.ViewModels;
 using Vector2 = System.Numerics.Vector2;
 
@@ -33,6 +34,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	private readonly Subject<bool> canRedoSubject      = new();
 
 	private bool ignoreNextStateChange;
+	private bool forceOpenOriginalFile;
 
 	public GuiEditorViewModel(
 		IWindowContext windowContext,
@@ -48,7 +50,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 		#region OpenFileCommand
 
-		OpenFileCommand
+		OpenBuiltinFileCommand
 			.HandleExceptionsWith(ex => {
 				logger.LogError(ex, "An exception was thrown while loading all available GUI files");
 				return Dialogs.Alert(
@@ -58,7 +60,11 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 					"Dismiss");
 			})
 			.WhereNotNull()
-			.Subscribe(file => {
+			.Subscribe(tuple => {
+				var (file, ignoreModifications) = tuple;
+
+				this.forceOpenOriginalFile = ignoreModifications;
+
 				// When explicitly opening a file, we want to definitively *re-open* it even if it's the same file,
 				// so we will set the property to null first before storing the chosen file.
 				OpenedFilePath = null;
@@ -624,25 +630,32 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	}
 
 	[ReactiveCommand]
-	private async Task<string?> OpenFileAsync()
+	private async Task<(string? FilePath, bool IgnoreModifications)> OpenBuiltinFileAsync()
 	{
 		if (!await ConfirmUnsavedChangesAsync())
-			return null;
+			return ( null, false );
 
 		var guiFiles = await GetAvailableGuiFilesAsync();
+		var ignoreModificationsOption = new ExtraDialogCheckboxOption(
+			"Ignore modifications",
+			"Load the original version of the composition, even if there is a modified version in the mod output folder"
+		);
 		var result = await Dialogs.ChooseAsync(
 			"Open GUI Composition",
 			"Choose a GUI composition file to open:",
 			guiFiles,
+			[ignoreModificationsOption],
 			positiveText: "Open"
 		);
 
 		if (result is null)
-			return null;
+			return ( null, false );
 
 		var guiScriptsPath = Path.Join(Settings.RomFsLocation, "gui", "scripts");
+		var finalFilePath = Path.Join(guiScriptsPath, result);
+		var ignoreModifications = ignoreModificationsOption.Value;
 
-		return Path.Join(guiScriptsPath, result);
+		return ( finalFilePath, ignoreModifications );
 	}
 
 	private async Task<bool> ConfirmUnsavedChangesAsync()
@@ -713,7 +726,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 		await TaskPoolScheduler.Yield(cancellationToken);
 
-		if (Settings.IsOutputLocationValid)
+		if (Settings.IsOutputLocationValid && !this.forceOpenOriginalFile)
 		{
 			var relativeRomFsLocation = Path.GetRelativePath(Settings.RomFsLocation, guiFilePath);
 			var matchingOutputPath = Path.Join(Settings.OutputLocation, relativeRomFsLocation);

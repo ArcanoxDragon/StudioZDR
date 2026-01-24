@@ -6,7 +6,7 @@ using Avalonia.Threading;
 using StudioZDR.App.Framework.Dialogs;
 using StudioZDR.UI.Avalonia.Views.Dialogs;
 
-namespace StudioZDR.UI.Avalonia.Framework;
+namespace StudioZDR.UI.Avalonia.Framework.Dialogs;
 
 public class AvaloniaDialogs(Func<WindowContext?> windowContextAccessor) : IDialogs
 {
@@ -64,7 +64,15 @@ public class AvaloniaDialogs(Func<WindowContext?> windowContextAccessor) : IDial
 	where T : class
 		=> Observable.FromAsync(() => ChooseAsync(title, message, items, positiveText, negativeText, positiveButtonAccent));
 
-	public async Task<T?> ChooseAsync<T>(string title, string message, IEnumerable<T> items, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
+	public IObservable<T?> Choose<T>(string title, string message, IEnumerable<T> items, ExtraDialogOption[] extraOptions, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
+	where T : class
+		=> Observable.FromAsync(() => ChooseAsync(title, message, items, positiveText, negativeText, positiveButtonAccent));
+
+	public Task<T?> ChooseAsync<T>(string title, string message, IEnumerable<T> items, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
+	where T : class
+		=> ChooseAsync(title, message, items, [], positiveText, negativeText, positiveButtonAccent);
+
+	public async Task<T?> ChooseAsync<T>(string title, string message, IEnumerable<T> items, ExtraDialogOption[] extraOptions, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
 	where T : class
 	{
 		return await Dispatcher.UIThread.InvokeAsync(async () => {
@@ -73,6 +81,7 @@ public class AvaloniaDialogs(Func<WindowContext?> windowContextAccessor) : IDial
 				Message = message,
 				ItemsSource = items,
 				PositiveButtonAccent = positiveButtonAccent,
+				ExtraOptions = extraOptions,
 			};
 
 			if (positiveText != null)

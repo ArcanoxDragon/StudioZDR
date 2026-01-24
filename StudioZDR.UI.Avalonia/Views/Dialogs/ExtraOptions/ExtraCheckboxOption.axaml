@@ -1,0 +1,30 @@
+<avalonia:ReactiveUserControl xmlns="https://github.com/avaloniaui"
+							  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+							  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+							  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+							  xmlns:avalonia="http://reactiveui.net"
+							  xmlns:dialogs="clr-namespace:StudioZDR.App.Framework.Dialogs;assembly=StudioZDR.App"
+							  mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="200"
+							  x:Class="StudioZDR.UI.Avalonia.Views.Dialogs.ExtraOptions.ExtraCheckboxOption"
+							  x:TypeArguments="dialogs:ExtraDialogCheckboxOption"
+							  x:DataType="dialogs:ExtraDialogCheckboxOption"
+							  x:Name="Self">
+	<Design.DataContext>
+		<dialogs:ExtraDialogCheckboxOption>
+			<x:Arguments>
+				<x:String>Test Option</x:String>
+				<x:String>Test Tooltip</x:String>
+			</x:Arguments>
+		</dialogs:ExtraDialogCheckboxOption>
+	</Design.DataContext>
+
+	<Grid DataContext="{Binding #Self.ViewModel}" ColumnDefinitions="Auto,*"
+		  ToolTip.Tip="{Binding Description}">
+		<CheckBox IsChecked="{Binding Value}"
+				  VerticalAlignment="Center" />
+
+		<Label Grid.Column="1"
+			   Content="{Binding Text}"
+			   VerticalAlignment="Center" />
+	</Grid>
+</avalonia:ReactiveUserControl>

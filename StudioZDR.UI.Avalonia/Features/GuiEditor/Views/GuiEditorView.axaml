@@ -12,14 +12,14 @@
 			 Name="View"
 			 framework:FeatureView.PreferredSize="1600, 900">
 	<UserControl.KeyBindings>
-		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
+		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenBuiltinFileCommand}" />
 		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFileCommand}" />
 	</UserControl.KeyBindings>
 
 	<DockPanel>
 		<Menu DockPanel.Dock="Top" HorizontalAlignment="Left">
 			<MenuItem Header="_File">
-				<MenuItem Header="_Open..." InputGesture="Ctrl+O" Command="{Binding OpenFileCommand}" />
+				<MenuItem Header="_Open Built-in Composition..." InputGesture="Ctrl+O" Command="{Binding OpenBuiltinFileCommand}" />
 				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFileCommand}" />
 				<Separator />
 				<MenuItem Header="_Close" Command="{Binding CloseCommand}" />
