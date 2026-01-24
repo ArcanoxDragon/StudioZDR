@@ -410,7 +410,6 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 	#region Selection
 
-	[ReactiveCommand]
 	public void SelectAll()
 	{
 		if (Composition is not { Hierarchy: var rootNode })

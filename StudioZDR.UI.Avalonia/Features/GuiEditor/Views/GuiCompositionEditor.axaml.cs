@@ -118,6 +118,14 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 			this.rightShiftPressed = false;
 
 		IsShiftPressed = this.leftShiftPressed || this.rightShiftPressed;
+
+		// We don't want to steal "Ctrl+A" functionality from text boxes, so we should only process that event
+		// if it is raised from someone other than a text box.
+		if (e.Key == Key.A && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Source is not TextBox)
+		{
+			ViewModel?.SelectAll();
+			e.Handled = true;
+		}
 	}
 
 	private void ToggleVisible_OnClick(object? sender, RoutedEventArgs e)
