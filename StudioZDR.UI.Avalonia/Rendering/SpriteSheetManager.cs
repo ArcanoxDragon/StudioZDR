@@ -37,10 +37,31 @@ internal class SpriteSheetManager : ISpriteSheetManager, IDisposable
 
 	public async IAsyncEnumerable<string> GetAllSpriteSheetNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		var bmsssBasePath = Path.Join(this.settings.RomFsLocation, "gui", "scripts");
+		var relativePathsSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-		foreach (string filePath in Directory.EnumerateFiles(bmsssBasePath, "sprites_*.bmsss", SearchOption.AllDirectories))
+		if (this.settings.IsOutputLocationValid)
 		{
+			var outputBmsssBasePath = Path.Join(this.settings.OutputLocation, "gui", "scripts");
+
+			await foreach (var item in GetAllSpriteSheetNamesAsyncCore(outputBmsssBasePath, relativePathsSeen, cancellationToken))
+				yield return item;
+		}
+
+		var romfsBmsssBasePath = Path.Join(this.settings.RomFsLocation, "gui", "scripts");
+
+		await foreach (var item in GetAllSpriteSheetNamesAsyncCore(romfsBmsssBasePath, relativePathsSeen, cancellationToken))
+			yield return item;
+	}
+
+	public async IAsyncEnumerable<string> GetAllSpriteSheetNamesAsyncCore(string basePath, HashSet<string> seenPaths, [EnumeratorCancellation] CancellationToken cancellationToken)
+	{
+		foreach (string filePath in Directory.EnumerateFiles(basePath, "sprites_*.bmsss", SearchOption.AllDirectories))
+		{
+			var relativePath = Path.GetRelativePath(basePath, filePath);
+
+			if (!seenPaths.Add(relativePath))
+				continue;
+
 			var bmsss = new Bmsss();
 
 			await using (var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -106,10 +127,25 @@ internal class SpriteSheetManager : ISpriteSheetManager, IDisposable
 
 	private SpriteSheet CreateSpriteSheet(string name)
 	{
-		var bmsssPath = Path.Join(this.settings.RomFsLocation, "gui", "scripts", $"sprites_{name.ToLower()}.bmsss");
+		string? bmsssPath = null;
 
-		if (!File.Exists(bmsssPath))
-			throw new ApplicationException($"A sprite sheet named \"{name}\" could not be found in RomFS");
+		if (this.settings.IsOutputLocationValid)
+		{
+			var outputBmsssPath = Path.Join(this.settings.OutputLocation, "gui", "scripts", $"sprites_{name.ToLower()}.bmsss");
+
+			if (File.Exists(outputBmsssPath))
+				bmsssPath = outputBmsssPath;
+		}
+
+		if (bmsssPath is null)
+		{
+			var romfsBmsssPath = Path.Join(this.settings.RomFsLocation, "gui", "scripts", $"sprites_{name.ToLower()}.bmsss");
+
+			if (!File.Exists(romfsBmsssPath))
+				throw new ApplicationException($"A sprite sheet named \"{name}\" could not be found in RomFS");
+
+			bmsssPath = romfsBmsssPath;
+		}
 
 		var bmsss = new Bmsss();
 
@@ -119,7 +155,7 @@ internal class SpriteSheetManager : ISpriteSheetManager, IDisposable
 		if (!bmsss.SpriteSheets.TryGetValue(name, out var dreadSpriteSheet))
 			throw new ApplicationException($"Sprite sheet file \"sprites_{name}.bmsss\" does not contain a sprite sheet named \"{name}\"");
 
-		var spriteSheet = new SpriteSheet(name, this.settings.RomFsLocation!, dreadSpriteSheet, this.logger);
+		var spriteSheet = new SpriteSheet(name, this.settings, dreadSpriteSheet, this.logger);
 
 		spriteSheet.SpriteLoaded += OnSpriteSheetSpriteLoaded;
 

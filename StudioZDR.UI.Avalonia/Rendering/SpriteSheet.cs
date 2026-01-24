@@ -5,6 +5,7 @@ using MercuryEngine.Data.TegraTextureLib.Formats;
 using MercuryEngine.Data.Types.DreadTypes;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
+using StudioZDR.App.Configuration;
 using StudioZDR.App.Extensions;
 using StudioZDR.App.Rendering;
 
@@ -17,16 +18,16 @@ internal class SpriteSheet : ISpriteSheet, IDisposable
 	private readonly Lock                                       spriteSheetLock = new();
 	private readonly ConcurrentDictionary<string, SpriteHolder> loadedSprites   = [];
 	private readonly Func<string, SpriteHolder>                 spriteFactory;
-	private readonly string                                     romfsPath;
+	private readonly ApplicationSettings                        settings;
 	private readonly ILogger?                                   logger;
 
 	private SKBitmap? spriteSheetTexture;
 	private bool      disposed;
 
-	public SpriteSheet(string name, string romfsPath, GUI__CSpriteSheet dreadSpriteSheet, ILogger? logger)
+	public SpriteSheet(string name, ApplicationSettings settings, GUI__CSpriteSheet dreadSpriteSheet, ILogger? logger)
 	{
 		this.spriteFactory = CreateSpriteHolder;
-		this.romfsPath = romfsPath;
+		this.settings = settings;
 		this.logger = logger;
 
 		Name = name;
@@ -128,7 +129,18 @@ internal class SpriteSheet : ISpriteSheet, IDisposable
 				return this.spriteSheetTexture;
 		}
 
-		var bctexPath = Path.Join(this.romfsPath, "textures", DreadSpriteSheet.TexturePath);
+		string? bctexPath = null;
+
+		if (this.settings.IsOutputLocationValid)
+		{
+			var outputBctexPath = Path.Join(this.settings.OutputLocation, "textures", DreadSpriteSheet.TexturePath);
+
+			if (File.Exists(outputBctexPath))
+				bctexPath = outputBctexPath;
+		}
+
+		bctexPath ??= Path.Join(this.settings.RomFsLocation, "textures", DreadSpriteSheet.TexturePath);
+
 		var bctex = new Bctex();
 
 		await using (var fileStream = File.Open(bctexPath, FileMode.Open, FileAccess.Read, FileShare.Read))
