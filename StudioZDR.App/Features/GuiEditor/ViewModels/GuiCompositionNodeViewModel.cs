@@ -65,6 +65,9 @@ public sealed partial class GuiCompositionNodeViewModel : ViewModelBase, IDispos
 	public partial bool IsVisible { get; set; }
 
 	[Reactive]
+	public partial bool IsExpanded { get; set; }
+
+	[Reactive]
 	public partial ObservableCollection<GuiCompositionNodeViewModel> Children { get; set; }
 
 	[ReactiveCommand]

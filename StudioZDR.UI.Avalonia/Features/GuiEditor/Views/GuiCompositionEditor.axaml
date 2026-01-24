@@ -145,16 +145,15 @@
 
 			<ScrollViewer x:Name="TreeViewScrollViewer" Grid.Row="1">
 				<TreeView x:Name="TreeView"
-						  ItemsSource="{Binding Composition.Hierarchy.Children}"
+						  ItemsSource="{Binding Composition.HierarchyRootCollection}"
 						  SelectedItems="{Binding SelectedNodes}"
 						  SelectionMode="Multiple"
-						  TreeViewItem.Expanded="TreeView_OnItemExpanded"
-						  TreeViewItem.Collapsed="TreeView_OnItemCollapsed"
 						  PointerMoved="TreeView_OnPointerMoved"
 						  PointerExited="TreeView_OnPointerExited">
 					<TreeView.Styles>
-						<Style Selector="TreeViewItem">
+						<Style Selector="TreeViewItem" x:DataType="viewModels:GuiCompositionNodeViewModel">
 							<Setter Property="DragDrop.AllowDrop" Value="True" />
+							<Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
 						</Style>
 					</TreeView.Styles>
 

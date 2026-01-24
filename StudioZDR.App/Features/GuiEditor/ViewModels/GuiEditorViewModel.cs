@@ -30,9 +30,10 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	private readonly Stack<Bmscp> undoStack = [];
 	private readonly Stack<Bmscp> redoStack = [];
 
-	private readonly Subject<bool> hasSelectionSubject = new();
-	private readonly Subject<bool> canUndoSubject      = new();
-	private readonly Subject<bool> canRedoSubject      = new();
+	private readonly Subject<bool> hasSelectionSubject           = new();
+	private readonly Subject<bool> hasSelectionExceptRootSubject = new();
+	private readonly Subject<bool> canUndoSubject                = new();
+	private readonly Subject<bool> canRedoSubject                = new();
 
 	private bool ignoreNextStateChange;
 	private bool ignoreNextFileOpen;
@@ -325,6 +326,12 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 			SelectedNodes
 				.ToObservableChangeSet()
+				.Select(_ => SelectedNodes.Count > 0 && SelectedNodes.All(n => n != Composition?.Hierarchy))
+				.Subscribe(this.hasSelectionExceptRootSubject)
+				.DisposeWith(disposables);
+
+			SelectedNodes
+				.ToObservableChangeSet()
 				.Subscribe(_ => Composition?.InvalidateRender())
 				.DisposeWith(disposables);
 
@@ -395,10 +402,11 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	private IObservable<bool> CanSaveFile   { get; }
 	private IObservable<bool> CanSaveFileAs { get; }
 
-	private ApplicationSettings Settings     => this.settingsMonitor.CurrentValue;
-	private IObservable<bool>   HasSelection => this.hasSelectionSubject;
-	private IObservable<bool>   CanUndo      => this.canUndoSubject;
-	private IObservable<bool>   CanRedo      => this.canRedoSubject;
+	private ApplicationSettings Settings               => this.settingsMonitor.CurrentValue;
+	private IObservable<bool>   HasSelection           => this.hasSelectionSubject;
+	private IObservable<bool>   HasSelectionExceptRoot => this.hasSelectionExceptRootSubject;
+	private IObservable<bool>   CanUndo                => this.canUndoSubject;
+	private IObservable<bool>   CanRedo                => this.canRedoSubject;
 
 	#region Selection
 
@@ -429,7 +437,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 			SelectedNodes.Add(node);
 	}
 
-	[ReactiveCommand(CanExecute = nameof(HasSelection))]
+	[ReactiveCommand(CanExecute = nameof(HasSelectionExceptRoot))]
 	public void CloneSelectedObjects()
 	{
 		if (Composition is not { } composition)
@@ -472,7 +480,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 		SelectedNodes.AddRange(nodesToSelect);
 	}
 
-	[ReactiveCommand(CanExecute = nameof(HasSelection))]
+	[ReactiveCommand(CanExecute = nameof(HasSelectionExceptRoot))]
 	public void DeleteSelectedObjects()
 	{
 		if (Composition is not { } composition)

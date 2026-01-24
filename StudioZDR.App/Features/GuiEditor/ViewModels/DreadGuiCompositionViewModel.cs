@@ -1,4 +1,6 @@
-﻿using System.Reactive;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -21,7 +23,7 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 		this.hierarchyDisposables = new CompositeDisposable();
 
 		RootContainer = rootContainer;
-		Hierarchy = BuildHierarchy(rootContainer, this.hierarchyDisposables).DisposeWith(this.hierarchyDisposables);
+		RebuildHierarchy();
 
 		this.WhenAnyValue(m => m.RootContainer)
 			.Subscribe(_ => RebuildHierarchy());
@@ -35,6 +37,9 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 
 	[Reactive]
 	public partial GuiCompositionNodeViewModel Hierarchy { get; private set; }
+
+	[Reactive]
+	public partial ObservableCollection<GuiCompositionNodeViewModel> HierarchyRootCollection { get; private set; }
 
 	[MustDisposeResource]
 	public IDisposable LockForReading()
@@ -55,16 +60,18 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 	public void InvalidateRender()
 		=> this.renderInvalidated.OnNext(Unit.Default);
 
+	[MemberNotNull(nameof(Hierarchy))]
+	[MemberNotNull(nameof(HierarchyRootCollection))]
 	public void RebuildHierarchy()
 	{
 		var prevHierarchyDisposables = Interlocked.Exchange(ref this.hierarchyDisposables, new CompositeDisposable());
 
 		prevHierarchyDisposables.Dispose();
 
-		if (RootContainer is null)
-			return;
+		using var _ = DelayChangeNotifications(); // Replace the two following properties simultaneously
 
 		Hierarchy = BuildHierarchy(RootContainer, this.hierarchyDisposables).DisposeWith(this.hierarchyDisposables);
+		HierarchyRootCollection = [Hierarchy];
 	}
 
 	public void Dispose()

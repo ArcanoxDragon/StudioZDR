@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
@@ -27,8 +27,9 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 
 	private readonly HashSet<string> expandedHierarchyNodes = [];
 
-	private bool    leftShiftPressed, rightShiftPressed;
-	private string? hierarchyRootName;
+	private GuiCompositionNodeViewModel? previousHierarchy;
+	private bool                         leftShiftPressed, rightShiftPressed;
+	private string?                      hierarchyRootName;
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage(
 		"Trimming",
@@ -42,7 +43,7 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 			KeyDownEvent.AddClassHandler<TopLevel>(Global_OnKeyDown, handledEventsToo: true).DisposeWith(disposables);
 			KeyUpEvent.AddClassHandler<TopLevel>(Global_OnKeyUp, handledEventsToo: true).DisposeWith(disposables);
 
-			ViewModel?.WhenAnyValue(vm => vm.Composition!.Hierarchy)
+			ViewModel?.WhenAnyValue(vm => vm.Composition!.HierarchyRootCollection)
 				.Subscribe(_ => OnHierarchyReplaced())
 				.DisposeWith(disposables);
 
@@ -52,6 +53,8 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 			ViewModel?.WhenAnyValue(vm => vm.SelectedNodes)
 				.SelectMany(nodes => nodes.ToObservableChangeSet())
 				.Subscribe(_ => SelectedNodesForProperties = ViewModel?.SelectedNodes.ToList() ?? []);
+
+			OnHierarchyReplaced();
 		});
 
 		this.SetupDragDrop(CanDragTreeItem, CreateTreeItemDragData, OnTreeItemDragOver, OnTreeItemDrop, DragDropEffects.Move);
@@ -139,19 +142,36 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 
 	private void ExpandAll_OnClick(object? sender, RoutedEventArgs e)
 	{
-		foreach (var item in this.TreeView.GetVisualDescendants().OfType<TreeViewItem>())
-			this.TreeView.ExpandSubTree(item);
+		if (ViewModel?.Composition?.Hierarchy is not { } hierarchy)
+			return;
+
+		foreach (var node in hierarchy.EnumerateSelfAndChildren())
+			node.IsExpanded = true;
 	}
 
 	private void CollapseAll_OnClick(object? sender, RoutedEventArgs e)
 	{
-		foreach (var item in this.TreeView.GetVisualDescendants().OfType<TreeViewItem>())
-			this.TreeView.CollapseSubTree(item);
+		if (ViewModel?.Composition?.Hierarchy is not { } hierarchy)
+			return;
+
+		foreach (var node in hierarchy.EnumerateSelfAndChildren())
+			node.IsExpanded = false;
 	}
 
 	private void OnHierarchyReplaced()
 	{
 		string? rootName = ViewModel?.Composition?.Hierarchy.Name;
+
+		this.expandedHierarchyNodes.Clear();
+
+		if (this.previousHierarchy != null)
+		{
+			foreach (var node in this.previousHierarchy.EnumerateSelfAndChildren())
+			{
+				if (node.IsExpanded)
+					this.expandedHierarchyNodes.Add(node.FullPath);
+			}
+		}
 
 		if (string.Equals(rootName, this.hierarchyRootName))
 		{
@@ -165,37 +185,16 @@ internal partial class GuiCompositionEditor : ReactiveUserControl<GuiEditorViewM
 		}
 
 		this.hierarchyRootName = rootName;
+		this.previousHierarchy = ViewModel?.Composition?.Hierarchy;
 	}
 
 	private void RestoreExpandedNodes()
 	{
-		foreach (var treeContainer in this.TreeView.GetRealizedTreeContainers().OfType<TreeViewItem>())
-		{
-			if (this.TreeView.TreeItemFromContainer(treeContainer) is not GuiCompositionNodeViewModel node)
-				continue;
-
-			treeContainer.IsExpanded = this.expandedHierarchyNodes.Contains(node.FullPath);
-		}
-	}
-
-	private void TreeView_OnItemExpanded(object? sender, RoutedEventArgs e)
-	{
-		if (e.Source is not TreeViewItem item)
-			return;
-		if (this.TreeView.TreeItemFromContainer(item) is not GuiCompositionNodeViewModel node)
+		if (ViewModel?.Composition?.Hierarchy is not { } hierarchy)
 			return;
 
-		this.expandedHierarchyNodes.Add(node.FullPath);
-	}
-
-	private void TreeView_OnItemCollapsed(object? sender, RoutedEventArgs e)
-	{
-		if (e.Source is not TreeViewItem item)
-			return;
-		if (this.TreeView.TreeItemFromContainer(item) is not GuiCompositionNodeViewModel node)
-			return;
-
-		this.expandedHierarchyNodes.Remove(node.FullPath);
+		foreach (var node in hierarchy.EnumerateSelfAndChildren())
+			node.IsExpanded = this.expandedHierarchyNodes.Contains(node.FullPath);
 	}
 
 	#region Tree Item Drag/Drop
