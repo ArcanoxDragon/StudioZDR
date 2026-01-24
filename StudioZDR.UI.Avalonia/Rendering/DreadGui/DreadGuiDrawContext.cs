@@ -84,6 +84,7 @@ internal sealed class DreadGuiDrawContext : IDisposable
 		Paint.MaskFilter = null;
 		Font.Embolden = false;
 		DrawLines(1);
+		Paint.Color = White;
 
 		void DrawLines(int count)
 		{
