@@ -13,6 +13,12 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 		this.WhenAnyValue(m => m.Font)
 			.Subscribe(font => SetAllValues((GUI__CLabel label) => label.Font, font));
 
+		this.WhenAnyValue(m => m.HorizontalTextAlignment)
+			.Subscribe(alignment => SetAllValues((GUI__CLabel label) => label.TextAlignment, alignment));
+
+		this.WhenAnyValue(m => m.VerticalTextAlignment)
+			.Subscribe(alignment => SetAllValues((GUI__CLabel label) => label.TextVerticalAlignment, alignment));
+
 		this.WhenAnyValue(m => m.Outline)
 			.Subscribe(outline => SetAllValues((GUI__CLabel label) => label.Outline, outline));
 
@@ -40,6 +46,20 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 
 	#endregion
 
+	#region Horizontal Text Alignment
+
+	[Reactive]
+	public partial string? HorizontalTextAlignment { get; set; }
+
+	#endregion
+
+	#region Vertical Text Alignment
+
+	[Reactive]
+	public partial string? VerticalTextAlignment { get; set; }
+
+	#endregion
+
 	#region AutoSize
 
 	[Reactive]
@@ -64,6 +84,8 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 		FontWatermark = null;
 		Outline = false;
 		AutoSize = true;
+		HorizontalTextAlignment = null;
+		VerticalTextAlignment = null;
 	}
 
 	protected override void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool firstObject)
@@ -73,6 +95,8 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 		GUI__CLabel? label = obj as GUI__CLabel;
 		string labelText = label?.Text ?? string.Empty;
 		string font = label?.Font ?? string.Empty;
+		string? horizontalTextAlignment = label?.TextAlignment;
+		string? verticalTextAlignment = label?.TextVerticalAlignment;
 		bool outline = label?.Outline ?? false;
 		bool autoSize = label?.Autosize ?? true;
 
@@ -80,6 +104,8 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 		{
 			LabelText = labelText;
 			Font = font;
+			HorizontalTextAlignment = horizontalTextAlignment;
+			VerticalTextAlignment = verticalTextAlignment;
 			Outline = outline;
 			AutoSize = autoSize;
 		}
@@ -96,6 +122,12 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 				Font = null;
 				FontWatermark = MultipleValuesPlaceholder;
 			}
+
+			if (horizontalTextAlignment != HorizontalTextAlignment)
+				HorizontalTextAlignment = null;
+
+			if (verticalTextAlignment != VerticalTextAlignment)
+				VerticalTextAlignment = null;
 
 			if (outline != Outline)
 				Outline = null;

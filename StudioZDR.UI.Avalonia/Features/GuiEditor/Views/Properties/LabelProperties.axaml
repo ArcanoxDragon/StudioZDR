@@ -3,6 +3,11 @@
 				xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 				xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 				xmlns:properties="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties"
+				xmlns:c="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
+				xmlns:i="https://github.com/projektanker/icons.avalonia"
+				xmlns:p="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels.Properties;assembly=StudioZDR.App"
+				xmlns:converters="clr-namespace:StudioZDR.UI.Avalonia.Converters"
+				xmlns:dreadTypes="clr-namespace:MercuryEngine.Data.Types.DreadTypes;assembly=MercuryEngine.Data.Types"
 				mc:Ignorable="d"
 				d:DesignWidth="500" d:DesignHeight="600"
 				x:CompileBindings="True"
@@ -14,7 +19,7 @@
 			ViewModel="{Binding #Control.ViewModel, Mode=OneWay}" />
 
 		<Grid
-			RowDefinitions="Auto,32,32,Auto,Auto"
+			RowDefinitions="Auto,32,32,40,40,Auto,Auto"
 			ColumnDefinitions="100,*"
 			Classes="ControlGrid"
 			IsEnabled="{Binding #Control.ViewModel.CanEdit}">
@@ -40,7 +45,71 @@
 					 Text="{Binding #Control.ViewModel.Font}"
 					 Watermark="{Binding #Control.ViewModel.FontWatermark}" />
 
-			<Label Grid.Row="3" Grid.Column="0" Target="OutlineCheckBox">
+			<Label Grid.Row="3" Grid.Column="0" Target="HorizontalTextAlignment">
+				<TextBlock TextWrapping="Wrap">
+					Horizontal Text Alignment:
+				</TextBlock>
+			</Label>
+
+			<StackPanel Grid.Row="3" Grid.Column="1"
+						x:Name="HorizontalTextAlignment"
+						Classes="ButtonGroup">
+				<c:RadioToggleButton ToolTip.Tip="Left"
+									 IsChecked="{
+									Binding #Control.ViewModel.HorizontalTextAlignment, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static dreadTypes:GUI__CLabel+TextAlignmentOptions.Left}}">
+					<i:Icon Value="fa-solid fa-objects-align-left" />
+				</c:RadioToggleButton>
+				<c:RadioToggleButton ToolTip.Tip="Center"
+									 IsChecked="{
+									Binding #Control.ViewModel.HorizontalTextAlignment, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static dreadTypes:GUI__CLabel+TextAlignmentOptions.Centered}}">
+					<i:Icon Value="fa-solid fa-objects-align-center-horizontal" />
+				</c:RadioToggleButton>
+				<c:RadioToggleButton ToolTip.Tip="Right"
+									 IsChecked="{
+									Binding #Control.ViewModel.HorizontalTextAlignment, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static dreadTypes:GUI__CLabel+TextAlignmentOptions.Right}}">
+					<i:Icon Value="fa-solid fa-objects-align-right" />
+				</c:RadioToggleButton>
+			</StackPanel>
+
+			<Label Grid.Row="4" Grid.Column="0" Target="VerticalTextAlignment">
+				<TextBlock TextWrapping="Wrap">
+					Vertical Text Alignment:
+				</TextBlock>
+			</Label>
+
+			<StackPanel Grid.Row="4" Grid.Column="1"
+						x:Name="VerticalTextAlignment"
+						Classes="ButtonGroup">
+				<c:RadioToggleButton ToolTip.Tip="Top"
+									 IsChecked="{
+									Binding #Control.ViewModel.VerticalTextAlignment, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static dreadTypes:GUI__CLabel+TextVerticalAlignmentOptions.Top}}">
+					<i:Icon Value="fa-solid fa-objects-align-top" />
+				</c:RadioToggleButton>
+				<c:RadioToggleButton ToolTip.Tip="Center"
+									 IsChecked="{
+									Binding #Control.ViewModel.VerticalTextAlignment, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static dreadTypes:GUI__CLabel+TextVerticalAlignmentOptions.Centered}}">
+					<i:Icon Value="fa-solid fa-objects-align-center-vertical" />
+				</c:RadioToggleButton>
+				<c:RadioToggleButton ToolTip.Tip="Bottom"
+									 IsChecked="{
+									Binding #Control.ViewModel.VerticalTextAlignment, 
+									Converter={x:Static converters:EqualsConverter.Instance},
+									ConverterParameter={x:Static dreadTypes:GUI__CLabel+TextVerticalAlignmentOptions.Bottom}}">
+					<i:Icon Value="fa-solid fa-objects-align-bottom" />
+				</c:RadioToggleButton>
+			</StackPanel>
+
+			<Label Grid.Row="5" Grid.Column="0" Target="OutlineCheckBox">
 				<!--
 				The BMSCP property is called "Outline", but it produces a shadow
 				in Dread, so we call it "Shadow" in the UI.
@@ -48,7 +117,7 @@
 				Shadow:
 			</Label>
 
-			<Grid Grid.Row="3" Grid.Column="1"
+			<Grid Grid.Row="5" Grid.Column="1"
 				  ColumnDefinitions="Auto,*"
 				  HorizontalAlignment="Stretch">
 				<CheckBox Grid.Column="0"
@@ -67,11 +136,11 @@
 				</StackPanel>
 			</Grid>
 
-			<Label Grid.Row="4" Grid.Column="0" Target="AutoSizeCheckBox">
+			<Label Grid.Row="6" Grid.Column="0" Target="AutoSizeCheckBox">
 				Auto Size:
 			</Label>
 
-			<Grid Grid.Row="4" Grid.Column="1"
+			<Grid Grid.Row="6" Grid.Column="1"
 				  ColumnDefinitions="Auto,*"
 				  HorizontalAlignment="Stretch">
 				<CheckBox Grid.Column="0"

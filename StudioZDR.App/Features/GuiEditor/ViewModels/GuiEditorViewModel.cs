@@ -647,6 +647,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 			// TODO: Dynamic sprite size? (need abstraction over SpriteSheetManager)
 			SizeX = 0.25f,
 			SizeY = 0.25f,
+			Autosize = false,
 		});
 	}
 
@@ -663,8 +664,10 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 		// Set common properties for all object types
 		newObject.Enabled = true;
 		newObject.Visible = true;
-		newObject.CenterX = 0.0f;
-		newObject.CenterY = 0.0f;
+		newObject.X = 0.0f;
+		newObject.Y = 0.0f;
+		newObject.ScaleX = 1.0f;
+		newObject.ScaleY = 1.0f;
 		newObject.ColorR = 1.0f;
 		newObject.ColorG = 1.0f;
 		newObject.ColorB = 1.0f;
