@@ -5,7 +5,6 @@
 				xmlns:properties="clr-namespace:StudioZDR.UI.Avalonia.Features.GuiEditor.Views.Properties"
 				xmlns:c="clr-namespace:StudioZDR.UI.Avalonia.Views.Controls"
 				xmlns:i="https://github.com/projektanker/icons.avalonia"
-				xmlns:p="clr-namespace:StudioZDR.App.Features.GuiEditor.ViewModels.Properties;assembly=StudioZDR.App"
 				xmlns:converters="clr-namespace:StudioZDR.UI.Avalonia.Converters"
 				xmlns:dreadTypes="clr-namespace:MercuryEngine.Data.Types.DreadTypes;assembly=MercuryEngine.Data.Types"
 				mc:Ignorable="d"
