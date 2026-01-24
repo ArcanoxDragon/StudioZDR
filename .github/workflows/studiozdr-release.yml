@@ -1,0 +1,113 @@
+name: Release StudioZDR
+
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ "v*.*.*" ]
+  pull_request:
+
+jobs:
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+        os:
+          - name: Windows
+            image: windows-latest
+            rid: win-x64
+            rust_target: x86_64-pc-windows-msvc
+          - name: Linux
+            image: ubuntu-latest
+            rid: linux-x64
+            rust_target: x86_64-unknown-linux-gnu
+
+    runs-on: ${{ matrix.os.image }}
+
+    name: ${{ matrix.os.name }} Executable (${{ matrix.configuration }})
+
+    outputs:
+      releaseVersion: ${{ steps.nbgv.outputs.CloudBuildNumber }}
+
+    env:
+      Solution_Name: StudioZDR.sln
+      Project_Path: StudioZDR.UI.Avalonia/StudioZDR.UI.Avalonia.csproj
+      Publish_Path: StudioZDR.UI.Avalonia/bin/publish
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
+    - name: Use Nerdbank.GitVersioning to set version variables
+      uses: dotnet/nbgv@v0.4.2
+      id: nbgv
+      with:
+        setAllVars: true
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    # Restore the application to populate the obj folder with RuntimeIdentifiers
+    - name: Restore the application
+      run: dotnet restore -r ${{ matrix.os.rid }} ${{ env.Solution_Name }}
+
+    # Publish the binary
+    - name: Publish binary
+      run: dotnet publish -c ${{ matrix.configuration }} -r ${{ matrix.os.rid }} -o "${{ env.Publish_Path }}/${{ matrix.os.rid }}" -p:DebugSymbols=False ${{ env.Project_Path }}
+
+    # ZIP artifacts for upload (Linux)
+    - name: Bundle artifacts
+      if: ${{ matrix.configuration == 'Release' && matrix.os.image == 'ubuntu-latest' }}
+      run: zip studiozdr_${{ matrix.os.rid }}.zip ${{ env.Publish_Path }}/${{ matrix.os.rid }}/* -jr
+
+    # ZIP artifacts for upload (Windows)
+    - name: Bundle artifacts
+      if: ${{ matrix.configuration == 'Release' && matrix.os.image == 'windows-latest' }}
+      run: Compress-Archive -Path ${{ env.Publish_Path }}\${{ matrix.os.rid }}\* -DestinationPath studiozdr_${{ matrix.os.rid }}.zip
+
+    # Upload the artifact
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: matrix.configuration == 'Release'
+      with:
+        name: studiozdr_${{ matrix.os.rid }}
+        if-no-files-found: error
+        path: studiozdr_${{ matrix.os.rid }}.zip
+
+  release:
+    runs-on: "ubuntu-latest"
+    name: Release
+    if: ${{ github.event_name != 'pull_request' && github.event_name != 'merge_group' && startsWith(github.ref, 'refs/tags/v') }}
+
+    permissions:
+      contents: write
+
+    needs:
+      - build
+
+    steps:
+      - name: Download binaries
+        uses: actions/download-artifact@v5.0.0
+        with:
+          pattern: '*'
+          path: publish/
+
+      - name: Upload binaries to GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: publish/studiozdr*/**/*.zip
+          draft: ${{ startsWith(github.ref, 'refs/heads/main') }}
+          generateReleaseNotes: true
+          name: studiozdr ${{ needs.build.outputs.releaseVersion }}
+          prerelease: true
+          updateOnlyUnreleased: true

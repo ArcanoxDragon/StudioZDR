@@ -6,6 +6,7 @@
 		<LangVersion>preview</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<NoWarn>CA1822</NoWarn>
+		<RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
 	</PropertyGroup>
 
 	<!-- Trimming-related properties -->

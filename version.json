@@ -1,0 +1,20 @@
+{
+	"$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/main/src/NerdBank.GitVersioning/version.schema.json",
+	"version": "0.1-alpha",
+	"pathFilters": [
+		":/StudioZDR.App",
+		":/StudioZDR.UI.Avalonia",
+		":/Directory.Build.props",
+		":/StudioZDR.sln"
+	],
+	"publicReleaseRefSpec": [
+		"^refs/heads/main$",
+		"^refs/tags/v\\d+\\.\\d+\\.\\d+.*"
+	],
+	"cloudBuild": {
+		"setVersionVariables": true,
+		"buildNumber": {
+			"enabled": true
+		}
+	}
+}
