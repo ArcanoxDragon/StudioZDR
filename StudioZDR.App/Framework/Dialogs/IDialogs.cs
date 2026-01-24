@@ -10,6 +10,9 @@ public interface IDialogs
 	IObservable<bool> Confirm(string title, string message, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true);
 	Task<bool> ConfirmAsync(string title, string message, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true);
 
+	IObservable<string?> Prompt(string title, string message, string? defaultValue = null, string? inputWatermark = null, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true);
+	Task<string?> PromptAsync(string title, string message, string? defaultValue = null, string? inputWatermark = null, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true);
+
 	IObservable<T?> Choose<T>(string title, string message, IEnumerable<T> items, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
 	where T : class;
 

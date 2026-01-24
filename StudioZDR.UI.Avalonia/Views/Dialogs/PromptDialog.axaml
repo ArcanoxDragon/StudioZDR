@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		mc:Ignorable="d"
+		x:Class="StudioZDR.UI.Avalonia.Views.Dialogs.PromptDialog"
+		Name="Dialog"
+		WindowStartupLocation="CenterOwner"
+		Classes="Dialog NoControlButtons Immersive Acrylic"
+		SizeToContent="WidthAndHeight"
+		CanResize="False"
+		ExtendClientAreaToDecorationsHint="True"
+		ExtendClientAreaTitleBarHeightHint="-1">
+	<Grid RowDefinitions="Auto,*">
+		<TextBlock Grid.Row="0"
+				   Padding="0,8,0,8"
+				   HorizontalAlignment="Center"
+				   IsHitTestVisible="False"
+				   Text="{Binding #Dialog.Title}" />
+
+		<Grid Grid.Row="1" RowDefinitions="*,Auto,Auto" Margin="20,10" MaxWidth="600">
+			<TextBlock Grid.Row="0" Text="{Binding #Dialog.Message}" TextWrapping="Wrap" />
+
+			<TextBox x:Name="InputTextBox"
+					 Grid.Row="1"
+					 Margin="0,10,0,0"
+					 Text="{Binding #Dialog.InputText}"
+					 Watermark="{Binding #Dialog.InputWatermark}" />
+
+			<StackPanel Grid.Row="2" Orientation="Horizontal" Classes="ButtonContainer">
+				<Button Content="{Binding #Dialog.PositiveText}"
+						IsDefault="True"
+						IsEnabled="{Binding #Dialog.InputText.Length}"
+						Command="{Binding #Dialog.OnPositiveButtonClicked}"
+						Classes.accent="{Binding #Dialog.PositiveButtonAccent}" />
+
+				<Button Content="{Binding #Dialog.NegativeText}"
+						IsCancel="True"
+						Command="{Binding #Dialog.OnNegativeButtonClicked}" />
+			</StackPanel>
+		</Grid>
+	</Grid>
+</Window>

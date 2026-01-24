@@ -24,6 +24,7 @@ namespace StudioZDR.App.Features.GuiEditor.ViewModels;
 public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, IWindowTitleProvider
 {
 	private readonly IWindowContext                       windowContext;
+	private readonly IFileBrowser                         fileBrowser;
 	private readonly IOptionsMonitor<ApplicationSettings> settingsMonitor;
 
 	private readonly Stack<Bmscp> undoStack = [];
@@ -34,21 +35,37 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	private readonly Subject<bool> canRedoSubject      = new();
 
 	private bool ignoreNextStateChange;
+	private bool ignoreNextFileOpen;
 	private bool forceOpenOriginalFile;
 
 	public GuiEditorViewModel(
 		IWindowContext windowContext,
+		IFileBrowser fileBrowser,
 		ISettingsManager settingsManager,
 		IOptionsMonitor<ApplicationSettings> settingsMonitor,
 		ILogger<GuiEditorViewModel> logger
 	)
 	{
 		this.windowContext = windowContext;
+		this.fileBrowser = fileBrowser;
 		this.settingsMonitor = settingsMonitor;
 		IsMouseSelectionEnabled = settingsMonitor.CurrentValue.GetFeatureSettings<GuiEditorSettings>().MouseSelectionEnabled;
 		ZoomLevel = 0;
 
-		#region OpenFileCommand
+		#region NewCompositionCommand
+
+		NewCompositionCommand
+			.WhereNotNull()
+			.Subscribe(newComposition => {
+				IsBuiltinFile = false;
+				this.ignoreNextFileOpen = true; // Don't want to trigger a load just because we set OpenedFilePath to null here
+				OpenedFilePath = null;
+				OpenedGuiFile = newComposition;
+			});
+
+		#endregion
+
+		#region OpenBuiltinFileCommand
 
 		OpenBuiltinFileCommand
 			.HandleExceptionsWith(ex => {
@@ -63,7 +80,26 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 			.Subscribe(tuple => {
 				var (file, ignoreModifications) = tuple;
 
+				IsBuiltinFile = true;
 				this.forceOpenOriginalFile = ignoreModifications;
+
+				// When explicitly opening a file, we want to definitively *re-open* it even if it's the same file,
+				// so we will set the property to null first before storing the chosen file.
+				OpenedFilePath = null;
+				OpenedFilePath = file;
+			});
+
+		#endregion
+
+		#region OpenFileCommand
+
+		OpenFileCommand
+			.WhereNotNull()
+			.Subscribe(tuple => {
+				var (file, isBuiltin) = tuple;
+
+				IsBuiltinFile = isBuiltin;
+				this.forceOpenOriginalFile = true;
 
 				// When explicitly opening a file, we want to definitively *re-open* it even if it's the same file,
 				// so we will set the property to null first before storing the chosen file.
@@ -76,6 +112,15 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 		#region OpenedFilePath
 
 		this.WhenAnyValue(m => m.OpenedFilePath)
+			.Where(_ => {
+				if (this.ignoreNextFileOpen)
+				{
+					this.ignoreNextFileOpen = false;
+					return false;
+				}
+
+				return true;
+			})
 			.ObserveOn(TaskPoolScheduler)
 			.InvokeCommand(LoadGuiFileCommand);
 
@@ -170,15 +215,43 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 		CanSaveFile = Observable.Return(Settings.IsOutputLocationValid)
 			.CombineLatest(
 				this.WhenAnyValue(m => m.OpenedGuiFile),
-				(outputValid, openedFile) => outputValid && openedFile != null)
+				this.WhenAnyValue(m => m.OpenedFilePath),
+				this.WhenAnyValue(m => m.IsBuiltinFile),
+				(outputValid, openedFile, openedFilePath, isBuiltin) => {
+					var isExistingFileOpen = openedFile != null && openedFilePath != null;
+					var isNewFileOpen = openedFile != null && openedFilePath == null;
+					var canSaveToOpenedPath = outputValid || !isBuiltin;
+
+					return ( isExistingFileOpen && canSaveToOpenedPath ) || isNewFileOpen;
+				})
 			.ObserveOn(MainThreadScheduler);
 
 		SaveFileCommand.IsExecuting
+			.CombineLatest(SaveFileAsCommand.IsExecuting, (saveExecuting, saveAsExecuting) => saveExecuting || saveAsExecuting)
 			.ToProperty(this, m => m.IsSaving, out this._isSavingHelper);
 
 		SaveFileCommand
 			.HandleExceptionsWith(ex => {
 				logger.LogError(ex, "An exception was thrown while saving \"{FilePath}\"", OpenedFilePath);
+				return Dialogs.Alert(
+					"Error",
+					"An error occurred while saving the GUI composition:\n\n" +
+					$"{ex.GetType().Name}: {ex.Message}",
+					"Dismiss");
+			})
+			.ObserveOn(MainThreadScheduler)
+			.Subscribe();
+
+		#endregion
+
+		#region SaveFileAsCommand
+
+		CanSaveFileAs = this.WhenAnyValue(m => m.OpenedGuiFile, (Bmscp? file) => file != null)
+			.ObserveOn(MainThreadScheduler);
+
+		SaveFileAsCommand
+			.HandleExceptionsWith(ex => {
+				logger.LogError(ex, "An exception was thrown while saving to a new file");
 				return Dialogs.Alert(
 					"Error",
 					"An error occurred while saving the GUI composition:\n\n" +
@@ -229,10 +302,11 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 			if (!Settings.IsOutputLocationValid)
 			{
 				Dialogs.Alert(
-						"Saving Disabled",
+						"Output Path Not Configured",
 						"Warning: You have not set an Output Path in the application settings (or the chosen output path" +
 						"does not exist). In order to protect your original RomFS files from accidental modification, you " +
-						"will not be able to save any changes made in the editor without first setting an Output Path.")
+						"will not be able to use the \"Save\" option when editing built-in composition files. To allow " +
+						"saving changes made to built-in compositions, configure an Output Path in the application settings.")
 					.Subscribe()
 					.DisposeWith(disposables);
 			}
@@ -275,6 +349,9 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	public partial Bmscp? OpenedGuiFile { get; set; }
 
 	[Reactive]
+	public partial bool IsBuiltinFile { get; set; }
+
+	[Reactive]
 	public partial Bmscp? LatestPristineState { get; set; }
 
 	[Reactive]
@@ -315,7 +392,8 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	[Reactive]
 	public partial bool IsMouseSelectionEnabled { get; set; }
 
-	private IObservable<bool> CanSaveFile { get; }
+	private IObservable<bool> CanSaveFile   { get; }
+	private IObservable<bool> CanSaveFileAs { get; }
 
 	private ApplicationSettings Settings     => this.settingsMonitor.CurrentValue;
 	private IObservable<bool>   HasSelection => this.hasSelectionSubject;
@@ -630,6 +708,41 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	}
 
 	[ReactiveCommand]
+	private async Task<Bmscp?> NewCompositionAsync()
+	{
+		if (!await ConfirmUnsavedChangesAsync())
+			return null;
+
+		var rootName = await Dialogs.Prompt(
+			"New Composition",
+			"Enter a name for the root object of the new composition:",
+			inputWatermark: "e.g. mynewcomposition",
+			positiveText: "Create"
+		);
+
+		if (rootName == null)
+			return null;
+
+		return new Bmscp {
+			Root = {
+				Value = new GUI__CDisplayObjectContainer {
+					// Need to populate some default values expected by the game
+					ID = rootName,
+					X = 0,
+					Y = 0,
+					ScaleX = 1,
+					ScaleY = 1,
+					Angle = 0,
+					SizeX = 1,
+					SizeY = 1,
+					Enabled = true,
+					Visible = true,
+				},
+			},
+		};
+	}
+
+	[ReactiveCommand]
 	private async Task<(string? FilePath, bool IgnoreModifications)> OpenBuiltinFileAsync()
 	{
 		if (!await ConfirmUnsavedChangesAsync())
@@ -658,6 +771,58 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 		return ( finalFilePath, ignoreModifications );
 	}
 
+	[ReactiveCommand]
+	private async Task<(string? FilePath, bool IsBuiltin)> OpenFileAsync()
+	{
+		if (!await ConfirmUnsavedChangesAsync())
+			return ( null, false );
+
+		var result = await this.fileBrowser.OpenFileAsync("Open GUI Composition", [
+			new FileDialogFilter("Composition Files (*.bmscp)", "*.bmscp"),
+		]);
+
+		var isBuiltin = false;
+
+		if (Settings.IsRomFsLocationValid && !string.IsNullOrEmpty(result))
+		{
+			var romfsRelativePath = Path.GetRelativePath(Settings.RomFsLocation, result);
+
+			if (romfsRelativePath != result)
+			{
+				// The user manually selected a file that lives in the base RomFS folder.
+				// This is considered loading a "built-in file", like the dedicated option for doing so,
+				// and saving will write to the "output folder" by default.
+				isBuiltin = true;
+
+				if (Settings.IsOutputLocationValid)
+				{
+					await Dialogs.AlertAsync(
+						"Warning",
+						"You have opened a built-in composition file from the base RomFS directory. " +
+						"To avoid accidental modifications to your base game files, the \"Save\" option " +
+						"will write to a copy of the composition file in your configured Output Path.\n\n" +
+						"If you are absolutely sure that you want to overwrite base game files, use the " +
+						"\"Save As...\" option in the File menu."
+					);
+				}
+				else
+				{
+					await Dialogs.AlertAsync(
+						"Warning",
+						"You have opened a built-in composition file from the base RomFS directory. " +
+						"Additionally, an Output Path has not been configured in the application settings. " +
+						"To avoid accidental modifications to your base game files, the \"Save\" option " +
+						"has been disabled.\n\n" +
+						"If you are absolutely sure that you want to overwrite base game files, use the " +
+						"\"Save As...\" option in the File menu."
+					);
+				}
+			}
+		}
+
+		return ( result, isBuiltin );
+	}
+
 	private async Task<bool> ConfirmUnsavedChangesAsync()
 	{
 		if (OpenedGuiFile is null || !IsDirty)
@@ -672,16 +837,38 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	[ReactiveCommand(CanExecute = nameof(CanSaveFile))]
 	private async Task SaveFileAsync()
 	{
-		if (!Settings.IsRomFsLocationValid || !Settings.IsOutputLocationValid)
+		if (OpenedFilePath is not { } openedFilePath)
+		{
+			// If saving a new file, just treat it as a "Save As"
+			if (OpenedGuiFile != null)
+				await SaveFileAsAsync();
+
+			return;
+		}
+
+		if (!Settings.IsRomFsLocationValid)
+			return;
+		if (IsBuiltinFile && !Settings.IsOutputLocationValid)
 			// Just in case
 			return;
-		if (OpenedFilePath is not { } openedFilePath || LatestPristineState is not { } bmscp)
+		if (LatestPristineState is not { } bmscp)
 			return;
 
 		await TaskPoolScheduler.Yield();
 
-		var relativeRomFsLocation = Path.GetRelativePath(Settings.RomFsLocation, openedFilePath);
-		var outputFilePath = Path.Join(Settings.OutputLocation, relativeRomFsLocation);
+		string outputFilePath;
+
+		if (IsBuiltinFile)
+		{
+			var relativeRomFsLocation = Path.GetRelativePath(Settings.RomFsLocation, openedFilePath);
+
+			outputFilePath = Path.Join(Settings.OutputLocation, relativeRomFsLocation);
+		}
+		else
+		{
+			outputFilePath = OpenedFilePath;
+		}
+
 		var outputFileDirectory = Path.GetDirectoryName(outputFilePath)!;
 
 		Directory.CreateDirectory(outputFileDirectory);
@@ -689,6 +876,58 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 		await using var fileStream = File.Open(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
 
 		await bmscp.WriteAsync(fileStream);
+		IsDirty = false;
+	}
+
+	[ReactiveCommand(CanExecute = nameof(CanSaveFileAs))]
+	private async Task SaveFileAsAsync()
+	{
+		if (LatestPristineState is not { } bmscp)
+			return;
+
+		await TaskPoolScheduler.Yield();
+
+		var outputFilePath = await this.fileBrowser.SaveFileAsync("Save GUI Composition", ".bmscp", [
+			new FileDialogFilter("Composition Files (*.bmscp)", "*.bmscp"),
+		]);
+
+		if (outputFilePath is null)
+			return;
+
+		var outputFileDirectory = Path.GetDirectoryName(outputFilePath)!;
+
+		if (Settings.IsRomFsLocationValid)
+		{
+			var baseGuiScriptsLocation = Path.Join(Settings.RomFsLocation, "gui", "scripts");
+			var romfsRelativePath = Path.GetRelativePath(baseGuiScriptsLocation, outputFilePath);
+
+			if (romfsRelativePath != outputFilePath)
+			{
+				// The user has tried to save over a base RomFS file - we need to warn about this
+				var confirmOverwrite = await Dialogs.ConfirmAsync(
+					"Warning",
+					"You have chosen to save to a file in your base RomFS directory! Doing this will " +
+					"result in your RomFS differing from the official unmodified game files, which can " +
+					"cause unexpected behavior. If you choose to continue, you will need to re-extract " +
+					"the game files from an official copy of the game to restore the originals.\n\n" +
+					"Are you SURE you want to do this?",
+					positiveText: "Yes, Overwrite Base Files",
+					negativeText: "No, Cancel"
+				);
+
+				if (!confirmOverwrite)
+					return;
+			}
+		}
+
+		Directory.CreateDirectory(outputFileDirectory);
+
+		await using var fileStream = File.Open(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+
+		await bmscp.WriteAsync(fileStream);
+
+		this.ignoreNextFileOpen = true; // We want to change OpenedFilePath without triggering a reload
+		OpenedFilePath = outputFilePath;
 		IsDirty = false;
 	}
 

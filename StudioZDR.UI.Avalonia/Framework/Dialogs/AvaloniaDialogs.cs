@@ -60,6 +60,27 @@ public class AvaloniaDialogs(Func<WindowContext?> windowContextAccessor) : IDial
 		});
 	}
 
+	public IObservable<string?> Prompt(string title, string message, string? defaultValue = null, string? inputWatermark = null, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
+		=> Observable.FromAsync(() => PromptAsync(title, message, defaultValue, inputWatermark, positiveText, negativeText, positiveButtonAccent));
+
+	public async Task<string?> PromptAsync(string title, string message, string? defaultValue = null, string? inputWatermark = null, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
+	{
+		return await Dispatcher.UIThread.InvokeAsync(async () => {
+			var dialog = new PromptDialog { Title = title, Message = message, PositiveButtonAccent = positiveButtonAccent };
+
+			if (defaultValue != null)
+				dialog.InputText = defaultValue;
+			if (inputWatermark != null)
+				dialog.InputWatermark = inputWatermark;
+			if (positiveText != null)
+				dialog.PositiveText = positiveText;
+			if (negativeText != null)
+				dialog.NegativeText = negativeText;
+
+			return await dialog.ShowDialog<string?>(ParentWindow);
+		});
+	}
+
 	public IObservable<T?> Choose<T>(string title, string message, IEnumerable<T> items, string? positiveText = null, string? negativeText = null, bool positiveButtonAccent = true)
 	where T : class
 		=> Observable.FromAsync(() => ChooseAsync(title, message, items, positiveText, negativeText, positiveButtonAccent));

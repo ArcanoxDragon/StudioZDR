@@ -12,15 +12,21 @@
 			 Name="View"
 			 framework:FeatureView.PreferredSize="1600, 900">
 	<UserControl.KeyBindings>
+		<KeyBinding Gesture="Ctrl+N" Command="{Binding NewCompositionCommand}" />
 		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenBuiltinFileCommand}" />
+		<KeyBinding Gesture="Ctrl+Shift+O" Command="{Binding OpenFileCommand}" />
 		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFileCommand}" />
+		<KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveFileAsCommand}" />
 	</UserControl.KeyBindings>
 
 	<DockPanel>
 		<Menu DockPanel.Dock="Top" HorizontalAlignment="Left">
 			<MenuItem Header="_File">
+				<MenuItem Header="_New Composition..." InputGesture="Ctrl+N" Command="{Binding NewCompositionCommand}" />
 				<MenuItem Header="_Open Built-in Composition..." InputGesture="Ctrl+O" Command="{Binding OpenBuiltinFileCommand}" />
+				<MenuItem Header="_Open Composition File..." InputGesture="Ctrl+Shift+O" Command="{Binding OpenFileCommand}" />
 				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFileCommand}" />
+				<MenuItem Header="_Save As..." InputGesture="Ctrl+Shift+S" Command="{Binding SaveFileAsCommand}" />
 				<Separator />
 				<MenuItem Header="_Close" Command="{Binding CloseCommand}" />
 			</MenuItem>

@@ -84,6 +84,10 @@ public partial class ListBoxDialog : ReactiveWindow<ListBoxDialogViewModel>
 		set => SetValue(ItemTemplateProperty, value);
 	}
 
+	/// <summary>
+	/// A list of extra <see cref="ExtraDialogOption"/>s to be displayed between
+	/// the dialog's list box control and the dialog's buttons.
+	/// </summary>
 	public IReadOnlyList<ExtraDialogOption> ExtraOptions
 	{
 		get => GetValue(ExtraOptionsProperty);

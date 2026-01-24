@@ -34,6 +34,27 @@ public class AvaloniaFileBrowser(WindowContext windowContext) : IFileBrowser
 		return folder?.TryGetLocalPath();
 	}
 
+	public async Task<string?> SaveFileAsync(string? title = null, string? defaultExtension = null, IEnumerable<FileDialogFilter>? filters = null, bool showOverwritePrompt = true)
+	{
+		var options = new FilePickerSaveOptions {
+			Title = title,
+			DefaultExtension = defaultExtension,
+			ShowOverwritePrompt = showOverwritePrompt,
+		};
+
+		if (filters != null)
+		{
+			options.FileTypeChoices = filters.Select(ToAvaloniaFilter).ToList();
+
+			if (options.FileTypeChoices.Count > 0)
+				options.SuggestedFileType = options.FileTypeChoices[0];
+		}
+
+		var file = await StorageProvider.SaveFilePickerAsync(options);
+
+		return file?.TryGetLocalPath();
+	}
+
 	private static FilePickerFileType ToAvaloniaFilter(FileDialogFilter filter)
 		=> new(filter.Name) { Patterns = filter.Extensions.ToList() };
 }
