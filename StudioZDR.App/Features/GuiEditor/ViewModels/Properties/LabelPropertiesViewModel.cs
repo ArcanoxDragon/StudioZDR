@@ -15,6 +15,9 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 
 		this.WhenAnyValue(m => m.Outline)
 			.Subscribe(outline => SetAllValues((GUI__CLabel label) => label.Outline, outline));
+
+		this.WhenAnyValue(m => m.AutoSize)
+			.Subscribe(autoSize => SetAllValues((GUI__CLabel label) => label.Autosize, autoSize));
 	}
 
 	#region LabelText
@@ -37,6 +40,13 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 
 	#endregion
 
+	#region AutoSize
+
+	[Reactive]
+	public partial bool? AutoSize { get; set; }
+
+	#endregion
+
 	#region Outline
 
 	[Reactive]
@@ -53,6 +63,7 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 		Font = null;
 		FontWatermark = null;
 		Outline = false;
+		AutoSize = true;
 	}
 
 	protected override void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool firstObject)
@@ -63,12 +74,14 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 		string labelText = label?.Text ?? string.Empty;
 		string font = label?.Font ?? string.Empty;
 		bool outline = label?.Outline ?? false;
+		bool autoSize = label?.Autosize ?? true;
 
 		if (firstObject)
 		{
 			LabelText = labelText;
 			Font = font;
 			Outline = outline;
+			AutoSize = autoSize;
 		}
 		else
 		{
@@ -86,6 +99,9 @@ public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 
 			if (outline != Outline)
 				Outline = null;
+
+			if (autoSize != AutoSize)
+				AutoSize = null;
 		}
 	}
 }

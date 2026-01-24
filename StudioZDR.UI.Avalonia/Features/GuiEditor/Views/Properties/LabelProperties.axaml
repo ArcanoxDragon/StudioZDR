@@ -14,7 +14,7 @@
 			ViewModel="{Binding #Control.ViewModel, Mode=OneWay}" />
 
 		<Grid
-			RowDefinitions="Auto,32,32,Auto"
+			RowDefinitions="Auto,32,32,Auto,Auto"
 			ColumnDefinitions="100,*"
 			Classes="ControlGrid"
 			IsEnabled="{Binding #Control.ViewModel.CanEdit}">
@@ -55,7 +55,7 @@
 						  x:Name="OutlineCheckBox"
 						  IsChecked="{Binding #Control.ViewModel.Outline}" />
 
-				<StackPanel Grid.Column="1">
+				<StackPanel Grid.Column="1" VerticalAlignment="Center">
 					<TextBlock MinWidth="{Binding $parent[StackPanel].Bounds.Width}"
 							   MaxWidth="{Binding $parent[StackPanel].Bounds.Width}"
 							   Foreground="{DynamicResource TextFillColorTertiary}"
@@ -63,6 +63,28 @@
 							   TextWrapping="Wrap">
 						Causes a sharp black shadow of the label's text to appear
 						behind the label, slightly below and to the right of it.
+					</TextBlock>
+				</StackPanel>
+			</Grid>
+
+			<Label Grid.Row="4" Grid.Column="0" Target="AutoSizeCheckBox">
+				Auto Size:
+			</Label>
+
+			<Grid Grid.Row="4" Grid.Column="1"
+				  ColumnDefinitions="Auto,*"
+				  HorizontalAlignment="Stretch">
+				<CheckBox Grid.Column="0"
+						  x:Name="AutoSizeCheckBox"
+						  IsChecked="{Binding #Control.ViewModel.AutoSize}" />
+
+				<StackPanel Grid.Column="1" VerticalAlignment="Center">
+					<TextBlock MinWidth="{Binding $parent[StackPanel].Bounds.Width}"
+							   MaxWidth="{Binding $parent[StackPanel].Bounds.Width}"
+							   Foreground="{DynamicResource TextFillColorTertiary}"
+							   FontSize="11"
+							   TextWrapping="Wrap">
+						The label will resize to fit its text
 					</TextBlock>
 				</StackPanel>
 			</Grid>
