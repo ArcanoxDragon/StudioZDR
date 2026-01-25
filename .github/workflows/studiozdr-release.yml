@@ -59,9 +59,26 @@ jobs:
     - name: Restore the application
       run: dotnet restore -r ${{ matrix.os.rid }} ${{ env.Solution_Name }}
 
+    # The next two steps (meaning the Linux version and the Windows version) exist to ensure the "publish" directory doesn't exist.
+    # In theory, it shouldn't exist in the first place because the container should be "clean" at the start of the workflow, but this is just in case.
+    # Due to https://github.com/dotnet/sdk/issues/14622, if the "publish" folder DOES exist when we try to publish, none of the native assets get copied.
+
+    # Remove existing publish directory (Linux)
+    - name: Remove publish directory
+      if: ${{ matrix.os.image == 'ubuntu-latest' }}
+      run: rm -rf ${{ env.Publish_Path }}
+
+    # ZIP artifacts for upload (Windows)
+    - name: Remove publish directory
+      if: ${{ matrix.os.image == 'windows-latest' }}
+      run: rm -force -recurse ${{ env.Publish_Path }}
+
     # Publish the binary
     - name: Publish binary
       run: dotnet publish -c ${{ matrix.configuration }} -r ${{ matrix.os.rid }} -o "${{ env.Publish_Path }}/${{ matrix.os.rid }}" -p:DebugSymbols=False ${{ env.Project_Path }}
+      env:
+        # Can't pass anything with semicolons on the command line, because MSBuild is Good Software(tm)
+        NoWarn: IL2026;IL2104;IL2121
 
     # ZIP artifacts for upload (Linux)
     - name: Bundle artifacts
