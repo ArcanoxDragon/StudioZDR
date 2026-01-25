@@ -123,19 +123,31 @@
 				<Button Command="{Binding DeleteSelectedObjectsCommand}"
 						HotKey="Delete"
 						ToolTip.Tip="Delete Selected">
-					<i:Icon Value="fa-trash" />
+					<i:Icon Value="fa-solid fa-trash" />
 				</Button>
 
 				<fluent:CommandBarSeparator />
 
-				<Button Click="ExpandAll_OnClick"
-						ToolTip.Tip="Expand All">
-					<i:Icon Value="fa-chevrons-down" />
-				</Button>
-
 				<Button Click="CollapseAll_OnClick"
 						ToolTip.Tip="Collapse All">
-					<i:Icon Value="fa-chevrons-up" />
+					<i:Icon Value="fa-solid fa-square-minus" />
+				</Button>
+
+				<Button Click="ExpandAll_OnClick"
+						ToolTip.Tip="Expand All">
+					<i:Icon Value="fa-solid fa-square-plus" />
+				</Button>
+
+				<fluent:CommandBarSeparator />
+
+				<Button Command="{Binding MoveSelectedNodeUpCommand}"
+						ToolTip.Tip="Move object up (amongst siblings)">
+					<i:Icon Value="fa-solid fa-up" />
+				</Button>
+
+				<Button Command="{Binding MoveSelectedNodeDownCommand}"
+						ToolTip.Tip="Move object down (amongst siblings)">
+					<i:Icon Value="fa-solid fa-down" />
 				</Button>
 			</StackPanel>
 

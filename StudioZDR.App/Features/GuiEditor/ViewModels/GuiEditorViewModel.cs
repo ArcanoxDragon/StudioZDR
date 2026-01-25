@@ -31,16 +31,16 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	private readonly Stack<Bmscp> undoStack = [];
 	private readonly Stack<Bmscp> redoStack = [];
 
-	private readonly Subject<bool> hasSelectionSubject           = new();
-	private readonly Subject<bool> hasSelectionExceptRootSubject = new();
-	private readonly Subject<bool> canUndoSubject                = new();
-	private readonly Subject<bool> canRedoSubject                = new();
+	private readonly Subject<bool> hasSingleSelectionExceptRootSubject = new();
+	private readonly Subject<bool> hasSelectionExceptRootSubject       = new();
+	private readonly Subject<bool> canUndoSubject                      = new();
+	private readonly Subject<bool> canRedoSubject                      = new();
 
 	private bool ignoreNextStateChange;
 	private bool ignoreNextFileOpen;
 	private bool forceOpenOriginalFile;
 
-	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", 
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
 								  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 	public GuiEditorViewModel(
 		IWindowContext windowContext,
@@ -337,8 +337,8 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 			SelectedNodes
 				.ToObservableChangeSet()
-				.Select(_ => SelectedNodes.Count > 0)
-				.Subscribe(this.hasSelectionSubject)
+				.Select(_ => SelectedNodes.Count == 1 && SelectedNodes[0] != Composition?.Hierarchy)
+				.Subscribe(this.hasSingleSelectionExceptRootSubject)
 				.DisposeWith(disposables);
 
 			SelectedNodes
@@ -357,7 +357,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 				Composition = null;
 			}).DisposeWith(disposables);
 
-			disposables.Add(this.hasSelectionSubject);
+			disposables.Add(this.hasSingleSelectionExceptRootSubject);
 			disposables.Add(this.canUndoSubject);
 			disposables.Add(this.canRedoSubject);
 		});
@@ -419,11 +419,11 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	private IObservable<bool> CanSaveFile   { get; }
 	private IObservable<bool> CanSaveFileAs { get; }
 
-	private ApplicationSettings Settings               => this.settingsMonitor.CurrentValue;
-	private IObservable<bool>   HasSelection           => this.hasSelectionSubject;
-	private IObservable<bool>   HasSelectionExceptRoot => this.hasSelectionExceptRootSubject;
-	private IObservable<bool>   CanUndo                => this.canUndoSubject;
-	private IObservable<bool>   CanRedo                => this.canRedoSubject;
+	private ApplicationSettings Settings                     => this.settingsMonitor.CurrentValue;
+	private IObservable<bool>   HasSingleSelectionExceptRoot => this.hasSingleSelectionExceptRootSubject;
+	private IObservable<bool>   HasSelectionExceptRoot       => this.hasSelectionExceptRootSubject;
+	private IObservable<bool>   CanUndo                      => this.canUndoSubject;
+	private IObservable<bool>   CanRedo                      => this.canRedoSubject;
 
 	#region Selection
 
@@ -519,6 +519,72 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 		// Stage the delete as an undo operation
 		StageUndoOperation();
+	}
+
+	[ReactiveCommand(CanExecute = nameof(HasSingleSelectionExceptRoot))]
+	public void MoveSelectedNodeUp()
+	{
+		if (Composition is not { } composition)
+			return;
+		if (SelectedNodes is not [{ DisplayObject: { } displayObject, Parent.DisplayObject: GUI__CDisplayObjectContainer parentContainer } node])
+			return;
+
+		using var _ = composition.LockForWriting();
+
+		var nodeIndexInParent = node.Parent.Children.IndexOf(node);
+		var objIndexInParent = parentContainer.Children.IndexOf(displayObject);
+
+		if (nodeIndexInParent != objIndexInParent)
+			// Node position doesn't match the object position! Something is out of sync.
+			return;
+		if (objIndexInParent <= 0)
+			// Either at the top already, or doesn't exist.
+			return;
+
+		node.Parent.Children.Remove(node);
+		node.Parent.Children.Insert(nodeIndexInParent - 1, node);
+		parentContainer.Children.Remove(displayObject);
+		parentContainer.Children.Insert(objIndexInParent - 1, displayObject);
+
+		// Stage the move as an undo operation
+		StageUndoOperation();
+
+		// Re-select the node
+		SelectedNodes.Clear();
+		SelectedNodes.Add(node);
+	}
+
+	[ReactiveCommand(CanExecute = nameof(HasSingleSelectionExceptRoot))]
+	public void MoveSelectedNodeDown()
+	{
+		if (Composition is not { } composition)
+			return;
+		if (SelectedNodes is not [{ DisplayObject: { } displayObject, Parent.DisplayObject: GUI__CDisplayObjectContainer parentContainer } node])
+			return;
+
+		using var _ = composition.LockForWriting();
+
+		var nodeIndexInParent = node.Parent.Children.IndexOf(node);
+		var objIndexInParent = parentContainer.Children.IndexOf(displayObject);
+
+		if (nodeIndexInParent != objIndexInParent)
+			// Node position doesn't match the object position! Something is out of sync.
+			return;
+		if (objIndexInParent < 0 || objIndexInParent >= parentContainer.Children.Count - 1)
+			// Either at the bottom already, or doesn't exist.
+			return;
+
+		node.Parent.Children.Remove(node);
+		node.Parent.Children.Insert(nodeIndexInParent + 1, node);
+		parentContainer.Children.Remove(displayObject);
+		parentContainer.Children.Insert(objIndexInParent + 1, displayObject);
+
+		// Stage the move as an undo operation
+		StageUndoOperation();
+
+		// Re-select the node
+		SelectedNodes.Clear();
+		SelectedNodes.Add(node);
 	}
 
 	/// <summary>
