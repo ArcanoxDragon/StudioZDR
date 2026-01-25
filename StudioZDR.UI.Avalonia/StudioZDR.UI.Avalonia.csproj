@@ -5,14 +5,17 @@
 		<OutputType>WinExe</OutputType>
 		<LangVersion>preview</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<NoWarn>CA1822</NoWarn>
+		<NoWarn Condition=" '$(NoWarn)' != '' ">$(NoWarn);</NoWarn>
+		<NoWarn>$(NoWarn)CA1822</NoWarn>
+		<RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
 	</PropertyGroup>
 
 	<!-- Trimming-related properties -->
 	<PropertyGroup>
 		<PublishTrimmed>true</PublishTrimmed>
-		<TrimMode>full</TrimMode>
+		<TrimMode>partial</TrimMode>
 		<InvariantGlobalization>true</InvariantGlobalization>
+		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
@@ -70,6 +73,7 @@
 		<PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 		<PackageReference Include="SkiaSharp" Version="3.119.1" />
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.1" />
 	</ItemGroup>
 
 	<ItemGroup>

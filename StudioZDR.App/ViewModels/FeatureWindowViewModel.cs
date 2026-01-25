@@ -10,6 +10,8 @@ namespace StudioZDR.App.ViewModels;
 [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
 public partial class FeatureWindowViewModel : ViewModelBase
 {
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+								  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 	public FeatureWindowViewModel(ViewModelFactory viewModelFactory)
 	{
 		this._windowTitle = string.Empty;

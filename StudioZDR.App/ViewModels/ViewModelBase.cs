@@ -5,7 +5,6 @@ using StudioZDR.App.Framework.Dialogs;
 
 namespace StudioZDR.App.ViewModels;
 
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public class ViewModelBase : ReactiveObject, IActivatableViewModel
 {
 	protected static IScheduler MainThreadScheduler => RxApp.MainThreadScheduler;

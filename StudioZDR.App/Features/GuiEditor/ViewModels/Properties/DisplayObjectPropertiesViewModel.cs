@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -27,6 +28,8 @@ public partial class DisplayObjectPropertiesViewModel : ViewModelBase, IDisposab
 
 	private volatile int refreshing;
 
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", 
+								  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 	public DisplayObjectPropertiesViewModel()
 	{
 		this.WhenAnyValue(m => m.Nodes)

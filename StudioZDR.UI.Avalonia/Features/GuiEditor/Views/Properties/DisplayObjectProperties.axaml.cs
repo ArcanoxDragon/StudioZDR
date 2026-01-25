@@ -20,7 +20,7 @@ where TViewModel : DisplayObjectPropertiesViewModel, new()
 	public static readonly StyledProperty<GuiEditorViewModel?> EditorProperty
 		= AvaloniaProperty.Register<GuiCompositionCanvas, GuiEditorViewModel?>(nameof(Editor));
 
-	[System.Diagnostics.CodeAnalysis.SuppressMessage(
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(
 		"Trimming",
 		"IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
 		Justification = "All assemblies that are reflected are included as TrimmerRootAssembly, so all necessary type metadata will be preserved")]

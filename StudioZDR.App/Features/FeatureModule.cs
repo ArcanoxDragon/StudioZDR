@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Options;
 using StudioZDR.App.Configuration;
@@ -11,10 +12,15 @@ public abstract class FeatureModule : Module, IFeature, INotifyPropertyChanged
 	private IOptionsMonitor<ApplicationSettings>? appSettingsMonitor;
 	private IDisposable?                          appSettingMonitorSubscription;
 
-	public abstract string Name          { get; }
-	public abstract string Description   { get; }
-	public abstract Type   ViewModelType { get; }
-	public abstract int    DisplayOrder  { get; }
+	public abstract string Name         { get; }
+	public abstract string Description  { get; }
+	public abstract int    DisplayOrder { get; }
+
+	public abstract Type ViewModelType
+	{
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		get;
+	}
 
 	public virtual string IconKey => "fa-solid fa-block";
 
@@ -93,8 +99,15 @@ public abstract class FeatureModule : Module, IFeature, INotifyPropertyChanged
 	#endregion
 }
 
-public abstract class FeatureModule<TViewModel> : FeatureModule
+public abstract class FeatureModule<
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+	TViewModel
+> : FeatureModule
 where TViewModel : ViewModelBase
 {
-	public override Type ViewModelType => typeof(TViewModel);
+	public override Type ViewModelType
+	{
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		get => typeof(TViewModel);
+	}
 }

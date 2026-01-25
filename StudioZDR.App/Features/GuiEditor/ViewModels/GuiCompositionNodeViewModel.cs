@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -15,6 +16,8 @@ public sealed partial class GuiCompositionNodeViewModel : ViewModelBase, IDispos
 	public GuiCompositionNodeViewModel()
 		: this(null) { }
 
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", 
+								  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 	public GuiCompositionNodeViewModel(GUI__CDisplayObject? displayObject, GuiCompositionNodeViewModel? parent = null)
 	{
 		DisplayObject = displayObject;

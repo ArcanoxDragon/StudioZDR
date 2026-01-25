@@ -1,0 +1,158 @@
+name: Release StudioZDR
+
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ "v*.*.*" ]
+  pull_request:
+
+jobs:
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+        os:
+          - name: Windows
+            image: windows-latest
+            rid: win-x64
+            rust_target: x86_64-pc-windows-msvc
+          - name: Linux
+            image: ubuntu-latest
+            rid: linux-x64
+            rust_target: x86_64-unknown-linux-gnu
+
+    runs-on: ${{ matrix.os.image }}
+
+    name: ${{ matrix.os.name }} Executable (${{ matrix.configuration }})
+
+    outputs:
+      releaseVersion: ${{ steps.nbgv.outputs.CloudBuildNumber }}
+
+    env:
+      Solution_Name: StudioZDR.sln
+      Tegra_Swizzle_Path: MercuryEngine.Data/src/MercuryEngine.Data.TegraTextureLib
+      Project_Path: StudioZDR.UI.Avalonia/StudioZDR.UI.Avalonia.csproj
+      Publish_Path: StudioZDR.UI.Avalonia/bin/publish
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    # Enable Corepack to use Yarn (for FontAwesome)
+    - name: Enable Corepack
+      run: corepack enable
+
+    # Set up Node.js itself
+    - name: Use Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: "22.x"
+
+    # Install the FontAwesome package
+    - name: Install FontAwesome
+      working-directory: ./StudioZDR.UI.Avalonia/Icons
+      run:
+        corepack yarn install
+      env:
+        NPM_FONTAWESOME_AUTH_TOKEN: ${{ secrets.NPM_FONTAWESOME_AUTH_TOKEN }}
+
+    # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
+    - name: Use Nerdbank.GitVersioning to set version variables
+      uses: dotnet/nbgv@v0.4.2
+      id: nbgv
+      with:
+        setAllVars: true
+
+    # Install Rust toolchain
+    - name: Install Rust toolchain
+      run: rustup update && rustup target add ${{ matrix.os.rust_target }}
+
+    # Build tegra-swizzle library
+    - name: Build tegra-swizzle library
+      working-directory: ${{ env.Tegra_Swizzle_Path }}
+      run: cargo build -r --target ${{ matrix.os.rust_target }}
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    # Restore the application to populate the obj folder with RuntimeIdentifiers
+    - name: Restore the application
+      run: dotnet restore -r ${{ matrix.os.rid }} ${{ env.Solution_Name }}
+
+    # The next two steps (meaning the Linux version and the Windows version) exist to ensure the "publish" directory doesn't exist.
+    # In theory, it shouldn't exist in the first place because the container should be "clean" at the start of the workflow, but this is just in case.
+    # Due to https://github.com/dotnet/sdk/issues/14622, if the "publish" folder DOES exist when we try to publish, none of the native assets get copied.
+
+    # Remove existing publish directory (Linux)
+    - name: Remove publish directory
+      if: ${{ matrix.os.image == 'ubuntu-latest' }}
+      run: rm -rf ${{ env.Publish_Path }}
+
+    # ZIP artifacts for upload (Windows)
+    - name: Remove publish directory
+      if: ${{ matrix.os.image == 'windows-latest' }}
+      run: Remove-Item -Force -Recurse ${{ env.Publish_Path }} -ErrorAction SilentlyContinue
+
+    # Publish the binary
+    - name: Publish binary
+      run: dotnet publish -c ${{ matrix.configuration }} -r ${{ matrix.os.rid }} -o "${{ env.Publish_Path }}/${{ matrix.os.rid }}" -p:DebugSymbols=False ${{ env.Project_Path }}
+      env:
+        # Can't pass anything with semicolons on the command line, because MSBuild is Good Software(tm)
+        NoWarn: IL2026;IL2104;IL2121
+
+    # ZIP artifacts for upload (Linux)
+    - name: Bundle artifacts
+      if: ${{ matrix.configuration == 'Release' && matrix.os.image == 'ubuntu-latest' }}
+      run: zip studiozdr_${{ matrix.os.rid }}.zip ${{ env.Publish_Path }}/${{ matrix.os.rid }}/* -jr
+
+    # ZIP artifacts for upload (Windows)
+    - name: Bundle artifacts
+      if: ${{ matrix.configuration == 'Release' && matrix.os.image == 'windows-latest' }}
+      run: Compress-Archive -Path ${{ env.Publish_Path }}\${{ matrix.os.rid }}\* -DestinationPath studiozdr_${{ matrix.os.rid }}.zip
+
+    # Upload the artifact
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: matrix.configuration == 'Release'
+      with:
+        name: studiozdr_${{ matrix.os.rid }}
+        if-no-files-found: error
+        path: studiozdr_${{ matrix.os.rid }}.zip
+
+  release:
+    runs-on: "ubuntu-latest"
+    name: Release
+    if: ${{ github.event_name != 'pull_request' && github.event_name != 'merge_group' && startsWith(github.ref, 'refs/tags/v') }}
+
+    permissions:
+      contents: write
+
+    needs:
+      - build
+
+    steps:
+      - name: Download binaries
+        uses: actions/download-artifact@v5.0.0
+        with:
+          pattern: '*'
+          path: publish/
+
+      - name: Upload binaries to GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: publish/studiozdr*/**/*.zip
+          draft: ${{ startsWith(github.ref, 'refs/heads/main') }}
+          generateReleaseNotes: true
+          name: studiozdr ${{ needs.build.outputs.releaseVersion }}
+          prerelease: true
+          updateOnlyUnreleased: true

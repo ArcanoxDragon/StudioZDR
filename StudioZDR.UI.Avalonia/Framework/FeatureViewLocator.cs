@@ -9,7 +9,7 @@ public class FeatureViewLocator : IDataTemplate
 	private const string AppNamespaceName = $"{nameof(StudioZDR)}.{nameof(StudioZDR.App)}";
 	private const string UiNamespaceName  = $"{nameof(StudioZDR)}.{nameof(UI)}.{nameof(Avalonia)}";
 
-	[System.Diagnostics.CodeAnalysis.SuppressMessage(
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(
 		"Trimming",
 		"IL2057:Unrecognized value passed to the parameter of method. It's not possible to guarantee the availability of the target type.",
 		Justification = "All view classes are in this assembly, which is a TrimmerRootAssembly and thus all necessary types will be preserved")]
