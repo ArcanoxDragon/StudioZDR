@@ -212,6 +212,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 		base.OnPointerMoved(e);
 
 		var ctrlPressed = ( e.KeyModifiers & KeyModifiers.Control ) == KeyModifiers.Control;
+		var shiftPressed = ( e.KeyModifiers & KeyModifiers.Shift ) == KeyModifiers.Shift;
 		var newPosition = e.GetPosition(this);
 		var transformedPosition = newPosition.Transform(InverseTransformMatrix);
 
@@ -237,7 +238,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 				this.dragLatched = true;
 
 			if (this.dragLatched)
-				MoveDraggedObjects(transformedPosition, delta);
+				MoveDraggedObjects(transformedPosition, delta, shiftPressed);
 		}
 		else
 		{
@@ -275,7 +276,7 @@ internal partial class GuiCompositionCanvas : ContentControl
 		}
 	}
 
-	private void MoveDraggedObjects(Point cursorPosition, Point delta)
+	private void MoveDraggedObjects(Point cursorPosition, Point delta, bool constrainProportions)
 	{
 		var (resizeOrigin, _, doResizeX, doResizeY) = this.resizeType;
 		var screenBounds = GetScreenBounds().ToRectangleF();
@@ -283,8 +284,22 @@ internal partial class GuiCompositionCanvas : ContentControl
 		var fullResizeDistanceY = Math.Abs(this.dragStart.Y - resizeOrigin.Y);
 		var resizeDirectionX = Math.Sign(this.dragStart.X - resizeOrigin.X);
 		var resizeDirectionY = Math.Sign(this.dragStart.Y - resizeOrigin.Y);
-		var resizeScaleX = ( cursorPosition.X - resizeOrigin.X ) / fullResizeDistanceX * resizeDirectionX;
-		var resizeScaleY = ( cursorPosition.Y - resizeOrigin.Y ) / fullResizeDistanceY * resizeDirectionY;
+		var resizeScaleX = ( ( cursorPosition.X - resizeOrigin.X ) / fullResizeDistanceX ) * resizeDirectionX;
+		var resizeScaleY = ( ( cursorPosition.Y - resizeOrigin.Y ) / fullResizeDistanceY ) * resizeDirectionY;
+
+		if (constrainProportions)
+		{
+			var effectiveScale = ( resizeScaleX + resizeScaleY ) / 2.0;
+
+			resizeScaleX = resizeScaleY = effectiveScale;
+
+			// Need to recalculate delta, too
+			var constrainedCursorPosX = resizeOrigin.X + ( fullResizeDistanceX * ( resizeScaleX / resizeDirectionX ) );
+			var constrainedCursorPosY = resizeOrigin.Y + ( fullResizeDistanceY * ( resizeScaleY / resizeDirectionY ) );
+			var constrainedCursorPos = new Point(constrainedCursorPosX, constrainedCursorPosY);
+
+			delta = constrainedCursorPos - this.dragStart;
+		}
 
 		foreach (var draggingObject in this.draggingObjects)
 		{
