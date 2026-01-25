@@ -868,7 +868,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 		{
 			// If saving a new file, just treat it as a "Save As"
 			if (OpenedGuiFile != null)
-				await SaveFileAsAsync();
+				await SaveFileAsAsync(false);
 
 			return;
 		}
@@ -907,7 +907,7 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 	}
 
 	[ReactiveCommand(CanExecute = nameof(CanSaveFileAs))]
-	private async Task SaveFileAsAsync()
+	private async Task SaveFileAsAsync(bool isCopy)
 	{
 		if (LatestPristineState is not { } bmscp)
 			return;
@@ -953,9 +953,12 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 
 		await bmscp.WriteAsync(fileStream);
 
-		this.ignoreNextFileOpen = true; // We want to change OpenedFilePath without triggering a reload
-		OpenedFilePath = outputFilePath;
-		IsDirty = false;
+		if (!isCopy)
+		{
+			this.ignoreNextFileOpen = true; // We want to change OpenedFilePath without triggering a reload
+			OpenedFilePath = outputFilePath;
+			IsDirty = false;
+		}
 	}
 
 	private async Task<List<string>> GetAvailableGuiFilesAsync()

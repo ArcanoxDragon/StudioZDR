@@ -16,7 +16,7 @@
 		<KeyBinding Gesture="Ctrl+O" Command="{Binding OpenBuiltinFileCommand}" />
 		<KeyBinding Gesture="Ctrl+Shift+O" Command="{Binding OpenFileCommand}" />
 		<KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFileCommand}" />
-		<KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveFileAsCommand}" />
+		<KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveFileAsCommand}" CommandParameter="{x:False}" />
 	</UserControl.KeyBindings>
 
 	<DockPanel>
@@ -26,7 +26,8 @@
 				<MenuItem Header="_Open Built-in Composition..." InputGesture="Ctrl+O" Command="{Binding OpenBuiltinFileCommand}" />
 				<MenuItem Header="_Open Composition File..." InputGesture="Ctrl+Shift+O" Command="{Binding OpenFileCommand}" />
 				<MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveFileCommand}" />
-				<MenuItem Header="_Save As..." InputGesture="Ctrl+Shift+S" Command="{Binding SaveFileAsCommand}" />
+				<MenuItem Header="_Save As..." InputGesture="Ctrl+Shift+S" Command="{Binding SaveFileAsCommand}" CommandParameter="{x:False}" />
+				<MenuItem Header="_Save Copy As..." Command="{Binding SaveFileAsCommand}" CommandParameter="{x:True}" />
 				<Separator />
 				<MenuItem Header="_Close" Command="{Binding CloseCommand}" />
 			</MenuItem>
