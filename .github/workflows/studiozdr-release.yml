@@ -43,6 +43,24 @@ jobs:
         fetch-depth: 0
         submodules: recursive
 
+    # Enable Corepack to use Yarn (for FontAwesome)
+    - name: Enable Corepack
+      run: corepack enable
+
+    # Set up Node.js itself
+    - name: Use Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: "22.x"
+        cache: "yarn"
+
+    # Install the FontAwesome package
+    - name: Install FontAwesome
+      run:
+        corepack yarn install
+      env:
+        NPM_FONTAWESOME_AUTH_TOKEN: ${{ secrets.NPM_FONTAWESOME_AUTH_TOKEN }}
+
     # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
     - name: Use Nerdbank.GitVersioning to set version variables
       uses: dotnet/nbgv@v0.4.2
