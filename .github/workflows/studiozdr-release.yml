@@ -52,7 +52,6 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: "22.x"
-        cache: "yarn"
 
     # Install the FontAwesome package
     - name: Install FontAwesome
