@@ -300,16 +300,22 @@ internal partial class GuiCompositionCanvas : ContentControl
 			{
 				// Objects move by an amount proportional to their distance from the drag origin
 				var objectToResizeOrigin = initialPosition - resizeOrigin;
-				var deltaScaleX = doResizeX ? Math.Abs(objectToResizeOrigin.X / fullResizeDistanceX) : 0;
-				var deltaScaleY = doResizeY ? Math.Abs(objectToResizeOrigin.Y / fullResizeDistanceY) : 0;
+				var proportionalResizeX = Math.Abs(fullResizeDistanceX) > 1e-20
+					? Math.Abs(objectToResizeOrigin.X / fullResizeDistanceX)
+					: 0;
+				var proportionalResizeY = Math.Abs(fullResizeDistanceY) > 1e-20
+					? Math.Abs(objectToResizeOrigin.Y / fullResizeDistanceY)
+					: 0;
+				var deltaScaleX = doResizeX ? proportionalResizeX : 0;
+				var deltaScaleY = doResizeY ? proportionalResizeY : 0;
 				var objDelta = new Point(delta.X * deltaScaleX, delta.Y * deltaScaleY);
 
 				newObjectPosition = initialPosition + objDelta;
 
 				if (doResizeX)
-					displayObject.ScaleX = draggingObject.InitialScaleX * (float) resizeScaleX;
+					displayObject.SizeX = draggingObject.InitialSizeX * (float) resizeScaleX;
 				if (doResizeY)
-					displayObject.ScaleY = draggingObject.InitialScaleY * (float) resizeScaleY;
+					displayObject.SizeY = draggingObject.InitialSizeY * (float) resizeScaleY;
 			}
 			else
 			{
@@ -576,8 +582,8 @@ internal partial class GuiCompositionCanvas : ContentControl
 
 	private sealed record DraggingObject(GuiCompositionNodeViewModel Node, Point InitialPosition)
 	{
-		public float InitialScaleX { get; } = Node.DisplayObject?.ScaleX ?? 1f;
-		public float InitialScaleY { get; } = Node.DisplayObject?.ScaleY ?? 1f;
+		public float InitialSizeX { get; } = Node.DisplayObject?.SizeX ?? 1f;
+		public float InitialSizeY { get; } = Node.DisplayObject?.SizeY ?? 1f;
 	}
 
 	private readonly record struct ResizeType(Point Origin, StandardCursorType Cursor, bool X, bool Y);
