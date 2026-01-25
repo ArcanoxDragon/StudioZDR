@@ -71,7 +71,7 @@ jobs:
     # ZIP artifacts for upload (Windows)
     - name: Remove publish directory
       if: ${{ matrix.os.image == 'windows-latest' }}
-      run: rm -force -recurse ${{ env.Publish_Path }}
+      run: Remove-Item -Force -Recurse ${{ env.Publish_Path }} -ErrorAction SilentlyContinue
 
     # Publish the binary
     - name: Publish binary
