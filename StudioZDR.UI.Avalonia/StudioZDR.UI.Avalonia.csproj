@@ -5,15 +5,17 @@
 		<OutputType>WinExe</OutputType>
 		<LangVersion>preview</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<NoWarn>CA1822</NoWarn>
+		<NoWarn Condition=" '$(NoWarn)' != '' ">$(NoWarn);</NoWarn>
+		<NoWarn>$(NoWarn)CA1822</NoWarn>
 		<RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
 	</PropertyGroup>
 
 	<!-- Trimming-related properties -->
 	<PropertyGroup>
 		<PublishTrimmed>true</PublishTrimmed>
-		<TrimMode>full</TrimMode>
+		<TrimMode>partial</TrimMode>
 		<InvariantGlobalization>true</InvariantGlobalization>
+		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">

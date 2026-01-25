@@ -13,6 +13,8 @@ public partial class SaveEditorViewModel : ViewModelBase, IBlockCloseWhenDirty
 	private readonly IFileBrowser   fileBrowser;
 	private readonly IWindowContext windowContext;
 
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", 
+								  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 	public SaveEditorViewModel(IFileBrowser fileBrowser, IWindowContext windowContext)
 	{
 		this.fileBrowser = fileBrowser;

@@ -1,10 +1,13 @@
-﻿using MercuryEngine.Data.Types.DreadTypes;
+﻿using System.Diagnostics.CodeAnalysis;
+using MercuryEngine.Data.Types.DreadTypes;
 using ReactiveUI.SourceGenerators;
 
 namespace StudioZDR.App.Features.GuiEditor.ViewModels.Properties;
 
 public partial class LabelPropertiesViewModel : DisplayObjectPropertiesViewModel
 {
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", 
+								  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 	public LabelPropertiesViewModel()
 	{
 		this.WhenAnyValue(m => m.LabelText)

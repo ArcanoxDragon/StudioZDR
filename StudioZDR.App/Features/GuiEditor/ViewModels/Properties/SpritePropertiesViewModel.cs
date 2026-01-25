@@ -1,4 +1,5 @@
-﻿using MercuryEngine.Data.Types.DreadTypes;
+﻿using System.Diagnostics.CodeAnalysis;
+using MercuryEngine.Data.Types.DreadTypes;
 using Microsoft.Extensions.Logging;
 using ReactiveUI.SourceGenerators;
 using StudioZDR.App.Extensions;
@@ -8,6 +9,8 @@ namespace StudioZDR.App.Features.GuiEditor.ViewModels.Properties;
 
 public partial class SpritePropertiesViewModel : DisplayObjectPropertiesViewModel
 {
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", 
+								  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 	public SpritePropertiesViewModel()
 	{
 		ChooseSpriteCommand

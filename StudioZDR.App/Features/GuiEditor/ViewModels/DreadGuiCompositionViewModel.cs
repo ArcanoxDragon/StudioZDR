@@ -18,6 +18,8 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 
 	private CompositeDisposable hierarchyDisposables;
 
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+								  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 	public DreadGuiCompositionViewModel(GUI__CDisplayObjectContainer? rootContainer)
 	{
 		this.hierarchyDisposables = new CompositeDisposable();
@@ -95,6 +97,8 @@ public sealed partial class DreadGuiCompositionViewModel : ViewModelBase, IDispo
 
 		return CreateNode(rootContainer);
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+									  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 		GuiCompositionNodeViewModel CreateNode(GUI__CDisplayObject displayObject, GuiCompositionNodeViewModel? parent = null)
 		{
 			GuiCompositionNodeViewModel node = new(displayObject, parent);

@@ -1,4 +1,5 @@
-﻿using System.Reactive.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reactive.Linq;
 using Microsoft.Extensions.Logging;
 using ReactiveUI.SourceGenerators;
 using StudioZDR.App.Extensions;
@@ -8,6 +9,8 @@ namespace StudioZDR.App.ViewModels;
 
 public partial class SpritePickerDialogViewModel : ViewModelBase
 {
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+								  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 	public SpritePickerDialogViewModel(ISpriteSheetManager? spriteSheetManager = null, ILogger<SpritePickerDialogViewModel>? logger = null)
 	{
 		SpriteSheets = [];
