@@ -88,8 +88,15 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 				this.forceOpenOriginalFile = ignoreModifications;
 
 				// When explicitly opening a file, we want to definitively *re-open* it even if it's the same file,
-				// so we will set the property to null first before storing the chosen file.
-				OpenedFilePath = null;
+				// so we will set the property to null first before storing the chosen file. To avoid race condition
+				// bugs, we will suppress the observability of setting this to null, and then manually clear the
+				// old composition as well. Then, when we set the path below, the normal load process will take place.
+				using (SuppressChangeNotifications())
+				{
+					OpenedFilePath = null;
+					OpenedGuiFile = null;
+				}
+
 				OpenedFilePath = file;
 			});
 
@@ -106,8 +113,15 @@ public partial class GuiEditorViewModel : ViewModelBase, IBlockCloseWhenDirty, I
 				this.forceOpenOriginalFile = true;
 
 				// When explicitly opening a file, we want to definitively *re-open* it even if it's the same file,
-				// so we will set the property to null first before storing the chosen file.
-				OpenedFilePath = null;
+				// so we will set the property to null first before storing the chosen file. To avoid race condition
+				// bugs, we will suppress the observability of setting this to null, and then manually clear the
+				// old composition as well. Then, when we set the path below, the normal load process will take place.
+				using (SuppressChangeNotifications())
+				{
+					OpenedFilePath = null;
+					OpenedGuiFile = null;
+				}
+
 				OpenedFilePath = file;
 			});
 
