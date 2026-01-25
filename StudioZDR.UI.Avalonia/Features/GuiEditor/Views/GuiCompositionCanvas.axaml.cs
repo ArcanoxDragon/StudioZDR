@@ -418,6 +418,10 @@ internal partial class GuiCompositionCanvas : ContentControl
 
 	#region Keyboard Events
 
+	private const float BaseNudgeIncrementX  = 1.0f / 1600.0f; // 1 pixel at Dread's native screen resolution of 900p
+	private const float BaseNudgeIncrementY  = 1.0f / 900.0f;  // 1 pixel at Dread's native screen resolution of 900p
+	private const float ShiftNudgeMultiplier = 10;
+
 	protected override void OnKeyDown(KeyEventArgs e)
 	{
 		base.OnKeyDown(e);
@@ -433,6 +437,67 @@ internal partial class GuiCompositionCanvas : ContentControl
 			}
 
 			this.lastPressedEscape = pressTime;
+		}
+		else if (e.Key == Key.Left)
+		{
+			NudgeObjects(-1, 0);
+		}
+		else if (e.Key == Key.Right)
+		{
+			NudgeObjects(1, 0);
+		}
+		else if (e.Key == Key.Up)
+		{
+			NudgeObjects(0, -1);
+		}
+		else if (e.Key == Key.Down)
+		{
+			NudgeObjects(0, 1);
+		}
+
+		void NudgeObjects(int directionX, int directionY)
+		{
+			if (Editor is not { } editor)
+				return;
+
+			var nudgeAmountX = directionX * BaseNudgeIncrementX;
+			var nudgeAmountY = directionY * BaseNudgeIncrementY;
+
+			if (( e.KeyModifiers & KeyModifiers.Shift ) == KeyModifiers.Shift)
+			{
+				nudgeAmountX *= ShiftNudgeMultiplier;
+				nudgeAmountY *= ShiftNudgeMultiplier;
+			}
+
+			var nodesToNudge = editor.GetTopmostSelectedNodes();
+
+			foreach (var node in nodesToNudge)
+			{
+				if (node.DisplayObject is not { } displayObject)
+					continue;
+
+				if (displayObject.RightX.HasValue)
+					displayObject.RightX += nudgeAmountX;
+				else if (displayObject.CenterX.HasValue)
+					displayObject.CenterX += nudgeAmountX;
+				else if (displayObject.LeftX.HasValue)
+					displayObject.LeftX += nudgeAmountX;
+				else
+					displayObject.X = ( displayObject.X ?? 0 ) + nudgeAmountX;
+
+				if (displayObject.BottomY.HasValue)
+					displayObject.BottomY += nudgeAmountY;
+				else if (displayObject.CenterY.HasValue)
+					displayObject.CenterY += nudgeAmountY;
+				else if (displayObject.TopY.HasValue)
+					displayObject.TopY += nudgeAmountY;
+				else
+					displayObject.Y = ( displayObject.Y ?? 0 ) + nudgeAmountY;
+
+				node.NotifyOfDisplayObjectChange();
+			}
+
+			editor.StageUndoOperation();
 		}
 	}
 
