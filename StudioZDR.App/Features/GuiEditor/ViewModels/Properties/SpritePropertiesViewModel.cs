@@ -9,7 +9,7 @@ namespace StudioZDR.App.Features.GuiEditor.ViewModels.Properties;
 
 public partial class SpritePropertiesViewModel : DisplayObjectPropertiesViewModel
 {
-	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", 
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
 								  Justification = "WhenAnyValue will only ever reference properties from TrimmerRootAssembly")]
 	public SpritePropertiesViewModel()
 	{
@@ -27,6 +27,12 @@ public partial class SpritePropertiesViewModel : DisplayObjectPropertiesViewMode
 		this.WhenAnyValue(m => m.SpriteName)
 			.Subscribe(spriteName => SetAllValues((GUI__CSprite sprite) => sprite.SpriteSheetItem, spriteName));
 
+		this.WhenAnyValue(m => m.FlipX)
+			.Subscribe(flip => SetAllValues((GUI__CSprite sprite) => sprite.FlipX, flip));
+
+		this.WhenAnyValue(m => m.FlipY)
+			.Subscribe(flip => SetAllValues((GUI__CSprite sprite) => sprite.FlipY, flip));
+
 		this.WhenAnyValue(m => m.AutoSize)
 			.Subscribe(autoSize => SetAllValues((GUI__CSprite sprite) => sprite.Autosize, autoSize));
 	}
@@ -38,6 +44,20 @@ public partial class SpritePropertiesViewModel : DisplayObjectPropertiesViewMode
 
 	[Reactive]
 	public partial string? SpriteNameWatermark { get; set; }
+
+	#endregion
+
+	#region FlipX
+
+	[Reactive]
+	public partial bool? FlipX { get; set; }
+
+	#endregion
+
+	#region FlipY
+
+	[Reactive]
+	public partial bool? FlipY { get; set; }
 
 	#endregion
 
@@ -84,7 +104,9 @@ public partial class SpritePropertiesViewModel : DisplayObjectPropertiesViewMode
 
 		SpriteName = null;
 		SpriteNameWatermark = null;
-		AutoSize = true;
+		FlipX = null;
+		FlipY = null;
+		AutoSize = null;
 	}
 
 	protected override void RefreshValuesFromObject(GUI__CDisplayObject? obj, bool firstObject)
@@ -93,11 +115,15 @@ public partial class SpritePropertiesViewModel : DisplayObjectPropertiesViewMode
 
 		GUI__CSprite? sprite = obj as GUI__CSprite;
 		var spriteSheetItem = sprite?.SpriteSheetItem;
+		bool flipX = sprite?.FlipX ?? false;
+		bool flipY = sprite?.FlipY ?? false;
 		bool autoSize = sprite?.Autosize ?? true;
 
 		if (firstObject)
 		{
 			SpriteName = spriteSheetItem;
+			FlipX = flipX;
+			FlipY = flipY;
 			AutoSize = autoSize;
 		}
 		else
@@ -107,6 +133,12 @@ public partial class SpritePropertiesViewModel : DisplayObjectPropertiesViewMode
 				SpriteName = null;
 				SpriteNameWatermark = MultipleValuesPlaceholder;
 			}
+
+			if (flipX != FlipX)
+				FlipX = null;
+
+			if (flipY != FlipY)
+				FlipY = null;
 
 			if (autoSize != AutoSize)
 				AutoSize = null;

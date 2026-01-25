@@ -15,7 +15,7 @@
 			ViewModel="{Binding #Control.ViewModel, Mode=OneWay}" />
 
 		<Grid
-			RowDefinitions="Auto,32,32"
+			RowDefinitions="Auto,32,32,32,32"
 			ColumnDefinitions="100,*"
 			Classes="ControlGrid"
 			IsEnabled="{Binding #Control.ViewModel.CanEdit}">
@@ -40,11 +40,27 @@
 				</TextBox.InnerRightContent>
 			</TextBox>
 
-			<Label Grid.Row="2" Grid.Column="0" Target="AutoSizeCheckBox">
+			<Label Grid.Row="2" Grid.Column="0" Target="FlipXCheckBox">
+				Flip X:
+			</Label>
+
+			<CheckBox Grid.Row="2" Grid.Column="1"
+					  x:Name="FlipXCheckBox"
+					  IsChecked="{Binding #Control.ViewModel.FlipX}" />
+
+			<Label Grid.Row="3" Grid.Column="0" Target="FlipYCheckBox">
+				Flip Y:
+			</Label>
+
+			<CheckBox Grid.Row="3" Grid.Column="1"
+					  x:Name="FlipYCheckBox"
+					  IsChecked="{Binding #Control.ViewModel.FlipY}" />
+
+			<Label Grid.Row="4" Grid.Column="0" Target="AutoSizeCheckBox">
 				Auto Size:
 			</Label>
 
-			<Grid Grid.Row="2" Grid.Column="1"
+			<Grid Grid.Row="4" Grid.Column="1"
 				  ColumnDefinitions="Auto,*"
 				  HorizontalAlignment="Stretch">
 				<CheckBox Grid.Column="0"
